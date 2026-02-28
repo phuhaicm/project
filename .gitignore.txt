@@ -1,0 +1,14 @@
+# Visual Studio cache
+.vs/
+
+# Build output
+**/bin/
+**/obj/
+
+# Rider/VSCode (optional)
+.idea/
+.vscode/
+
+# OS files
+.DS_Store
+Thumbs.db

@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+    x:Class="PoiNarration.Mobile.Views.PoiListPage"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    Title="POI List">
+
+    <VerticalStackLayout Padding="16" Spacing="12">
+        <Label Text="POI List Page" FontSize="22" />
+        <Button Text="Open Detail (test)" Clicked="OnOpenDetailClicked"/>
+    </VerticalStackLayout>
+</ContentPage>

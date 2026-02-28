@@ -1,0 +1,11 @@
+C:\Users\Admin\source\repos\PoiNarration\PoiNarration.Core\bin\Debug\net9.0\PoiNarration.Core.deps.json
+C:\Users\Admin\source\repos\PoiNarration\PoiNarration.Core\bin\Debug\net9.0\PoiNarration.Core.dll
+C:\Users\Admin\source\repos\PoiNarration\PoiNarration.Core\bin\Debug\net9.0\PoiNarration.Core.pdb
+C:\Users\Admin\source\repos\PoiNarration\PoiNarration.Core\obj\Debug\net9.0\PoiNarration.Core.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\Admin\source\repos\PoiNarration\PoiNarration.Core\obj\Debug\net9.0\PoiNarration.Core.AssemblyInfoInputs.cache
+C:\Users\Admin\source\repos\PoiNarration\PoiNarration.Core\obj\Debug\net9.0\PoiNarration.Core.AssemblyInfo.cs
+C:\Users\Admin\source\repos\PoiNarration\PoiNarration.Core\obj\Debug\net9.0\PoiNarration.Core.csproj.CoreCompileInputs.cache
+C:\Users\Admin\source\repos\PoiNarration\PoiNarration.Core\obj\Debug\net9.0\PoiNarration.Core.dll
+C:\Users\Admin\source\repos\PoiNarration\PoiNarration.Core\obj\Debug\net9.0\refint\PoiNarration.Core.dll
+C:\Users\Admin\source\repos\PoiNarration\PoiNarration.Core\obj\Debug\net9.0\PoiNarration.Core.pdb
+C:\Users\Admin\source\repos\PoiNarration\PoiNarration.Core\obj\Debug\net9.0\ref\PoiNarration.Core.dll
