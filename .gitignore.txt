@@ -1,14 +1,16 @@
 # Visual Studio cache
 .vs/
 
-# Build output
+# Build artifacts
 **/bin/
 **/obj/
 
-# Rider/VSCode (optional)
-.idea/
-.vscode/
+# User-specific
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
 
-# OS files
+# OS
 .DS_Store
 Thumbs.db
