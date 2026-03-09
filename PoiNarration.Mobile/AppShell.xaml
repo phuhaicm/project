@@ -6,17 +6,10 @@
     xmlns:views="clr-namespace:PoiNarration.Mobile.Views">
 
     <TabBar>
-        <!-- Tab 1 -->
-        <ShellContent
-            Title="POI"
-            Icon="dotnet_bot.png"
-            ContentTemplate="{DataTemplate views:PoiListPage}" />
-
-        <!-- Tab 2 -->
-        <ShellContent
-            Title="Map"
-            Icon="dotnet_bot.png"
-            ContentTemplate="{DataTemplate views:MapPage}" />
+        <ShellContent Title="Booths"
+                      ContentTemplate="{DataTemplate views:BoothListPage}" />
+        <ShellContent Title="Map"
+                      ContentTemplate="{DataTemplate views:MapPage}" />
     </TabBar>
 
 </Shell>

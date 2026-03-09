@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+    x:Class="PoiNarration.Mobile.Views.GateModePage"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    Title="Gate - Choose Mode">
+
+    <VerticalStackLayout Padding="16" Spacing="12">
+        <Label Text="Bạn vừa quét QR ở cổng" FontSize="20" />
+        <Label Text="Chọn chế độ:"/>
+
+        <Button Text="1) GPS Tracking (Auto)"
+                Clicked="OnGpsModeClicked"/>
+
+        <Button Text="2) Manual (Chọn khu vực)"
+                Clicked="OnManualModeClicked"/>
+    </VerticalStackLayout>
+</ContentPage>
