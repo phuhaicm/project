@@ -1,0 +1,66 @@
+﻿{
+  "zones": [
+    {
+      "id": "zone-a",
+      "nameVi": "Khu A",
+      "nameEn": "Zone A",
+      "centerLat": 10.0,
+      "centerLng": 106.0,
+      "radiusMeters": 80
+    },
+    {
+      "id": "zone-b",
+      "nameVi": "Khu B",
+      "nameEn": "Zone B",
+      "centerLat": 10.0,
+      "centerLng": 106.0,
+      "radiusMeters": 80
+    }
+  ],
+  "booths": [
+    {
+      "id": "booth-01",
+      "zoneId": "zone-a",
+      "nameVi": "Gian 01",
+      "nameEn": "Booth 01",
+      "descVi": "Gian đồ ăn nhanh...",
+      "descEn": "Fast food booth...",
+      "priority": 1,
+      "lat": 10.0,
+      "lng": 106.0,
+      "radiusMeters": 10,
+      "imageUrl": ""
+    },
+    {
+      "id": "booth-02",
+      "zoneId": "zone-a",
+      "nameVi": "Gian 02",
+      "nameEn": "Booth 02",
+      "descVi": "Gian nước uống...",
+      "descEn": "Drinks booth...",
+      "priority": 1,
+      "lat": 10.0,
+      "lng": 106.0,
+      "radiusMeters": 10,
+      "imageUrl": ""
+    }
+  ],
+  "menuItems": [
+    {
+      "id": "m-01",
+      "boothId": "booth-01",
+      "name": "Burger",
+      "description": "Burger bò",
+      "price": 35000,
+      "imageUrl": ""
+    },
+    {
+      "id": "m-02",
+      "boothId": "booth-02",
+      "name": "Trà chanh",
+      "description": "Mát lạnh",
+      "price": 20000,
+      "imageUrl": ""
+    }
+  ]
+}
