@@ -1,20 +1,46 @@
-<?xml version="1.0" encoding="utf-8" ?>
+﻿<?xml version="1.0" encoding="utf-8" ?>
 <ContentPage
     x:Class="PoiNarration.Mobile.Views.BoothListPage"
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     Title="Booths">
 
-    <VerticalStackLayout Padding="16" Spacing="12">
-        <Label Text="Booth List (Week 1 Skeleton)" FontSize="22" />
+    <Grid RowDefinitions="Auto,*,Auto" Padding="10" RowSpacing="10">
 
-        <Button Text="Scan Gate QR (Demo)"
-                Clicked="OnScanGateClicked"/>
+        <!-- HEADER: giữ lại các thứ tuần 1 -->
+        <VerticalStackLayout Grid.Row="0" Spacing="8">
+            <Button Text="Scan Gate QR (Demo)" Clicked="OnScanGateClicked"/>
+            <Button Text="Manual Mode (Choose Zone)" Clicked="OnManualClicked"/>
+        </VerticalStackLayout>
 
-        <Button Text="Manual Mode (Go to Zones)"
-                Clicked="OnManualClicked"/>
+        <!-- LIST: tuần 2 sẽ đổ data từ SQLite -->
+        <CollectionView x:Name="BoothsView"
+                        Grid.Row="1"
+                        SelectionMode="Single"
+                        SelectionChanged="OnBoothSelected">
+            <CollectionView.ItemTemplate>
+                <DataTemplate>
+                    <!-- Frame warning obsolete vẫn chạy OK; tuần 6 đổi Border -->
+                    <Frame Padding="12" Margin="10" CornerRadius="16">
+                        <VerticalStackLayout Spacing="4">
+                            <Label Text="{Binding Name}" FontSize="18" />
+                            <Label Text="{Binding Desc}"
+                                   FontSize="12"
+                                   Opacity="0.7"
+                                   LineBreakMode="TailTruncation"/>
+                        </VerticalStackLayout>
+                    </Frame>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
 
-        <Button Text="Open Booth Detail (Demo)"
-                Clicked="OnOpenDetailClicked"/>
-    </VerticalStackLayout>
+        <!-- LANGUAGE -->
+        <HorizontalStackLayout Grid.Row="2"
+                               HorizontalOptions="Center"
+                               Spacing="10">
+            <Button Text="VI" Clicked="OnLangVi"/>
+            <Button Text="EN" Clicked="OnLangEn"/>
+        </HorizontalStackLayout>
+
+    </Grid>
 </ContentPage>

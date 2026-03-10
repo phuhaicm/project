@@ -6,10 +6,17 @@
     xmlns:views="clr-namespace:PoiNarration.Mobile.Views">
 
     <TabBar>
-        <ShellContent Title="Booths"
-                      ContentTemplate="{DataTemplate views:BoothListPage}" />
-        <ShellContent Title="Map"
-                      ContentTemplate="{DataTemplate views:MapPage}" />
+        <!-- Tab Booths -->
+        <ShellContent
+        Route="booths"
+        Title="Booths"
+        ContentTemplate="{DataTemplate views:BoothListPage}" />
+
+        <!-- Tab Map -->
+        <ShellContent
+        Route="map"
+        Title="Map"
+        ContentTemplate="{DataTemplate views:MapPage}" />
     </TabBar>
 
 </Shell>
