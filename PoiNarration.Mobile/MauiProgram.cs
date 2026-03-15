@@ -1,5 +1,4 @@
 ﻿using Microsoft.Extensions.Logging;
-using Microsoft.Maui.Controls.Hosting;
 using PoiNarration.Mobile.Services;
 
 namespace PoiNarration.Mobile;
@@ -12,15 +11,21 @@ public static class MauiProgram
 
         builder
             .UseMauiApp<App>()
-            .UseMauiMaps(); // thêm dòng này
+            .UseMauiMaps();
 
 #if DEBUG
         builder.Logging.AddDebug();
 #endif
 
         var dbPath = Path.Combine(FileSystem.AppDataDirectory, "app.db3");
+
+        // Database
         builder.Services.AddSingleton(new AppDatabase(dbPath));
+
+        // Services
         builder.Services.AddSingleton<LocationService>();
+        builder.Services.AddSingleton<NarrationService>();
+        builder.Services.AddSingleton<GeofenceService>();
 
         return builder.Build();
     }

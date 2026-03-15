@@ -28,7 +28,7 @@
       "priority": 1,
       "lat": 10.762520,
       "lng": 106.682230,
-      "radiusMeters": 10,
+      "radiusMeters": 60,
       "imageUrl": ""
     },
     {
@@ -41,7 +41,7 @@
       "priority": 1,
       "lat": 10.762540,
       "lng": 106.682260,
-      "radiusMeters": 10,
+      "radiusMeters": 60,
       "imageUrl": ""
     },
     {
@@ -54,7 +54,7 @@
       "priority": 1,
       "lat": 10.762720,
       "lng": 106.682470,
-      "radiusMeters": 10,
+      "radiusMeters": 60,
       "imageUrl": ""
     }
   ],

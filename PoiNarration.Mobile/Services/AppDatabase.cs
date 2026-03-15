@@ -17,6 +17,7 @@ public class AppDatabase
         await _db.CreateTableAsync<Zone>();
         await _db.CreateTableAsync<Booth>();
         await _db.CreateTableAsync<BoothMenuItem>();
+        await _db.CreateTableAsync<PlaybackLog>();
     }
 
     public Task<int> CountZonesAsync() => _db.Table<Zone>().CountAsync();
@@ -42,5 +43,22 @@ public class AppDatabase
         _db.InsertAllAsync(items);
     public Task<List<Booth>> GetAllBoothsAsync() =>
     _db.Table<Booth>().ToListAsync();
+    public Task<int> InsertPlaybackLogAsync(PlaybackLog log) =>
+    _db.InsertAsync(log);
+
+    public Task<List<PlaybackLog>> GetLogsAsync() =>
+        _db.Table<PlaybackLog>()
+           .OrderByDescending(x => x.PlayedAtUtc)
+           .ToListAsync();
+
+    public async Task<PlaybackLog?> GetLatestLogByBoothAsync(string boothId)
+    {
+        var log = await _db.Table<PlaybackLog>()
+            .Where(x => x.BoothId == boothId)
+            .OrderByDescending(x => x.PlayedAtUtc)
+            .FirstOrDefaultAsync();
+
+        return log;
+    }
 
 }
