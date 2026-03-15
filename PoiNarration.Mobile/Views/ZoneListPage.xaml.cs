@@ -1,30 +1,19 @@
-﻿using PoiNarration.Mobile.Services;
-using PoiNarration.Core.Models;
-
-namespace PoiNarration.Mobile.Views;
+﻿namespace PoiNarration.Mobile.Views;
 
 public partial class ZoneListPage : ContentPage
 {
-    private readonly AppDatabase _db;
-
-    public ZoneListPage(AppDatabase db)
+    public ZoneListPage()
     {
         InitializeComponent();
-        _db = db;
     }
 
-    protected override async void OnAppearing()
+    private async void OnZoneAClicked(object sender, EventArgs e)
     {
-        base.OnAppearing();
-        await _db.InitAsync();
-        ZonesView.ItemsSource = await _db.GetZonesAsync();
+        await Shell.Current.GoToAsync($"{nameof(BoothByZonePage)}?zoneId=zone-a");
     }
 
-    private async void OnZoneSelected(object sender, SelectionChangedEventArgs e)
+    private async void OnZoneBClicked(object sender, EventArgs e)
     {
-        if (e.CurrentSelection.FirstOrDefault() is not PoiNarration.Core.Models.Zone zone) return;
-
-        await Shell.Current.GoToAsync($"{nameof(BoothByZonePage)}?zoneId={zone.Id}");
-        ((CollectionView)sender).SelectedItem = null;
+        await Shell.Current.GoToAsync($"{nameof(BoothByZonePage)}?zoneId=zone-b");
     }
 }

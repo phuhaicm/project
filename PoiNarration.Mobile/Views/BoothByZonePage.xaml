@@ -12,8 +12,8 @@
             <DataTemplate>
                 <Frame Padding="12" Margin="10" CornerRadius="16">
                     <VerticalStackLayout Spacing="4">
-                        <Label Text="{Binding NameVi}" FontSize="18" />
-                        <Label Text="{Binding DescVi}" FontSize="12" Opacity="0.7" LineBreakMode="TailTruncation"/>
+                        <Label Text="{Binding NameVi}" FontSize="18"/>
+                        <Label Text="{Binding DescVi}" FontSize="12" Opacity="0.7"/>
                     </VerticalStackLayout>
                 </Frame>
             </DataTemplate>

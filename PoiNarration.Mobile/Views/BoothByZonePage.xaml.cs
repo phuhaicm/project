@@ -8,11 +8,13 @@ namespace PoiNarration.Mobile.Views;
 public partial class BoothByZonePage : ContentPage
 {
     private readonly AppDatabase _db;
+
     public string ZoneId { get; set; } = "";
 
     public BoothByZonePage()
     {
         InitializeComponent();
+
         var services = Application.Current?.Handler?.MauiContext?.Services
                        ?? throw new Exception("Services is null");
 
@@ -22,6 +24,7 @@ public partial class BoothByZonePage : ContentPage
     protected override async void OnAppearing()
     {
         base.OnAppearing();
+
         await _db.InitAsync();
 
         if (!string.IsNullOrWhiteSpace(ZoneId))
@@ -35,6 +38,7 @@ public partial class BoothByZonePage : ContentPage
         if (e.CurrentSelection.FirstOrDefault() is not Booth booth) return;
 
         await Shell.Current.GoToAsync($"{nameof(BoothDetailPage)}?boothId={booth.Id}");
+
         ((CollectionView)sender).SelectedItem = null;
     }
 }
