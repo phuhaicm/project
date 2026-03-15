@@ -42,4 +42,5 @@ public class AppDatabase
         _db.InsertAllAsync(items);
     public Task<List<Booth>> GetAllBoothsAsync() =>
     _db.Table<Booth>().ToListAsync();
+
 }

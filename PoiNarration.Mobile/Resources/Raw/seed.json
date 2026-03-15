@@ -2,18 +2,18 @@
   "zones": [
     {
       "id": "zone-a",
-      "nameVi": "Khu A",
-      "nameEn": "Zone A",
-      "centerLat": 10.0,
-      "centerLng": 106.0,
+      "nameVi": "Khu Ẩm thực A",
+      "nameEn": "Food Zone A",
+      "centerLat": 10.762500,
+      "centerLng": 106.682200,
       "radiusMeters": 80
     },
     {
       "id": "zone-b",
-      "nameVi": "Khu B",
-      "nameEn": "Zone B",
-      "centerLat": 10.0,
-      "centerLng": 106.0,
+      "nameVi": "Khu Ẩm thực B",
+      "nameEn": "Food Zone B",
+      "centerLat": 10.762700,
+      "centerLng": 106.682450,
       "radiusMeters": 80
     }
   ],
@@ -21,30 +21,44 @@
     {
       "id": "booth-01",
       "zoneId": "zone-a",
-      "nameVi": "Gian 01",
-      "nameEn": "Booth 01",
-      "descVi": "Gian đồ ăn nhanh...",
-      "descEn": "Fast food booth...",
+      "nameVi": "Gian Bún Bò Huế",
+      "nameEn": "Hue Beef Noodle Booth",
+      "descVi": "Gian hàng chuyên bún bò Huế đậm vị.",
+      "descEn": "A booth specializing in rich Hue beef noodles.",
       "priority": 1,
-      "lat": 10.0,
-      "lng": 106.0,
+      "lat": 10.762520,
+      "lng": 106.682230,
       "radiusMeters": 10,
       "imageUrl": ""
     },
     {
       "id": "booth-02",
       "zoneId": "zone-a",
-      "nameVi": "Gian 02",
-      "nameEn": "Booth 02",
-      "descVi": "Gian nước uống...",
-      "descEn": "Drinks booth...",
+      "nameVi": "Gian Bánh Mì",
+      "nameEn": "Bread Booth",
+      "descVi": "Gian hàng bánh mì nóng giòn.",
+      "descEn": "A booth serving crispy Vietnamese bread.",
       "priority": 1,
-      "lat": 10.0,
-      "lng": 106.0,
+      "lat": 10.762540,
+      "lng": 106.682260,
+      "radiusMeters": 10,
+      "imageUrl": ""
+    },
+    {
+      "id": "booth-03",
+      "zoneId": "zone-b",
+      "nameVi": "Gian Trà Sữa",
+      "nameEn": "Milk Tea Booth",
+      "descVi": "Gian trà sữa và đồ uống giải khát.",
+      "descEn": "A booth for milk tea and drinks.",
+      "priority": 1,
+      "lat": 10.762720,
+      "lng": 106.682470,
       "radiusMeters": 10,
       "imageUrl": ""
     }
   ],
+  "``": null,
   "menuItems": [
     {
       "id": "m-01",

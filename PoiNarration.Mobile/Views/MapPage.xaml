@@ -3,9 +3,26 @@
     x:Class="PoiNarration.Mobile.Views.MapPage"
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:maps="http://schemas.microsoft.com/dotnet/2021/maui/maps"
     Title="Map">
 
-    <VerticalStackLayout Padding="16">
-        <Label Text="Map Page" FontSize="22" />
-    </VerticalStackLayout>
+    <Grid RowDefinitions="Auto,*,Auto" Padding="10" RowSpacing="10">
+
+        <VerticalStackLayout Grid.Row="0" Spacing="6">
+            <Label x:Name="GpsStatusLabel" Text="GPS: chưa kiểm tra" FontAttributes="Bold"/>
+            <Label x:Name="LocationLabel" Text="Vị trí hiện tại: chưa có"/>
+            <Label x:Name="NearestBoothLabel" Text="Gian gần nhất: chưa có"/>
+            <Label x:Name="BoothCountLabel" Text="Số booth: 0"/>
+            <Button Text="Lấy vị trí hiện tại" Clicked="OnRefreshLocationClicked"/>
+        </VerticalStackLayout>
+
+        <maps:Map x:Name="FoodMap"
+                  Grid.Row="1"
+                  IsShowingUser="True" />
+
+        <Label Grid.Row="2"
+               Text="Tuần 3: Map + GPS foreground + gian hàng gần nhất"
+               HorizontalOptions="Center"
+               Opacity="0.7" />
+    </Grid>
 </ContentPage>
