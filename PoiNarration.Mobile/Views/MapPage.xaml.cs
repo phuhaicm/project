@@ -13,6 +13,9 @@ public partial class MapPage : ContentPage
     private readonly SeedService _seed;
     private readonly LocationService _locationService;
     private CancellationTokenSource? _trackingCts;
+    private readonly NarrationService _narrationService;
+    private readonly GeofenceService _geofenceService;
+    private bool _isHandlingTrigger = false;
     private List<Booth> _booths = new();
 
     public MapPage()
@@ -25,6 +28,9 @@ public partial class MapPage : ContentPage
         _db = services.GetRequiredService<AppDatabase>();
         _seed = new SeedService(_db);
         _locationService = services.GetRequiredService<LocationService>();
+        _narrationService = services.GetRequiredService<NarrationService>();
+        _geofenceService = services.GetRequiredService<GeofenceService>();
+        _seed ??= new SeedService(_db);
     }
 
     protected override async void OnAppearing()
@@ -94,7 +100,8 @@ public partial class MapPage : ContentPage
                 UpdateMapAndNearest(loc);
             });
 
-            await Task.CompletedTask;
+            await CheckGeofenceAndNarrateAsync(loc);
+
         }, _trackingCts.Token);
     }
 
@@ -141,6 +148,31 @@ public partial class MapPage : ContentPage
         if (location != null)
         {
             UpdateMapAndNearest(location);
+        }
+    }
+    private async Task CheckGeofenceAndNarrateAsync(Location location)
+    {
+        if (_isHandlingTrigger) return;
+        if (_narrationService == null || _geofenceService == null) return;
+
+        var triggeredBooth = await _geofenceService.CheckAndGetTriggeredBoothAsync(location, _booths);
+
+        if (triggeredBooth == null) return;
+
+        _isHandlingTrigger = true;
+
+        try
+        {
+            await MainThread.InvokeOnMainThreadAsync(async () =>
+            {
+                await Shell.Current.GoToAsync($"{nameof(BoothDetailPage)}?boothId={triggeredBooth.Id}");
+            });
+
+            await _narrationService.SpeakBoothAsync(triggeredBooth, "GPS", location);
+        }
+        finally
+        {
+            _isHandlingTrigger = false;
         }
     }
 }

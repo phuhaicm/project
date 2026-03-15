@@ -8,6 +8,7 @@ namespace PoiNarration.Mobile.Views;
 public partial class BoothByZonePage : ContentPage
 {
     private readonly AppDatabase _db;
+    private bool _isNavigating = false;
 
     public string ZoneId { get; set; } = "";
 
@@ -35,10 +36,23 @@ public partial class BoothByZonePage : ContentPage
 
     private async void OnBoothSelected(object sender, SelectionChangedEventArgs e)
     {
-        if (e.CurrentSelection.FirstOrDefault() is not Booth booth) return;
+        if (_isNavigating) return;
 
-        await Shell.Current.GoToAsync($"{nameof(BoothDetailPage)}?boothId={booth.Id}");
+        if (e.CurrentSelection.FirstOrDefault() is not Booth booth)
+            return;
 
+        _isNavigating = true;
+
+        // clear selection NGAY để lần sau bấm lại item cũ vẫn ăn
         ((CollectionView)sender).SelectedItem = null;
+
+        try
+        {
+            await Shell.Current.GoToAsync($"{nameof(BoothDetailPage)}?boothId={booth.Id}");
+        }
+        finally
+        {
+            _isNavigating = false;
+        }
     }
 }
