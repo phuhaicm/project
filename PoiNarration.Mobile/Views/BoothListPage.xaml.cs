@@ -43,7 +43,10 @@ public partial class BoothListPage : ContentPage
     }
 
     private async void OnScanGateClicked(object sender, EventArgs e)
-        => await Shell.Current.GoToAsync(nameof(GateModePage));
+    {
+        // Chuyển hướng sang trang quét mã QR thần thánh!
+        await Navigation.PushAsync(new PoiNarration.Mobile.Views.QRScanPage());
+    }
 
     private async void OnManualClicked(object sender, EventArgs e)
         => await Shell.Current.GoToAsync(nameof(ZoneListPage));

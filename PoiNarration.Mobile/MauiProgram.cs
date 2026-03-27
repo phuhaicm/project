@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
 using PoiNarration.Mobile.Services;
+using ZXing.Net.Maui.Controls;
 
 namespace PoiNarration.Mobile;
 
@@ -11,7 +12,9 @@ public static class MauiProgram
 
         builder
             .UseMauiApp<App>()
+            .UseBarcodeReader()
             .UseMauiMaps();
+        
 
 #if DEBUG
         builder.Logging.AddDebug();
