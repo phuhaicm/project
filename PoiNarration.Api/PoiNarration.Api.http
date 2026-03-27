@@ -1,0 +1,6 @@
+@PoiNarration.Api_HostAddress = http://localhost:5174
+
+GET {{PoiNarration.Api_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
