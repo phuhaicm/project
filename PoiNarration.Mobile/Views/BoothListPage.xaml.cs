@@ -43,15 +43,18 @@ public partial class BoothListPage : ContentPage
     }
 
     private async void OnScanGateClicked(object sender, EventArgs e)
-        => await Shell.Current.GoToAsync(nameof(GateModePage));
-
+    {
+        // Đổi hướng, không mở GateModePage nữa mà mở toang màn hình Camera!
+        await Navigation.PushAsync(new QRScanPage());
+    }
     private async void OnManualClicked(object sender, EventArgs e)
         => await Shell.Current.GoToAsync(nameof(ZoneListPage));
-
+    // DÁN ĐOẠN NÀY VÀO DƯỚI HÀM OnManualClicked:
+    
     private async void OnBoothSelected(object sender, SelectionChangedEventArgs e)
     {
         if (e.CurrentSelection.FirstOrDefault() is not BoothDisplay booth) return;
-        await Shell.Current.GoToAsync($"{nameof(BoothDetailPage)}?boothId={booth.Id}");
+        await Shell.Current.GoToAsync($"{nameof(BoothDetailPage)}?BoothId={booth.Id}");
         ((CollectionView)sender).SelectedItem = null;
     }
 

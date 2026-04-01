@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
 using PoiNarration.Mobile.Services;
+using ZXing.Net.Maui.Controls; // 1. Đảm bảo đã có dòng này
 
 namespace PoiNarration.Mobile;
 
@@ -11,7 +12,8 @@ public static class MauiProgram
 
         builder
             .UseMauiApp<App>()
-            .UseMauiMaps();
+            .UseMauiMaps()
+            .UseBarcodeReader(); // 2. THÊM DÒNG NÀY VÀO ĐÂY (Cực kỳ quan trọng)
 
 #if DEBUG
         builder.Logging.AddDebug();

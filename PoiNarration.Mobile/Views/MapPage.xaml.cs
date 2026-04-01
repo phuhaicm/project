@@ -30,7 +30,6 @@ public partial class MapPage : ContentPage
         _locationService = services.GetRequiredService<LocationService>();
         _narrationService = services.GetRequiredService<NarrationService>();
         _geofenceService = services.GetRequiredService<GeofenceService>();
-        _seed ??= new SeedService(_db);
     }
 
     protected override async void OnAppearing()

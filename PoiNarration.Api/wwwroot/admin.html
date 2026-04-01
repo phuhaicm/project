@@ -1,0 +1,183 @@
+﻿<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Quản lý Menu - Admin Dashboard</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            padding: 20px;
+            background: #f0f2f5;
+            display: flex;
+            gap: 20px;
+        }
+
+        .form-card {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            width: 350px;
+            height: fit-content;
+            position: sticky;
+            top: 20px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+
+        .list-card {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            flex: 1;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+
+        input {
+            width: 100%;
+            padding: 10px;
+            margin: 8px 0;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            box-sizing: border-box;
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            background: #6200ee;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+
+            button.delete {
+                background: #ff5252;
+                padding: 5px 10px;
+                width: auto;
+            }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+
+        th, td {
+            border-bottom: 1px solid #eee;
+            padding: 12px;
+            text-align: left;
+        }
+
+        img {
+            width: 60px;
+            height: 60px;
+            object-fit: cover;
+            border-radius: 6px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="form-card">
+        <h3 style="color: #6200ee; margin-top: 0;">Thêm món mới</h3>
+        <input type="text" id="boothId" placeholder="Mã gian hàng (VD: booth-01)" value="booth-01">
+        <input type="text" id="itemName" placeholder="Tên món ăn">
+        <input type="text" id="itemDesc" placeholder="Mô tả">
+        <input type="number" id="itemPrice" placeholder="Giá (VNĐ)">
+        <input type="file" id="itemFile">
+        <button onclick="saveItem()">LƯU MÓN ĂN</button>
+        <hr>
+        <button style="background: #03dac6; color: #333;" onclick="loadMenu()">XEM DANH SÁCH</button>
+    </div>
+
+    <div class="list-card">
+        <h3 id="listTitle">Danh sách món ăn</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>Ảnh</th>
+                    <th>Tên món</th>
+                    <th>Giá</th>
+                    <th>Booth</th>
+                    <th>Thao tác</th>
+                </tr>
+            </thead>
+            <tbody id="menuTableBody">
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        // 1. Hàm lưu món ăn
+        async function saveItem() {
+            const boothId = document.getElementById('boothId').value;
+            const fileInput = document.getElementById('itemFile');
+            if (!fileInput.files[0]) return alert("Vui lòng chọn ảnh!");
+
+            // Upload ảnh trước
+            const formData = new FormData();
+            formData.append('file', fileInput.files[0]);
+            const uploadRes = await fetch('/api/media/upload', { method: 'POST', body: formData });
+            const uploadData = await uploadRes.json();
+
+            // Lưu món ăn sau
+            const item = {
+                name: document.getElementById('itemName').value,
+                description: document.getElementById('itemDesc').value,
+                price: parseInt(document.getElementById('itemPrice').value),
+                imageUrl: uploadData.url
+            };
+
+            await fetch(`/api/boothmenu/${boothId}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(item)
+            });
+
+            alert("Đã lưu!");
+            loadMenu(); // Lưu xong tự động load lại bảng
+        }
+
+        // 2. Hàm load danh sách món ăn
+        async function loadMenu() {
+            const boothId = document.getElementById('boothId').value;
+            document.getElementById('listTitle').innerText = `Danh sách món ăn của: ${boothId}`;
+
+            const res = await fetch(`/api/boothmenu/${boothId}`);
+            const data = await res.json();
+
+            const tbody = document.getElementById('menuTableBody');
+            tbody.innerHTML = ''; // Xóa bảng cũ
+
+            data.forEach(item => {
+                tbody.innerHTML += `
+                        <tr>
+                            <td><img src="${item.imageUrl}" alt="img"></td>
+                            <td>
+                                <b>${item.name}</b><br>
+                                <small style="color:gray">${item.description}</small>
+                            </td>
+                            <td>${item.price.toLocaleString()}đ</td>
+                            <td>${item.boothId}</td>
+                            <td>
+                                <button class="delete" onclick="deleteItem('${item.boothId}', '${item.id}')">Xóa</button>
+                            </td>
+                        </tr>
+                    `;
+            });
+        }
+
+        // 3. Hàm xóa món ăn
+        async function deleteItem(bId, iId) {
+            if (!confirm("Xóa thiệt hả sếp?")) return;
+            await fetch(`/api/boothmenu/${bId}/items/${iId}`, { method: 'DELETE' });
+            loadMenu();
+        }
+
+        // Tự động load danh sách khi vừa mở trang
+        window.onload = loadMenu;
+    </script>
+</body>
+</html>
