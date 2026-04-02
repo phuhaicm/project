@@ -1,13 +1,6 @@
-﻿using SQLite;
-
-namespace PoiNarration.Core.Models;
-
-public class PlaybackLog
+﻿public class PlaybackLog
 {
-    [PrimaryKey]
     public string Id { get; set; } = Guid.NewGuid().ToString();
-
-    [Indexed]
     public string BoothId { get; set; } = "";
 
     public string TriggerType { get; set; } = ""; // GPS / QR / Manual
