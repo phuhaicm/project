@@ -3,26 +3,40 @@ using PoiNarration.Api.Data;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Thêm các dịch vụ cần thiết
+// Controllers
 builder.Services.AddControllers();
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen(); // Bật Swagger
-builder.Services.AddDbContext<AppDbContext>(opt => opt.UseSqlite("Data Source=poi.db"));
+
+// DbContext
+builder.Services.AddDbContext<AppDbContext>(options =>
+    options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+// Built-in OpenAPI
+builder.Services.AddOpenApi();
 
 var app = builder.Build();
 
-// Cấu hình môi trường chạy
+// OpenAPI + Swagger UI local
 if (app.Environment.IsDevelopment())
 {
-    app.UseSwagger();
-    app.UseSwaggerUI(); // Bật giao diện Swagger UI
+    app.MapOpenApi();
+
+    app.UseSwaggerUI(options =>
+    {
+        options.SwaggerEndpoint("/openapi/v1.json", "PoiNarration API v1");
+    });
 }
 
-app.UseStaticFiles(); // Cho phép server mở thư mục chứa hình ảnh
+app.UseStaticFiles();
 
-// 🛑 ĐÃ KHÓA MÕM KẺ PHẢN DIỆN: Không ép chuyển sang HTTPS nữa!
-// app.UseHttpsRedirection(); 
+app.UseHttpsRedirection();
 
-app.UseAuthorization();
 app.MapControllers();
+
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    await DataSeeder.SeedAsync(db);
+}
+
+
 app.Run();

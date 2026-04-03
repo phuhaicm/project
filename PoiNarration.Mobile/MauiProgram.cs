@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Logging;
+﻿//using Android.Net;
+using Microsoft.Extensions.Logging;
 using PoiNarration.Mobile.Services;
 using ZXing.Net.Maui.Controls; // 1. Đảm bảo đã có dòng này
 
@@ -28,6 +29,9 @@ public static class MauiProgram
         builder.Services.AddSingleton<LocationService>();
         builder.Services.AddSingleton<NarrationService>();
         builder.Services.AddSingleton<GeofenceService>();
+        builder.Services.AddSingleton<ApiService>();
+        builder.Services.AddSingleton<SyncService>();
+
 
         return builder.Build();
     }

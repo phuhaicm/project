@@ -1,7 +1,7 @@
 ﻿using SQLite;
 using PoiNarration.Core.Models;
 
-namespace PoiNarration.Mobile.Services;
+namespace PoiNarration.Mobile;
 
 public class AppDatabase
 {
@@ -14,11 +14,16 @@ public class AppDatabase
 
     public async Task InitAsync()
     {
+        //if (_isInitialized) return;
+
         await _db.CreateTableAsync<Zone>();
         await _db.CreateTableAsync<Booth>();
         await _db.CreateTableAsync<BoothMenuItem>();
         await _db.CreateTableAsync<PlaybackLog>();
+
+        //_isInitialized = true;
     }
+
 
     public Task<int> CountZonesAsync() => _db.Table<Zone>().CountAsync();
 
@@ -36,8 +41,16 @@ public class AppDatabase
         return booth;
     }
 
-    public Task<List<BoothMenuItem>> GetMenuByBoothAsync(string boothId) =>
-        _db.Table<BoothMenuItem>().Where(m => m.BoothId == boothId).ToListAsync();
+    //public Task<List<BoothMenuItem>> GetMenuByBoothAsync(string boothId) =>
+        //_db.Table<BoothMenuItem>().Where(m => m.BoothId == boothId).ToListAsync();
+    public async Task<List<BoothMenuItem>> GetMenuByBoothAsync(string boothId)
+    {
+        await InitAsync();
+
+        return await _db.Table<BoothMenuItem>()
+            .Where(x => x.BoothId == boothId && !x.IsDeleted)
+            .ToListAsync();
+    }
 
     public Task InsertAllAsync<T>(IEnumerable<T> items) where T : new() =>
         _db.InsertAllAsync(items);
@@ -59,6 +72,32 @@ public class AppDatabase
             .FirstOrDefaultAsync();
 
         return log;
+    }
+    public async Task<int> UpsertBoothAsync(Booth booth)
+    {
+        await InitAsync();
+
+        var existing = await _db.Table<Booth>()
+            .Where(x => x.Id == booth.Id)
+            .FirstOrDefaultAsync();
+
+        if (existing == null)
+            return await _db.InsertAsync(booth);
+
+        return await _db.UpdateAsync(booth);
+    }
+    public async Task<int> UpsertMenuItemAsync(BoothMenuItem item)
+    {
+        await InitAsync();
+
+        var existing = await _db.Table<BoothMenuItem>()
+            .Where(x => x.Id == item.Id)
+            .FirstOrDefaultAsync();
+
+        if (existing == null)
+            return await _db.InsertAsync(item);
+
+        return await _db.UpdateAsync(item);
     }
 
 }

@@ -18,4 +18,9 @@ public partial class GateModePage : ContentPage
     {
         await Shell.Current.GoToAsync(nameof(ZoneListPage));
     }
+    private async void OnBoothQrClicked(object sender, EventArgs e)
+    {
+        await Shell.Current.GoToAsync(nameof(QRScanPage));
+    }
+
 }

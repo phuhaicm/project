@@ -1,19 +1,32 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using PoiNarration.Api.Controllers; // Để nó nhận ra class MenuItem bạn viết lúc nãy
+using PoiNarration.Api.Models.Entities;
 
-namespace PoiNarration.Api.Data
+namespace PoiNarration.Api.Data;
+
+public class AppDbContext : DbContext
 {
-    // AppDbContext đóng vai trò là "Người quản kho" 
-    // Nó kết nối giữa các Class C# và các Bảng trong Database
-    public class AppDbContext : DbContext
+    public AppDbContext(DbContextOptions<AppDbContext> options)
+        : base(options)
     {
-        public AppDbContext(DbContextOptions<AppDbContext> options) : base(options)
-        {
-        }
+    }
 
-        // Khai báo bảng MenuItems dựa trên khuôn mẫu là class MenuItem
-        public DbSet<MenuItem> MenuItems { get; set; }
+    public DbSet<Booth> Booths => Set<Booth>();
+    public DbSet<BoothMenuItem> BoothMenuItems => Set<BoothMenuItem>();
+    public DbSet<PlaybackLog> PlaybackLogs => Set<PlaybackLog>();
+    public DbSet<AppUser> AppUsers => Set<AppUser>();
 
-        // Bạn có thể thêm các DbSet khác ở đây nếu sau này có thêm bảng Booth, Zone...
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+        base.OnModelCreating(modelBuilder);
+
+        modelBuilder.Entity<Booth>().HasKey(x => x.Id);
+        modelBuilder.Entity<BoothMenuItem>().HasKey(x => x.Id);
+        modelBuilder.Entity<PlaybackLog>().HasKey(x => x.Id);
+
+        modelBuilder.Entity<BoothMenuItem>()
+            .HasIndex(x => new { x.BoothId, x.IsDeleted });
+
+        modelBuilder.Entity<PlaybackLog>()
+            .HasIndex(x => new { x.BoothId, x.PlayedAtUtc });
     }
 }

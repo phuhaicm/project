@@ -1,6 +1,5 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using PoiNarration.Core.Models;
-using PoiNarration.Mobile.Services;
 
 namespace PoiNarration.Mobile.Views;
 
