@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 18
-VisualStudioVersion = 18.4.11620.152 stable
+VisualStudioVersion = 18.4.11620.152
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PoiNarration.Mobile", "PoiNarration.Mobile\PoiNarration.Mobile.csproj", "{25F0EBE9-B4E2-44B1-8074-42914C5B2D7A}"
 	ProjectSection(ProjectDependencies) = postProject
@@ -13,6 +13,8 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{02EA681E-C7D8-13C7-8484-4AC65E1B71E8}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PoiNarration.Api", "PoiNarration.Api\PoiNarration.Api.csproj", "{12E6AAC8-49E3-4DE7-B095-7C18ABA17E98}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PoiNarration.Web", "PoiNarration.Web\PoiNarration.Web.csproj", "{DFB51BCE-2780-43A3-90CB-C259727B561B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -33,6 +35,10 @@ Global
 		{12E6AAC8-49E3-4DE7-B095-7C18ABA17E98}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{12E6AAC8-49E3-4DE7-B095-7C18ABA17E98}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{12E6AAC8-49E3-4DE7-B095-7C18ABA17E98}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DFB51BCE-2780-43A3-90CB-C259727B561B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DFB51BCE-2780-43A3-90CB-C259727B561B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DFB51BCE-2780-43A3-90CB-C259727B561B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DFB51BCE-2780-43A3-90CB-C259727B561B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
