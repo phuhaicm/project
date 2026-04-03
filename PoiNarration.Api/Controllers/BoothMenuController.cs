@@ -1,72 +1,91 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using PoiNarration.Api.Data; // Nhớ để ý namespace này có khớp với thư mục Data của bạn không
+using PoiNarration.Api.Data;
+using PoiNarration.Api.DTOs.Menu;
+using PoiNarration.Api.Models.Entities;
 
-namespace PoiNarration.Api.Controllers
+namespace PoiNarration.Api.Controllers;
+
+[ApiController]
+[Route("api/booths/{boothId}/menu")]
+public class BoothMenuController : ControllerBase
 {
-    // Giữ cái khuôn mẫu MenuItem ở đây hoặc chuyển sang file riêng trong folder Models
-    public class MenuItem
+    private readonly AppDbContext _db;
+
+    public BoothMenuController(AppDbContext db)
     {
-        public string? Id { get; set; }
-        public string? BoothId { get; set; }
-        public string? Name { get; set; }
-        public string? Description { get; set; }
-        public decimal Price { get; set; }
-        public string? ImageUrl { get; set; }
+        _db = db;
     }
 
-    [ApiController]
-    [Route("api/[controller]")]
-    public class BoothMenuController : ControllerBase
+    [HttpGet]
+    public async Task<ActionResult<List<BoothMenuItem>>> GetByBooth(string boothId)
     {
-        private readonly AppDbContext _db;
+        var items = await _db.BoothMenuItems
+            .Where(x => x.BoothId == boothId && !x.IsDeleted)
+            .OrderBy(x => x.Name)
+            .ToListAsync();
 
-        // TIÊM (Inject) Database vào Controller để sử dụng
-        public BoothMenuController(AppDbContext db)
+        return Ok(items);
+    }
+
+    [HttpPost]
+    public async Task<ActionResult<BoothMenuItem>> Create(string boothId, [FromBody] UpsertMenuItemRequest request)
+    {
+        var boothExists = await _db.Booths.AnyAsync(x => x.Id == boothId);
+        if (!boothExists)
+            return NotFound("Không tìm thấy booth.");
+
+        var item = new BoothMenuItem
         {
-            _db = db;
-        }
+            BoothId = boothId,
+            Name = request.Name,
+            Description = request.Description,
+            Price = request.Price,
+            ImageUrl = request.ImageUrl,
+            UpdatedAtUtc = DateTime.UtcNow,
+            IsDeleted = false
+        };
 
-        // 1. Lấy danh sách món ăn từ Database thật
-        [HttpGet("{boothId}")]
-        public async Task<IActionResult> GetMenu(string boothId)
-        {
-            var menu = await _db.MenuItems
-                                .Where(m => m.BoothId == boothId)
-                                .ToListAsync();
-            return Ok(menu);
-        }
+        _db.BoothMenuItems.Add(item);
+        await _db.SaveChangesAsync();
 
-        // 2. Thêm món mới và LƯU VĨNH VIỄN vào file .db
-        [HttpPost("{boothId}")]
-        public async Task<IActionResult> AddMenuItem(string boothId, [FromBody] MenuItem newItem)
-        {
-            // Tự tạo ID nếu bên Web không gửi
-            if (string.IsNullOrEmpty(newItem.Id))
-                newItem.Id = Guid.NewGuid().ToString();
+        return Ok(item);
+    }
 
-            newItem.BoothId = boothId;
+    [HttpPut("{menuId}")]
+    public async Task<ActionResult<BoothMenuItem>> Update(string boothId, string menuId, [FromBody] UpsertMenuItemRequest request)
+    {
+        var item = await _db.BoothMenuItems
+            .FirstOrDefaultAsync(x => x.Id == menuId && x.BoothId == boothId);
 
-            _db.MenuItems.Add(newItem); // Cho món ăn vào giỏ
-            await _db.SaveChangesAsync(); // Chốt đơn, lưu xuống ổ cứng!
+        if (item == null)
+            return NotFound("Không tìm thấy menu item.");
 
-            return Ok(new { Message = "Đã lưu vào Database thật thành công!" });
-        }
+        item.Name = request.Name;
+        item.Description = request.Description;
+        item.Price = request.Price;
+        item.ImageUrl = request.ImageUrl;
+        item.UpdatedAtUtc = DateTime.UtcNow;
 
-        // 3. Xóa món ăn khỏi Database
-        [HttpDelete("{boothId}/items/{itemId}")]
-        public async Task<IActionResult> DeleteMenuItem(string boothId, string itemId)
-        {
-            var item = await _db.MenuItems
-                                .FirstOrDefaultAsync(m => m.BoothId == boothId && m.Id == itemId);
+        await _db.SaveChangesAsync();
 
-            if (item != null)
-            {
-                _db.MenuItems.Remove(item);
-                await _db.SaveChangesAsync(); // Lưu lại thay đổi sau khi xóa
-                return Ok(new { Message = "Đã xóa xong khỏi Database!" });
-            }
-            return NotFound("Không tìm thấy món để xóa");
-        }
+        return Ok(item);
+    }
+
+    [HttpDelete("{menuId}")]
+    public async Task<IActionResult> Delete(string boothId, string menuId)
+    {
+        var item = await _db.BoothMenuItems
+            .FirstOrDefaultAsync(x => x.Id == menuId && x.BoothId == boothId);
+
+        if (item == null)
+            return NotFound();
+
+        item.IsDeleted = true;
+        item.UpdatedAtUtc = DateTime.UtcNow;
+
+        await _db.SaveChangesAsync();
+
+        return NoContent();
     }
 }

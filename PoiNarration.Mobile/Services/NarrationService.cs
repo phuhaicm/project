@@ -1,11 +1,14 @@
 ﻿using PoiNarration.Core.Models;
+using System.Runtime.Versioning;
 
 namespace PoiNarration.Mobile.Services;
+
 
 public class NarrationService
 {
     private readonly AppDatabase _db;
     private bool _isSpeaking = false;
+    private CancellationTokenSource? _speakCts;
 
     public NarrationService(AppDatabase db)
     {
@@ -32,13 +35,14 @@ public class NarrationService
                 locale = locales.FirstOrDefault(x => x.Language.StartsWith("vi"));
             else
                 locale = locales.FirstOrDefault(x => x.Language.StartsWith("en"));
+            _speakCts = new CancellationTokenSource();
 
             await TextToSpeech.Default.SpeakAsync(text, new SpeechOptions
             {
                 Locale = locale,
                 Pitch = 1.0f,
                 Volume = 1.0f
-            });
+            }, _speakCts.Token);
 
             var log = new PlaybackLog
             {
@@ -58,4 +62,10 @@ public class NarrationService
             _isSpeaking = false;
         }
     }
+    public Task StopAsync()
+    {
+        _speakCts?.Cancel();
+        return Task.CompletedTask;
+    }
+
 }

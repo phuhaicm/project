@@ -1,34 +1,25 @@
 <?xml version="1.0" encoding="utf-8" ?>
-<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             xmlns:zxing="clr-namespace:ZXing.Net.Maui.Controls;assembly=ZXing.Net.MAUI.Controls"
-             x:Class="PoiNarration.Mobile.Views.QRScanPage"
-             Title="Quét mã QR">
+<ContentPage
+    x:Class="PoiNarration.Mobile.Views.QRScanPage"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:zxing="clr-namespace:ZXing.Net.Maui.Controls;assembly=ZXing.Net.MAUI.Controls"
+    Title="Scan Booth QR">
 
     <Grid>
-        <zxing:CameraBarcodeReaderView 
-            x:Name="barcodeReader"
-            IsDetecting="True"
-            BarcodesDetected="barcodeReader_BarcodesDetected" />
+        <zxing:CameraBarcodeReaderView
+            x:Name="cameraView"
+            BarcodesDetected="OnBarcodesDetected" />
 
-        <Grid RowDefinitions="*, 250, *" ColumnDefinitions="*, 250, *">
-
-            <BoxView Grid.Row="0" Grid.ColumnSpan="3" Color="#90000000" />
-            <BoxView Grid.Row="2" Grid.ColumnSpan="3" Color="#90000000" />
-            <BoxView Grid.Row="1" Grid.Column="0" Color="#90000000" />
-            <BoxView Grid.Row="1" Grid.Column="2" Color="#90000000" />
-            <Border Grid.Row="1" Grid.Column="1"
-                    Stroke="White" StrokeThickness="3"
-                    BackgroundColor="Transparent"
-                    StrokeShape="RoundRectangle 15">
-
-                <BoxView HeightRequest="2" Color="Lime" VerticalOptions="Start" x:Name="ScanLine" />
+        <Grid VerticalOptions="End" Padding="16">
+            <Border BackgroundColor="#88000000"
+                    StrokeThickness="0"
+                    StrokeShape="RoundRectangle 12"
+                    Padding="12">
+                <Label Text="Đưa QR Booth vào khung hình"
+                       TextColor="White"
+                       HorizontalOptions="Center" />
             </Border>
-
-            <Label Grid.Row="2" Grid.ColumnSpan="3" 
-                   Text="Đưa mã QR vào khung để khám phá" 
-                   TextColor="White" FontAttributes="Bold"
-                   HorizontalOptions="Center" VerticalOptions="Start" Margin="0,20,0,0"/>
         </Grid>
     </Grid>
 </ContentPage>

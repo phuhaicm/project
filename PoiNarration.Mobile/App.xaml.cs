@@ -20,6 +20,23 @@ public partial class App : Application
 
     protected override Window CreateWindow(IActivationState? activationState)
     {
+        MainThread.BeginInvokeOnMainThread(async () =>
+        {
+            try
+            {
+                var services = Current?.Handler?.MauiContext?.Services;
+                var syncService = services?.GetService<PoiNarration.Mobile.Services.SyncService>();
+
+                if (syncService != null)
+                {
+                    await syncService.SyncAsync();
+                }
+            }
+            catch
+            {
+                // fallback offline
+            }
+        });
         return new Window(new AppShell());
     }
 

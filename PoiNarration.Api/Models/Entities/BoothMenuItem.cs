@@ -1,4 +1,4 @@
-﻿namespace PoiNarration.Core.Models;
+﻿namespace PoiNarration.Api.Models.Entities;
 
 public class BoothMenuItem
 {

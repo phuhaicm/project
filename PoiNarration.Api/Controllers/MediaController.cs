@@ -1,42 +1,55 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using PoiNarration.Api.DTOs.Media;
 
-namespace PoiNarration.Api.Controllers
+namespace PoiNarration.Api.Controllers;
+
+[ApiController]
+[Route("api/[controller]")]
+public class MediaController : ControllerBase
 {
-    [ApiController]
-    [Route("api/[controller]")]
-    public class MediaController : ControllerBase
+    private readonly IWebHostEnvironment _env;
+
+    public MediaController(IWebHostEnvironment env)
     {
-        private readonly IWebHostEnvironment _env;
+        _env = env;
+    }
 
-        public MediaController(IWebHostEnvironment env)
+    [HttpPost("upload")]
+    public async Task<ActionResult<UploadMediaResponse>> Upload(IFormFile file)
+    {
+        if (file == null || file.Length == 0)
+            return BadRequest("Không có file.");
+
+        var allowedExtensions = new[] { ".jpg", ".jpeg", ".png", ".webp" };
+        var ext = Path.GetExtension(file.FileName).ToLowerInvariant();
+
+        if (!allowedExtensions.Contains(ext))
+            return BadRequest("Định dạng file không hợp lệ.");
+
+        if (file.Length > 5 * 1024 * 1024)
+            return BadRequest("File quá lớn. Giới hạn 5MB.");
+
+        var webRoot = _env.WebRootPath;
+        if (string.IsNullOrWhiteSpace(webRoot))
         {
-            _env = env; // Lấy thông tin thư mục của Server
+            webRoot = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot");
         }
 
-        [HttpPost("upload")]
-        public async Task<IActionResult> UploadImage(IFormFile file)
+        var uploadFolder = Path.Combine(webRoot, "uploads", "menu");
+        Directory.CreateDirectory(uploadFolder);
+
+        var safeFileName = $"{Guid.NewGuid()}{ext}";
+        var fullPath = Path.Combine(uploadFolder, safeFileName);
+
+        await using var stream = new FileStream(fullPath, FileMode.Create);
+        await file.CopyToAsync(stream);
+
+        var baseUrl = $"{Request.Scheme}://{Request.Host}";
+        var fileUrl = $"{baseUrl}/uploads/menu/{safeFileName}";
+
+        return Ok(new UploadMediaResponse
         {
-            if (file == null || file.Length == 0)
-                return BadRequest("Chưa chọn file hình nào cả!");
-
-            // Chỉ định đường dẫn tới thư mục wwwroot/images
-            var uploadsFolder = Path.Combine(_env.WebRootPath, "images");
-            if (!Directory.Exists(uploadsFolder))
-                Directory.CreateDirectory(uploadsFolder);
-
-            // Tạo tên file ngẫu nhiên để không bị trùng lặp (ví dụ: abc-123_phobo.jpg)
-            var uniqueFileName = Guid.NewGuid().ToString() + "_" + file.FileName;
-            var filePath = Path.Combine(uploadsFolder, uniqueFileName);
-
-            // Copy file từ web vào ổ cứng của Server
-            using (var stream = new FileStream(filePath, FileMode.Create))
-            {
-                await file.CopyToAsync(stream);
-            }
-
-            // Trả về cái Link URL để lát Mobile lấy ảnh hiện lên App
-            var imageUrl = $"/images/{uniqueFileName}";
-            return Ok(new { Url = imageUrl });
-        }
+            Url = fileUrl
+        });
     }
 }

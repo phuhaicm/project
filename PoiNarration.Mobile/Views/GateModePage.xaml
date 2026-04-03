@@ -14,5 +14,8 @@
 
         <Button Text="2) Manual (Chọn khu vực)"
                 Clicked="OnManualModeClicked"/>
+        
+        <Button Text="Quét QR Booth"
+        Clicked="OnBoothQrClicked"/>
     </VerticalStackLayout>
 </ContentPage>
