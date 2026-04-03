@@ -1,0 +1,35 @@
+﻿@model PoiNarration.Web.ViewModels.OwnerMenuItemVm
+
+<h2>Thêm món ăn</h2>
+
+Create
+<form>
+    <input type="hidden" asp-for="BoothId" />
+
+    <div>
+        <label>Tên món</label>
+        <input asp-for="Name" />
+    </div>
+
+    <div>
+        <label>Mô tả</label>
+        <textarea asp-for="Description"></textarea>
+    </div>
+
+    <div>
+        <label>Giá</label>
+        <input asp-for="Price" type="number" step="1000" />
+    </div>
+
+    <div>
+        <label>Ảnh</label>
+        <input asp-for="ImageFile" type="file" accept=".jpg,.jpeg,.png,.webp" />
+    </div>
+
+    <button type="submit">Lưu</button>
+</form>
+
+@if (TempData["Success"] != null)
+{
+    <p style="color:green">@TempData["Success"]</p>
+}
