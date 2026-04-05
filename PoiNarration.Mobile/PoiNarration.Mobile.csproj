@@ -1,8 +1,10 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
+		
 		<TargetFramework>net10.0-android</TargetFramework>
-		<TargetFrameworks Condition="$([MSBuild]::IsOSPlatform('windows'))">$(TargetFrameworks);net9.0-windows10.0.19041.0</TargetFrameworks>
+		
+		
 		<!-- Uncomment to also build the tizen app. You will need to install tizen by following this: https://github.com/Samsung/Tizen.NET -->
 		<!-- <TargetFrameworks>$(TargetFrameworks);net9.0-tizen</TargetFrameworks> -->
 
@@ -19,6 +21,11 @@
 		<SingleProject>true</SingleProject>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
+
+		<SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">23.0</SupportedOSPlatformVersion>
+		
+		
+
 		<UseRidGraph>true</UseRidGraph>
 		
 
@@ -63,13 +70,12 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
-		<PackageReference Include="Microsoft.Maui.Controls" Version="$(MauiVersion)" />
-		<PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="9.0.8" />
-		<PackageReference Include="Microsoft.Maui.Controls.Maps" Version="9.0.120" />
+		<PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.2" />
+		<PackageReference Include="Microsoft.Maui.Controls" Version="10.0.51" />
+		<PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="10.0.5" />
+		<PackageReference Include="Microsoft.Maui.Controls.Maps" Version="10.0.51" />
 		<PackageReference Include="sqlite-net-pcl" Version="1.9.172" />
-		<PackageReference Include="System.Text.Json" Version="9.0.12" />
-		<PackageReference Include="ZXing.Net.Maui.Controls" Version="0.5.2" />
+		<PackageReference Include="ZXing.Net.Maui.Controls" Version="0.7.4" />
 	</ItemGroup>
 
 	<ItemGroup>

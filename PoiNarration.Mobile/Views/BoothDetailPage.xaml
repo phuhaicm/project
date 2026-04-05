@@ -8,39 +8,44 @@
     <ScrollView>
         <VerticalStackLayout Padding="16" Spacing="12">
 
-            <Label x:Name="BoothName"
-                   FontSize="22"
-                   FontAttributes="Bold" />
+            <Label
+                x:Name="BoothName"
+                FontSize="22"
+                FontAttributes="Bold" />
 
-            <Label x:Name="BoothDesc"
-                   FontSize="14"
-                   Opacity="0.8" />
+            <Label
+                x:Name="BoothDesc"
+                FontSize="14"
+                Opacity="0.8" />
 
             <HorizontalStackLayout Spacing="12">
-                <Button Text="Play"
-                        Clicked="OnPlayClicked" />
-                <Button Text="Stop"
-                        Clicked="OnStopClicked" />
+                <Button Text="Play" Clicked="OnPlayClicked" />
+                <Button Text="Stop" Clicked="OnStopClicked" />
             </HorizontalStackLayout>
 
-            <Label Text="Menu"
-                   FontSize="18"
-                   Margin="0,12,0,0" />
+            <Label
+                Text="Menu"
+                FontSize="18"
+                Margin="0,12,0,0" />
 
             <CollectionView x:Name="MenuView">
                 <CollectionView.ItemTemplate>
                     <DataTemplate>
-                        <Border Stroke="#DDDDDD"
-                                StrokeThickness="1"
-                                StrokeShape="RoundRectangle 12"
-                                Padding="10"
-                                Margin="0,6">
-                            <Grid ColumnDefinitions="100,*"
-                                  ColumnSpacing="10">
+                        <Border
+                            Stroke="#DDDDDD"
+                            StrokeThickness="1"
+                            StrokeShape="RoundRectangle 12"
+                            Padding="10"
+                            Margin="0,6">
 
-                                <Image HeightRequest="100"
-                                       WidthRequest="100"
-                                       Aspect="AspectFill">
+                            <Grid
+                                ColumnDefinitions="100,*"
+                                ColumnSpacing="10">
+
+                                <Image
+                                    HeightRequest="100"
+                                    WidthRequest="100"
+                                    Aspect="AspectFill">
                                     <Image.Source>
                                         <UriImageSource
                                             Uri="{Binding ImageUrl}"
@@ -49,19 +54,24 @@
                                     </Image.Source>
                                 </Image>
 
-                                <VerticalStackLayout Grid.Column="1"
-                                                     Spacing="4">
-                                    <Label Text="{Binding Name}"
-                                           FontAttributes="Bold"
-                                           FontSize="16"/>
+                                <VerticalStackLayout
+                                    Grid.Column="1"
+                                    Spacing="4">
 
-                                    <Label Text="{Binding Description}"
-                                           FontSize="12"
-                                           Opacity="0.7"/>
+                                    <Label
+                                        Text="{Binding Name}"
+                                        FontAttributes="Bold"
+                                        FontSize="16" />
 
-                                    <Label Text="{Binding Price}"
-                                           FontSize="14"
-                                           TextColor="DarkRed"/>
+                                    <Label
+                                        Text="{Binding Description}"
+                                        FontSize="12"
+                                        Opacity="0.7" />
+
+                                    <Label
+                                        Text="{Binding Price}"
+                                        FontSize="14"
+                                        TextColor="DarkRed" />
                                 </VerticalStackLayout>
 
                             </Grid>

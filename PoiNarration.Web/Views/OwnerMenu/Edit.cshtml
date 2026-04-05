@@ -1,0 +1,46 @@
+@model PoiNarration.Web.ViewModels.OwnerMenuItemVm
+
+@{
+    ViewData["Title"] = "Sửa món ăn";
+}
+
+<h2>Sửa món ăn</h2>
+
+Edit
+    <input type="hidden" asp-for="BoothId" />
+    <input type="hidden" asp-for="MenuId" />
+    <input type="hidden" asp-for="ExistingImageUrl" />
+
+    <div style="margin-bottom:10px;">
+        <label>Tên món</label><br />
+        <input asp-for="Name" />
+    </div>
+
+    <div style="margin-bottom:10px;">
+        <label>Mô tả</label><br />
+        <textarea asp-for="Description"></textarea>
+    </div>
+
+    <div style="margin-bottom:10px;">
+        <label>Giá</label><br />
+        <input asp-for="Price" type="number" step="1000" />
+    </div>
+
+    <div style="margin-bottom:10px;">
+        <label>Ảnh hiện tại</label><br />
+        @if (!string.IsNullOrWhiteSpace(Model.ExistingImageUrl))
+        {
+            @Model.ExistingImageUrl
+        }
+    </div>
+
+    <div style="margin-bottom:10px;">
+        <label>Đổi ảnh mới (nếu muốn)</label><br />
+        <input asp-for="ImageFile" type="file" accept=".jpg,.jpeg,.png,.webp" />
+    </div>
+
+    <button type="submit">Cập nhật</button>
+</form>
+
+<p>
+    <a asp-action="Index" asp-route-bo

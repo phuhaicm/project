@@ -1,0 +1,112 @@
+﻿@model List<PoiNarration.Web.Models.BoothMenuItemDto>
+@{
+    ViewData["Title"] = "Quản lý Menu";
+    var boothId = ViewBag.BoothId as string;
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <div>
+        <h3 class="mb-0 fw-bold">@ViewData["Title"]</h3>
+        <div class="text-muted">Gian hàng: <span class="badge bg-light text-dark border">@boothId</span></div>
+    </div>
+    <div class="d-flex gap-2">
+        @* Sửa lỗi thẻ Quay lại *@
+        <a class="btn btn-outline-secondary btn-sm" asp-action="MyBooths">
+            <i class="bi bi-arrow-left me-1"></i> Quay lại
+        </a>
+        @* Sửa lỗi thẻ Thêm món *@
+        <a class="btn btn-primary btn-sm" asp-action="Create" asp-route-boothId="@boothId">
+            <i class="bi bi-plus-lg me-1"></i> Thêm món mới
+        </a>
+    </div>
+</div>
+
+<div class="card card-shadow border-0 shadow-sm">
+    <div class="card-body">
+        @if (Model == null || !Model.Any())
+        {
+            <div class="alert alert-info mb-0 border-0 shadow-sm">
+                <i class="bi bi-info-circle me-2"></i> Hiện chưa có món ăn nào trong thực đơn này.
+            </div>
+        }
+        else
+        {
+            <div class="table-responsive">
+                <table class="table align-middle table-hover">
+                    <thead class="table-light">
+                        <tr>
+                            <th style="width: 80px;">Ảnh</th>
+                            <th>Tên món</th>
+                            <th>Mô tả</th>
+                            <th style="width: 120px;">Giá</th>
+                            <th class="text-end" style="width: 150px;">Thao tác</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model)
+                        {
+                            <tr>
+                                <td>
+                                    @if (!string.IsNullOrWhiteSpace(item.ImageUrl))
+                                    {
+                                        <img class="rounded shadow-sm" src="@item.ImageUrl"
+                                             alt="menu" style="width: 60px; height: 60px; object-fit: cover;" />
+                                    }
+                                    else
+                                    {
+                                        <div class="bg-light rounded d-flex align-items-center justify-content-center"
+                                             style="width: 60px; height: 60px;">
+                                            <i class="bi bi-image text-muted"></i>
+                                        </div>
+                                    }
+                                </td>
+                                <td>
+                                    <div class="fw-bold text-dark">@item.Name</div>
+                                    <div class="small text-muted">ID: @item.Id</div>
+                                </td>
+                                <td>
+                                    <div class="text-truncate" style="max-width: 250px;" title="@item.Description">
+                                        @item.Description
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="fw-bold text-danger">@item.Price.ToString("N0") đ</span>
+                                </td>
+                                <td class="text-end">
+                                    <div class="d-flex justify-content-end gap-1">
+                                        @* Nút Sửa *@
+                                        <a class="btn btn-outline-primary btn-sm"
+                                               asp-action="Edit"
+                                               asp-route-id="@item.Id"
+                                               asp-route-boothId="@boothId">
+                                            <i class="bi bi-pencil"></i>
+                                        </a>
+
+                                        @* Form Xóa - Sửa lỗi thẻ form bị vỡ *@
+                                        <form asp-action="Delete" method="post"
+                                              onclick="return confirm('Bạn có chắc chắn muốn xóa món này?');">
+                                            <input type="hidden" name="menuId" value="@item.Id" />
+                                            <input type="hidden" name="boothId" value="@boothId" />
+                                            <button class="btn btn-outline-danger btn-sm" type="submit">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+    </div>
+</div>
+
+<style>
+    /* Đảm bảo ảnh không bị méo */
+    .thumb {
+        width: 60px;
+        height: 60px;
+        object-fit: cover;
+    }
+</style>

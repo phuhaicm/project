@@ -43,7 +43,7 @@ public partial class QRScanPage : ContentPage
                 }
             }
 
-            await DisplayAlert("QR không hợp lệ", text, "OK");
+            await DisplayAlertAsync("QR không hợp lệ", text, "OK");
             _handled = false;
         });
     }

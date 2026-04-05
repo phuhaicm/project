@@ -5,8 +5,12 @@ namespace PoiNarration.Web.ViewModels;
 public class OwnerMenuItemVm
 {
     public string BoothId { get; set; } = "";
+    public string MenuId { get; set; } = "";
+
     public string Name { get; set; } = "";
     public string Description { get; set; } = "";
     public decimal Price { get; set; }
+
+    public string ExistingImageUrl { get; set; } = "";
     public IFormFile? ImageFile { get; set; }
 }

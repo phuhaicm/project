@@ -1,0 +1,96 @@
+﻿@model List<PoiNarration.Web.Models.BoothDto>
+@{
+    ViewData["Title"] = "Quản lý Owner/Booth";
+    var owners = ViewBag.Owners as List<PoiNarration.Web.Models.AppUserDto> ?? new();
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <div>
+        <h3 class="mb-0">@ViewData["Title"]</h3>
+        <div class="text-muted">Gán Owner cho từng gian hàng</div>
+    </div>
+</div>
+
+<div class="card card-shadow">
+    <div class="card-body">
+        <div class="row g-2 mb-3">
+            <div class="col-12 col-md-5">
+                <div class="input-group">
+                    <span class="input-group-text"><i class="bi bi-search"></i></span>
+                    <input id="searchBox" class="form-control" placeholder="Tìm booth theo tên / id..." />
+                </div>
+            </div>
+            <div class="col-12 col-md-7 text-md-end">
+                <span class="badge bg-info text-dark">Tổng booth: @Model.Count</span>
+            </div>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table align-middle table-hover" id="boothTable">
+                <thead>
+                    <tr>
+                        <th>Booth</th>
+                        <th>Owner hiện tại</th>
+                        <th style="width: 400px;">Gán owner mới</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var booth in Model)
+                    {
+                        <tr>
+                            <td>
+                                <div class="fw-semibold">@booth.NameVi</div>
+                                <div class="text-muted small">@booth.Id</div>
+                            </td>
+                            <td>
+                                @if (!string.IsNullOrWhiteSpace(booth.OwnerUserId))
+                                {
+                                    <span class="badge bg-success">@booth.OwnerUserId</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-secondary">Chưa gán</span>
+                                }
+                            </td>
+                            <td>
+                                @* Đã thêm thẻ form và sửa lỗi dính chữ AssignOwner *@
+                                <form asp-action="AssignOwner" method="post" class="d-flex gap-2">
+                                    <input type="hidden" name="boothId" value="@booth.Id" />
+
+                                    <select class="form-select form-select-sm" name="ownerUserId">
+                                        <option value="">-- Chọn Owner --</option>
+                                        @foreach (var owner in owners)
+                                        {
+                                            @* Tự động chọn nếu owner này đang sở hữu booth *@
+                                            <!option value="@owner.Id" @(owner.Id == booth.OwnerUserId ? "selected" : "")>
+                                                @owner.Username
+                                            </!option>
+                                        }
+                                    </select>
+
+                                    <button class="btn btn-primary btn-sm text-nowrap" type="submit">
+                                        <i class="bi bi-link-45deg me-1"></i> Gán
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.getElementById('searchBox').addEventListener('input', function () {
+            const q = this.value.toLowerCase();
+            const rows = document.querySelectorAll('#boothTable tbody tr');
+            rows.forEach(r => {
+                // Chỉ lấy text ở cột đầu tiên (tên booth/id) để tìm kiếm chính xác hơn
+                const boothName = r.querySelector('td:first-child').innerText.toLowerCase();
+                r.style.display = boothName.includes(q) ? '' : 'none';
+            });
+        });
+    </script>
+}

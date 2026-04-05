@@ -1,35 +1,73 @@
 ﻿@model PoiNarration.Web.ViewModels.OwnerMenuItemVm
+@{
+    ViewData["Title"] = "Thêm món ăn mới";
+}
 
-<h2>Thêm món ăn</h2>
+<div class="row justify-content-center">
+    <div class="col-12 col-lg-8">
+        <div class="card card-shadow border-0 shadow-sm">
+            <div class="card-body p-4">
+                <div class="d-flex align-items-center mb-4">
+                    <a asp-action="Index" asp-route-boothId="@Model.BoothId" class="btn btn-link text-decoration-none p-0 me-3">
+                        <i class="bi bi-arrow-left fs-4"></i>
+                    </a>
+                    <h3 class="mb-0 fw-bold">Thêm món ăn mới</h3>
+                </div>
 
-Create
-<form>
-    <input type="hidden" asp-for="BoothId" />
+                @* Sửa lỗi: Thêm đầy đủ thuộc tính cho form, đặc biệt là enctype để upload file *@
+                <form asp-action="Create" method="post" enctype="multipart/form-data">
+                    <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+                    
+                    @* Giữ lại BoothId để biết món ăn thuộc về gian hàng nào *@
+                    <input type="hidden" asp-for="BoothId" />
 
-    <div>
-        <label>Tên món</label>
-        <input asp-for="Name" />
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Tên món ăn</label>
+                        <input asp-for="Name" class="form-control" placeholder="Nhập tên món (ví dụ: Phở bò, Bánh mì...)" />
+                        <span asp-validation-for="Name" class="text-danger small"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Mô tả món ăn</label>
+                        <textarea asp-for="Description" class="form-control" rows="4" placeholder="Mô tả nguyên liệu hoặc hương vị để AI thuyết minh hay hơn..."></textarea>
+                        <span asp-validation-for="Description" class="text-danger small"></span>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Giá bán (VNĐ)</label>
+                            <div class="input-group">
+                                <input asp-for="Price" type="number" step="1000" class="form-control" placeholder="0" />
+                                <span class="input-group-text">đ</span>
+                            </div>
+                            <span asp-validation-for="Price" class="text-danger small"></span>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Hình ảnh món ăn</label>
+                            <input asp-for="ImageFile" type="file" class="form-control" accept=".jpg,.jpeg,.png,.webp" />
+                            <div class="form-text">Định dạng: JPG, PNG, WebP.</div>
+                        </div>
+                    </div>
+
+                    <hr class="my-4" />
+
+                    <div class="d-flex gap-2">
+                        <button class="btn btn-primary px-4" type="submit">
+                            <i class="bi bi-check-circle me-1"></i> Lưu món ăn
+                        </button>
+                        <a class="btn btn-outline-secondary px-4" asp-action="Index" asp-route-boothId="@Model.BoothId">
+                            Hủy bỏ
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
     </div>
+</div>
 
-    <div>
-        <label>Mô tả</label>
-        <textarea asp-for="Description"></textarea>
-    </div>
-
-    <div>
-        <label>Giá</label>
-        <input asp-for="Price" type="number" step="1000" />
-    </div>
-
-    <div>
-        <label>Ảnh</label>
-        <input asp-for="ImageFile" type="file" accept=".jpg,.jpeg,.png,.webp" />
-    </div>
-
-    <button type="submit">Lưu</button>
-</form>
-
-@if (TempData["Success"] != null)
-{
-    <p style="color:green">@TempData["Success"]</p>
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
 }

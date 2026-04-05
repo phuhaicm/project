@@ -1,0 +1,62 @@
+﻿@model PoiNarration.Web.ViewModels.LoginVm
+@{
+    ViewData["Title"] = "Đăng nhập";
+}
+
+<div class="row justify-content-center">
+    <div class="col-12 col-md-6 col-lg-4">
+        <div class="card card-shadow mt-4">
+            <div class="card-body p-4">
+                <div class="text-center mb-4">
+                    <div class="display-6 fw-bold">
+                        <i class="bi bi-geo-alt-fill text-primary"></i> PoiNarration
+                    </div>
+                    <div class="text-muted small">Đăng nhập để quản trị gian hàng & thống kê</div>
+                </div>
+
+                @if (ViewBag.Error != null)
+                {
+                    <div class="alert alert-danger py-2 small">
+                        <i class="bi bi-exclamation-triangle me-1"></i> @ViewBag.Error
+                    </div>
+                }
+
+                @* Sửa lỗi: Thêm dấu đóng ngoặc cho thẻ form và sửa aspss thành class *@
+                <form asp-controller="Account" asp-action="Login" method="post">
+                    
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Tài khoản</label>
+                        <input asp-for="Username" class="form-control" placeholder="vd: admin hoặc owner1" required />
+                        <span asp-validation-for="Username" class="text-danger small"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Mật khẩu</label>
+                        <input asp-for="Password" type="password" class="form-control" placeholder="vd: 123456" required />
+                        <span asp-validation-for="Password" class="text-danger small"></span>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary w-100 fw-bold py-2">
+                        <i class="bi bi-box-arrow-in-right me-1"></i> Đăng nhập
+                    </button>
+
+                    <hr class="my-4" />
+                    
+                    <div class="p-3 bg-light rounded border border-dashed">
+                        <div class="small text-muted mb-1 fw-bold text-uppercase" style="font-size: 0.7rem;">Tài khoản dùng thử:</div>
+                        <div class="small text-muted">
+                            <div><i class="bi bi-person-badge me-1"></i> <b>Admin:</b> admin / 123456</div>
+                            <div><i class="bi bi-shop me-1"></i> <b>Owner:</b> owner1 / 123456</div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}
