@@ -7,7 +7,7 @@ using PoiNarration.Api.Models.Entities;
 namespace PoiNarration.Api.Controllers;
 
 [ApiController]
-[Route("api/booths/{boothId}/menu")]
+[Route("api/boothmenu")] // Đổi lại Route cho khớp với Web
 public class BoothMenuController : ControllerBase
 {
     private readonly AppDbContext _db;
@@ -17,7 +17,8 @@ public class BoothMenuController : ControllerBase
         _db = db;
     }
 
-    [HttpGet]
+    // 1. Lấy danh sách món ăn: GET /api/boothmenu/booth-01
+    [HttpGet("{boothId}")]
     public async Task<ActionResult<List<BoothMenuItem>>> GetByBooth(string boothId)
     {
         var items = await _db.BoothMenuItems
@@ -28,12 +29,14 @@ public class BoothMenuController : ControllerBase
         return Ok(items);
     }
 
-    [HttpPost]
+    // 2. Thêm món mới: POST /api/boothmenu/booth-01
+    [HttpPost("{boothId}")]
     public async Task<ActionResult<BoothMenuItem>> Create(string boothId, [FromBody] UpsertMenuItemRequest request)
     {
+        // Kiểm tra xem Booth có tồn tại không (tùy chọn)
         var boothExists = await _db.Booths.AnyAsync(x => x.Id == boothId);
         if (!boothExists)
-            return NotFound("Không tìm thấy booth.");
+            return NotFound("Không tìm thấy mã gian hàng này trong hệ thống.");
 
         var item = new BoothMenuItem
         {
@@ -52,14 +55,15 @@ public class BoothMenuController : ControllerBase
         return Ok(item);
     }
 
-    [HttpPut("{menuId}")]
+    // 3. Cập nhật món: PUT /api/boothmenu/booth-01/items/menuId
+    [HttpPut("{boothId}/items/{menuId}")]
     public async Task<ActionResult<BoothMenuItem>> Update(string boothId, string menuId, [FromBody] UpsertMenuItemRequest request)
     {
         var item = await _db.BoothMenuItems
             .FirstOrDefaultAsync(x => x.Id == menuId && x.BoothId == boothId);
 
         if (item == null)
-            return NotFound("Không tìm thấy menu item.");
+            return NotFound("Không tìm thấy món ăn cần sửa.");
 
         item.Name = request.Name;
         item.Description = request.Description;
@@ -72,7 +76,8 @@ public class BoothMenuController : ControllerBase
         return Ok(item);
     }
 
-    [HttpDelete("{menuId}")]
+    // 4. Xóa món: DELETE /api/boothmenu/booth-01/items/menuId
+    [HttpDelete("{boothId}/items/{menuId}")]
     public async Task<IActionResult> Delete(string boothId, string menuId)
     {
         var item = await _db.BoothMenuItems
@@ -81,6 +86,7 @@ public class BoothMenuController : ControllerBase
         if (item == null)
             return NotFound();
 
+        // Xóa mềm (Soft Delete)
         item.IsDeleted = true;
         item.UpdatedAtUtc = DateTime.UtcNow;
 

@@ -11,8 +11,8 @@ using PoiNarration.Api.Data;
 namespace PoiNarration.Api.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260403051744_AddUsersAndOwner")]
-    partial class AddUsersAndOwner
+    [Migration("20260404185611_AddMultiLangApiOnly")]
+    partial class AddMultiLangApiOnly
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -20,29 +20,7 @@ namespace PoiNarration.Api.Migrations
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "10.0.5");
 
-            modelBuilder.Entity("PoiNarration.Api.Models.Entities.AppUser", b =>
-                {
-                    b.Property<string>("Id")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("PasswordHash")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("Role")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("Username")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("AppUsers");
-                });
-
-            modelBuilder.Entity("PoiNarration.Api.Models.Entities.Booth", b =>
+            modelBuilder.Entity("Booth", b =>
                 {
                     b.Property<string>("Id")
                         .HasColumnType("TEXT");
@@ -87,44 +65,7 @@ namespace PoiNarration.Api.Migrations
                     b.ToTable("Booths");
                 });
 
-            modelBuilder.Entity("PoiNarration.Api.Models.Entities.BoothMenuItem", b =>
-                {
-                    b.Property<string>("Id")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("BoothId")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("Description")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("ImageUrl")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.Property<decimal>("Price")
-                        .HasColumnType("TEXT");
-
-                    b.Property<DateTime>("UpdatedAtUtc")
-                        .HasColumnType("TEXT");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("BoothId", "IsDeleted");
-
-                    b.ToTable("BoothMenuItems");
-                });
-
-            modelBuilder.Entity("PoiNarration.Api.Models.Entities.PlaybackLog", b =>
+            modelBuilder.Entity("PlaybackLog", b =>
                 {
                     b.Property<string>("Id")
                         .HasColumnType("TEXT");
@@ -158,6 +99,74 @@ namespace PoiNarration.Api.Migrations
                     b.HasIndex("BoothId", "PlayedAtUtc");
 
                     b.ToTable("PlaybackLogs");
+                });
+
+            modelBuilder.Entity("PoiNarration.Api.Models.Entities.AppUser", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("PasswordHash")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Role")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Username")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("AppUsers");
+                });
+
+            modelBuilder.Entity("PoiNarration.Api.Models.Entities.BoothMenuItem", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("BoothId")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("DescriptionEn")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("ImageUrl")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("NameEn")
+                        .HasColumnType("TEXT");
+
+                    b.Property<decimal>("Price")
+                        .HasColumnType("TEXT");
+
+                    b.Property<decimal?>("PriceUsd")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("UpdatedAtUtc")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("BoothId", "IsDeleted");
+
+                    b.ToTable("BoothMenuItems");
                 });
 #pragma warning restore 612, 618
         }

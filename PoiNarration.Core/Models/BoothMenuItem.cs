@@ -5,9 +5,17 @@ public class BoothMenuItem
     public string Id { get; set; } = Guid.NewGuid().ToString();
     public string BoothId { get; set; } = "";
 
-    public string Name { get; set; } = "";
-    public string Description { get; set; } = "";
-    public decimal Price { get; set; }
+    // Tên món ăn (Việt - Anh)
+    public string Name { get; set; } = "";        // Tên chính (thường là tiếng Việt)
+    public string? NameEn { get; set; }           // Tên tiếng Anh
+
+    // Mô tả món ăn (Việt - Anh)
+    public string Description { get; set; } = ""; // Mô tả tiếng Việt
+    public string? DescriptionEn { get; set; }    // Mô tả tiếng Anh
+
+    // Giá cả (VND - USD)
+    public decimal Price { get; set; }            // Giá VND
+    public decimal? PriceUsd { get; set; }        // Giá USD (nếu có)
 
     public string ImageUrl { get; set; } = "";
 

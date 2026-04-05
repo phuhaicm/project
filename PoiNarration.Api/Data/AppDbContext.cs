@@ -1,6 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using PoiNarration.Api.Models.Entities;
-
+using PoiNarration.Api.Models.Entities; // Quay lại dùng đồ nhà làm cho lành
 namespace PoiNarration.Api.Data;
 
 public class AppDbContext : DbContext

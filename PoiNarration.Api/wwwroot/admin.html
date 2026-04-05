@@ -2,66 +2,97 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <title>Quản lý Menu - Admin Dashboard</title>
+    <title>Quản lý Hệ thống - Poi Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         body {
             font-family: 'Segoe UI', sans-serif;
             padding: 20px;
             background: #f0f2f5;
+            margin: 0;
+        }
+
+        .dashboard-container {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            max-width: 1200px;
+            margin: auto;
+        }
+
+        /* Stats Cards */
+        .stats-row {
             display: flex;
             gap: 20px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            flex: 1;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+            text-align: center;
+            border-bottom: 4px solid #6200ee;
+        }
+
+            .stat-card h2 {
+                margin: 10px 0 0 0;
+            }
+
+        /* Layout Content - Fix chiều cao ở đây */
+        .main-content {
+            display: flex;
+            gap: 20px;
+            align-items: stretch;
         }
 
         .form-card {
             background: white;
             padding: 20px;
             border-radius: 12px;
-            width: 350px;
-            height: fit-content;
-            position: sticky;
-            top: 20px;
+            width: 320px;
             box-shadow: 0 4px 10px rgba(0,0,0,0.1);
         }
 
-        .list-card {
+        /* Cố định chiều cao cái Card chứa biểu đồ */
+        .chart-card {
             background: white;
             padding: 20px;
             border-radius: 12px;
             flex: 1;
             box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            max-height: 450px; /* KHÓA CHIỀU CAO TẠI ĐÂY */
         }
 
-        input {
+        /* Danh sách món ăn */
+        .list-card {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            margin-top: 10px;
+        }
+
+        input, button {
             width: 100%;
             padding: 10px;
             margin: 8px 0;
-            border: 1px solid #ddd;
             border-radius: 6px;
             box-sizing: border-box;
         }
 
         button {
-            width: 100%;
-            padding: 12px;
             background: #6200ee;
             color: white;
             border: none;
-            border-radius: 6px;
-            cursor: pointer;
             font-weight: bold;
-            margin-top: 10px;
+            cursor: pointer;
         }
-
-            button.delete {
-                background: #ff5252;
-                padding: 5px 10px;
-                width: auto;
-            }
 
         table {
             width: 100%;
             border-collapse: collapse;
-            margin-top: 15px;
         }
 
         th, td {
@@ -71,8 +102,8 @@
         }
 
         img {
-            width: 60px;
-            height: 60px;
+            width: 50px;
+            height: 50px;
             object-fit: cover;
             border-radius: 6px;
         }
@@ -80,104 +111,109 @@
 </head>
 <body>
 
-    <div class="form-card">
-        <h3 style="color: #6200ee; margin-top: 0;">Thêm món mới</h3>
-        <input type="text" id="boothId" placeholder="Mã gian hàng (VD: booth-01)" value="booth-01">
-        <input type="text" id="itemName" placeholder="Tên món ăn">
-        <input type="text" id="itemDesc" placeholder="Mô tả">
-        <input type="number" id="itemPrice" placeholder="Giá (VNĐ)">
-        <input type="file" id="itemFile">
-        <button onclick="saveItem()">LƯU MÓN ĂN</button>
-        <hr>
-        <button style="background: #03dac6; color: #333;" onclick="loadMenu()">XEM DANH SÁCH</button>
-    </div>
+    <div class="dashboard-container">
+        <div style="display:flex; justify-content: space-between; align-items: center;">
+            <h2 id="welcomeText" style="color: #6200ee;">Poi Dashboard</h2>
+            <button onclick="logout()" style="width: auto; background: #999; margin: 0;">Đăng xuất</button>
+        </div>
 
-    <div class="list-card">
-        <h3 id="listTitle">Danh sách món ăn</h3>
-        <table>
-            <thead>
-                <tr>
-                    <th>Ảnh</th>
-                    <th>Tên món</th>
-                    <th>Giá</th>
-                    <th>Booth</th>
-                    <th>Thao tác</th>
-                </tr>
-            </thead>
-            <tbody id="menuTableBody">
-            </tbody>
-        </table>
+        <div class="stats-row">
+            <div class="stat-card"><h4>Tổng lượt nghe</h4><h2 id="totalStats">0</h2></div>
+            <div class="stat-card"><h4>Booth Hot nhất</h4><h2 id="hotBooth">--</h2></div>
+            <div class="stat-card"><h4>Quyền hạn</h4><h2 id="userRoleBadge">--</h2></div>
+        </div>
+
+        <div class="main-content">
+            <div class="form-card">
+                <h3 style="margin-top:0">Cấu hình</h3>
+                <input type="text" id="boothId" value="booth-01" onchange="loadMenu()">
+                <input type="text" id="itemName" placeholder="Tên món">
+                <input type="number" id="itemPrice" placeholder="Giá">
+                <input type="file" id="itemFile">
+                <button onclick="saveItem()">LƯU MÓN ĂN</button>
+            </div>
+
+            <div class="chart-card">
+                <h3 style="margin: 0 0 15px 0;">Lượt nghe theo Gian hàng</h3>
+                <div style="height: 300px; width: 100%; position: relative;">
+                    <canvas id="topBoothChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="list-card">
+            <h3 id="listTitle">Danh sách món ăn</h3>
+            <table>
+                <thead>
+                    <tr><th>Ảnh</th><th>Tên món</th><th>Giá</th><th>Booth</th><th>Thao tác</th></tr>
+                </thead>
+                <tbody id="menuTableBody"></tbody>
+            </table>
+        </div>
     </div>
 
     <script>
-        // 1. Hàm lưu món ăn
-        async function saveItem() {
-            const boothId = document.getElementById('boothId').value;
-            const fileInput = document.getElementById('itemFile');
-            if (!fileInput.files[0]) return alert("Vui lòng chọn ảnh!");
+        // --- PHẦN 1: AUTH ---
+        const role = localStorage.getItem('userRole');
+        if (!role) window.location.href = 'login.html';
+        document.getElementById('welcomeText').innerText = `Chào sếp, ${localStorage.getItem('userFullName')}!`;
+        document.getElementById('userRoleBadge').innerText = role;
 
-            // Upload ảnh trước
-            const formData = new FormData();
-            formData.append('file', fileInput.files[0]);
-            const uploadRes = await fetch('/api/media/upload', { method: 'POST', body: formData });
-            const uploadData = await uploadRes.json();
+        function logout() { localStorage.clear(); window.location.href = 'login.html'; }
 
-            // Lưu món ăn sau
-            const item = {
-                name: document.getElementById('itemName').value,
-                description: document.getElementById('itemDesc').value,
-                price: parseInt(document.getElementById('itemPrice').value),
-                imageUrl: uploadData.url
-            };
+        // --- PHẦN 2: BIỂU ĐỒ ---
+        let myChart;
+        async function loadChart() {
+            try {
+                const res = await fetch('/api/dashboard/top-booths');
+                const data = await res.json();
 
-            await fetch(`/api/boothmenu/${boothId}`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(item)
-            });
+                document.getElementById('totalStats').innerText = data.reduce((s, i) => s + i.count, 0);
+                if (data.length > 0) document.getElementById('hotBooth').innerText = data[0].boothName;
 
-            alert("Đã lưu!");
-            loadMenu(); // Lưu xong tự động load lại bảng
+                const ctx = document.getElementById('topBoothChart').getContext('2d');
+                if (myChart) myChart.destroy();
+
+                myChart = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: data.map(d => d.boothName),
+                        datasets: [{
+                            label: 'Lượt nghe',
+                            data: data.map(d => d.count),
+                            backgroundColor: '#6200ee',
+                            maxBarThickness: 40 // Fix thanh mập
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false, // Kết hợp với div cao 300px ở trên
+                        scales: { y: { beginAtZero: true, suggestedMax: 10 } }
+                    }
+                });
+            } catch (e) { console.error(e); }
         }
 
-        // 2. Hàm load danh sách món ăn
+        // --- PHẦN 3: MENU ---
         async function loadMenu() {
-            const boothId = document.getElementById('boothId').value;
-            document.getElementById('listTitle').innerText = `Danh sách món ăn của: ${boothId}`;
-
-            const res = await fetch(`/api/boothmenu/${boothId}`);
-            const data = await res.json();
-
-            const tbody = document.getElementById('menuTableBody');
-            tbody.innerHTML = ''; // Xóa bảng cũ
-
-            data.forEach(item => {
-                tbody.innerHTML += `
-                        <tr>
-                            <td><img src="${item.imageUrl}" alt="img"></td>
-                            <td>
-                                <b>${item.name}</b><br>
-                                <small style="color:gray">${item.description}</small>
-                            </td>
-                            <td>${item.price.toLocaleString()}đ</td>
-                            <td>${item.boothId}</td>
-                            <td>
-                                <button class="delete" onclick="deleteItem('${item.boothId}', '${item.id}')">Xóa</button>
-                            </td>
-                        </tr>
-                    `;
-            });
+            const bId = document.getElementById('boothId').value;
+            document.getElementById('listTitle').innerText = `Danh sách món ăn: ${bId}`;
+            try {
+                const res = await fetch(`/api/boothmenu/${bId}`);
+                const data = await res.json();
+                document.getElementById('menuTableBody').innerHTML = data.map(item => `
+                    <tr>
+                        <td><img src="${item.imageUrl}" onerror="this.src='https://via.placeholder.com/50'"></td>
+                        <td><b>${item.name}</b></td>
+                        <td>${item.price.toLocaleString()}đ</td>
+                        <td>${item.boothId}</td>
+                        <td><button style="background:red; width:auto; padding:5px 10px;" onclick="deleteItem('${item.boothId}', '${item.id}')">Xóa</button></td>
+                    </tr>
+                `).join('');
+            } catch (e) { console.error(e); }
         }
 
-        // 3. Hàm xóa món ăn
-        async function deleteItem(bId, iId) {
-            if (!confirm("Xóa thiệt hả sếp?")) return;
-            await fetch(`/api/boothmenu/${bId}/items/${iId}`, { method: 'DELETE' });
-            loadMenu();
-        }
-
-        // Tự động load danh sách khi vừa mở trang
-        window.onload = loadMenu;
+        window.onload = () => { loadMenu(); loadChart(); };
     </script>
 </body>
 </html>

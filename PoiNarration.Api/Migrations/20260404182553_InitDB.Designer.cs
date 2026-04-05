@@ -11,8 +11,8 @@ using PoiNarration.Api.Data;
 namespace PoiNarration.Api.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260403093837_AddUsersOwnerAndDashboard")]
-    partial class AddUsersOwnerAndDashboard
+    [Migration("20260404182553_InitDB")]
+    partial class InitDB
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
