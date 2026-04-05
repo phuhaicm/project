@@ -5,7 +5,7 @@
 namespace PoiNarration.Api.Migrations
 {
     /// <inheritdoc />
-    public partial class AddUsersOwnerAndDashboard : Migration
+    public partial class UpdateBoothMenuMultiLang : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)

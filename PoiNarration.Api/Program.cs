@@ -5,6 +5,9 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Controllers
 builder.Services.AddControllers();
+builder.Services.AddCors(options => {
+    options.AddDefaultPolicy(p => p.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod());
+});
 
 // DbContext
 builder.Services.AddDbContext<AppDbContext>(options =>
@@ -29,7 +32,7 @@ if (app.Environment.IsDevelopment())
 app.UseStaticFiles();
 
 app.UseHttpsRedirection();
-
+app.UseCors();
 app.MapControllers();
 
 using (var scope = app.Services.CreateScope())

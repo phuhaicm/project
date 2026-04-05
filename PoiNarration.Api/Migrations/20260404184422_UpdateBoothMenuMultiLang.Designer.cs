@@ -11,8 +11,8 @@ using PoiNarration.Api.Data;
 namespace PoiNarration.Api.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260402150706_AddOwnerAndUsers")]
-    partial class AddOwnerAndUsers
+    [Migration("20260404184422_UpdateBoothMenuMultiLang")]
+    partial class UpdateBoothMenuMultiLang
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)

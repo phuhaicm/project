@@ -18,19 +18,17 @@ public class DashboardController : ControllerBase
     [HttpGet("top-booths")]
     public async Task<IActionResult> GetTopBooths()
     {
-        var result = await (
-            from log in _db.PlaybackLogs
-            group log by log.BoothId into g
-            join booth in _db.Booths on g.Key equals booth.Id
-            orderby g.Count() descending
-            select new
+        // Mình bắt đầu từ bảng Booths, sau đó đếm số Log tương ứng
+        var result = await _db.Booths
+            .Select(b => new
             {
-                BoothId = booth.Id,
-                BoothName = booth.NameVi,
-                Count = g.Count()
-            }
-        ).Take(10).ToListAsync();
-
+                BoothId = b.Id,
+                BoothName = b.NameVi ?? "Chưa đặt tên", // Tránh lỗi null tên
+                Count = _db.PlaybackLogs.Count(log => log.BoothId == b.Id)
+            })
+            .OrderByDescending(x => x.Count) // Thằng nào nghe nhiều nhất lên đầu
+            .Take(10)
+            .ToListAsync();
         return Ok(result);
     }
 }
