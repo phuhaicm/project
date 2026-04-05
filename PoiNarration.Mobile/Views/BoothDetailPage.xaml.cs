@@ -1,14 +1,11 @@
 using Microsoft.Extensions.DependencyInjection;
 using PoiNarration.Core.Models;
 using PoiNarration.Mobile.Services;
-using System.Runtime.Versioning;
 
 namespace PoiNarration.Mobile.Views;
 
 [QueryProperty(nameof(BoothId), "boothId")]
-[SupportedOSPlatform("android")]
 public partial class BoothDetailPage : ContentPage
-
 {
     private readonly AppDatabase _db;
     private readonly NarrationService _narrationService;
@@ -55,7 +52,6 @@ public partial class BoothDetailPage : ContentPage
     {
         try
         {
-            // Online trước
             var onlineMenu = await _apiService.GetMenuByBoothAsync(BoothId);
 
             foreach (var item in onlineMenu)
@@ -65,7 +61,7 @@ public partial class BoothDetailPage : ContentPage
         }
         catch
         {
-            // lỗi API thì fallback SQLite
+            // fallback offline
         }
 
         MenuView.ItemsSource = await _db.GetMenuByBoothAsync(BoothId);
