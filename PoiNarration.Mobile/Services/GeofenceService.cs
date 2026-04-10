@@ -1,5 +1,4 @@
 ﻿using PoiNarration.Core.Models;
-using PoiNarration.Core.Utils;
 
 namespace PoiNarration.Mobile.Services;
 
@@ -7,92 +6,68 @@ public class GeofenceService
 {
     private readonly AppDatabase _db;
 
-    // lưu thời điểm bắt đầu vào vùng
-    private readonly Dictionary<string, DateTime> _enteredAt = new();
+    private string? _lastBoothId;
+    private DateTime _lastPlayedUtc = DateTime.MinValue;
 
-    // booth nào đã trigger trong lần đứng hiện tại
-    private readonly HashSet<string> _triggeredInside = new();
+    public TimeSpan Cooldown { get; set; } = TimeSpan.FromMinutes(2);
 
     public GeofenceService(AppDatabase db)
     {
         _db = db;
     }
 
-    public int DebounceSeconds { get; set; } = 1;   // debug trước, sau này tăng lên 3
-    public int CooldownMinutes { get; set; } = 0;   // debug trước, sau này tăng lên 5
-
-    public async Task<Booth?> CheckAndGetTriggeredBoothAsync(Location currentLocation, List<Booth> booths)
+    public async Task<Booth?> CheckAndGetTriggeredBoothAsync(double userLat, double userLng)
     {
-        if (booths.Count == 0) return null;
+        return await FindTriggeredBoothAsync(userLat, userLng);
+    }
 
-        var insideBooths = booths
+    public async Task<Booth?> FindTriggeredBoothAsync(double userLat, double userLng)
+    {
+        var booths = await _db.GetAllBoothsAsync();
+
+        var candidates = booths
+            .Where(b => b.IsActive)
             .Select(b => new
             {
                 Booth = b,
-                Distance = GeoUtils.DistanceInMeters(
-                    currentLocation.Latitude,
-                    currentLocation.Longitude,
-                    b.Lat,
-                    b.Lng)
+                Distance = CalculateDistanceMeters(userLat, userLng, b.Lat, b.Lng)
             })
             .Where(x => x.Distance <= x.Booth.RadiusMeters)
             .OrderByDescending(x => x.Booth.Priority)
             .ThenBy(x => x.Distance)
             .ToList();
 
-        // booth đang nằm trong vùng hiện tại
-        var insideIds = insideBooths.Select(x => x.Booth.Id).ToHashSet();
+        var selected = candidates.FirstOrDefault()?.Booth;
+        if (selected == null) return null;
 
-        // những booth đã rời khỏi vùng -> xóa trạng thái vào vùng
-        var oldEnteredIds = _enteredAt.Keys.ToList();
-        foreach (var id in oldEnteredIds)
+        if (_lastBoothId == selected.Id &&
+            DateTime.UtcNow - _lastPlayedUtc < Cooldown)
         {
-            if (!insideIds.Contains(id))
-                _enteredAt.Remove(id);
-        }
-
-        // những booth đã rời khỏi vùng -> cho phép trigger lại khi vào lại
-        var oldTriggeredIds = _triggeredInside.ToList();
-        foreach (var id in oldTriggeredIds)
-        {
-            if (!insideIds.Contains(id))
-                _triggeredInside.Remove(id);
-        }
-
-        // không có booth nào trong vùng
-        if (insideBooths.Count == 0)
-            return null;
-
-        // chọn booth ưu tiên nhất / gần nhất
-        var selected = insideBooths.First().Booth;
-
-        // nếu vừa mới vào vùng lần đầu
-        if (!_enteredAt.ContainsKey(selected.Id))
-        {
-            _enteredAt[selected.Id] = DateTime.UtcNow;
             return null;
         }
 
-        // debounce
-        var enteredAt = _enteredAt[selected.Id];
-        var secondsInside = (DateTime.UtcNow - enteredAt).TotalSeconds;
-        if (secondsInside < DebounceSeconds)
-            return null;
-
-        // nếu đã trigger trong lần đứng hiện tại thì không trigger lại
-        if (_triggeredInside.Contains(selected.Id))
-            return null;
-
-        // cooldown
-        var latestLog = await _db.GetLatestLogByBoothAsync(selected.Id);
-        if (latestLog != null && CooldownMinutes > 0)
-        {
-            var diff = DateTime.UtcNow - latestLog.PlayedAtUtc;
-            if (diff.TotalMinutes < CooldownMinutes)
-                return null;
-        }
-
-        _triggeredInside.Add(selected.Id);
         return selected;
     }
+
+    public void MarkPlayed(string boothId)
+    {
+        _lastBoothId = boothId;
+        _lastPlayedUtc = DateTime.UtcNow;
+    }
+
+    private static double CalculateDistanceMeters(double lat1, double lng1, double lat2, double lng2)
+    {
+        const double R = 6371000;
+        double dLat = DegreesToRadians(lat2 - lat1);
+        double dLng = DegreesToRadians(lng2 - lng1);
+
+        double a = Math.Sin(dLat / 2) * Math.Sin(dLat / 2) +
+                   Math.Cos(DegreesToRadians(lat1)) * Math.Cos(DegreesToRadians(lat2)) *
+                   Math.Sin(dLng / 2) * Math.Sin(dLng / 2);
+
+        double c = 2 * Math.Atan2(Math.Sqrt(a), Math.Sqrt(1 - a));
+        return R * c;
+    }
+
+    private static double DegreesToRadians(double deg) => deg * Math.PI / 180;
 }

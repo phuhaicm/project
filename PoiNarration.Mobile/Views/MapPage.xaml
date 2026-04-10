@@ -3,26 +3,67 @@
     x:Class="PoiNarration.Mobile.Views.MapPage"
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-    xmlns:maps="http://schemas.microsoft.com/dotnet/2021/maui/maps"
-    Title="Map">
+    xmlns:maps="clr-namespace:Microsoft.Maui.Controls.Maps;assembly=Microsoft.Maui.Controls.Maps"
+    Title="Bản đồ">
 
-    <Grid RowDefinitions="Auto,*,Auto" Padding="10" RowSpacing="10">
-
-        <VerticalStackLayout Grid.Row="0" Spacing="6">
-            <Label x:Name="GpsStatusLabel" Text="GPS: chưa kiểm tra" FontAttributes="Bold"/>
-            <Label x:Name="LocationLabel" Text="Vị trí hiện tại: chưa có"/>
-            <Label x:Name="NearestBoothLabel" Text="Gian gần nhất: chưa có"/>
-            <Label x:Name="BoothCountLabel" Text="Số booth: 0"/>
-            <Button Text="Lấy vị trí hiện tại" Clicked="OnRefreshLocationClicked"/>
-        </VerticalStackLayout>
-
+    <Grid RowDefinitions="*,Auto">
         <maps:Map x:Name="FoodMap"
-                  Grid.Row="1"
-                  IsShowingUser="True" />
+                  IsShowingUser="True"
+                  Grid.Row="0" />
 
-        <Label Grid.Row="2"
-               Text="Tuần 3: Map + GPS foreground + gian hàng gần nhất"
-               HorizontalOptions="Center"
-               Opacity="0.7" />
+        <Border Grid.Row="1"
+                Margin="12"
+                Padding="16"
+                Stroke="#2E2E38"
+                StrokeThickness="1"
+                StrokeShape="RoundRectangle 16"
+                BackgroundColor="#161622">
+
+            <VerticalStackLayout Spacing="8">
+
+                <HorizontalStackLayout Spacing="10">
+                    <Label x:Name="GpsStatusLabel" Text="GPS: Đang kiểm tra..." FontSize="11" TextColor="#B8B8C7" />
+                    <Label x:Name="BoothCountLabel" Text="Số booth: 0" FontSize="11" TextColor="#B8B8C7" />
+                </HorizontalStackLayout>
+
+                <Label x:Name="LocationLabel" Text="Vị trí: Đang xác định..." FontSize="11" TextColor="#8E8E93" />
+
+                <BoxView HeightRequest="0.5" Color="#2E2E38" Margin="0,4" />
+
+                <Label Text="BOOTH GẦN NHẤT"
+                       TextColor="#6D5DF6"
+                       FontAttributes="Bold"
+                       FontSize="12"
+                       CharacterSpacing="1" />
+
+                <Label x:Name="NearestBoothName"
+                       Text="Chưa xác định"
+                       TextColor="White"
+                       FontAttributes="Bold"
+                       FontSize="18" />
+
+                <Label x:Name="NearestBoothLabel" 
+                       Text="" 
+                       FontSize="13" 
+                       TextColor="#B8B8C7" />
+
+                <Label x:Name="NearestBoothDistance"
+                       Text=""
+                       TextColor="#B8B8C7"
+                       FontSize="13" />
+
+                <Button x:Name="OpenNearestButton"
+                        Text="Mở chi tiết"
+                        Clicked="OnOpenNearestClicked"
+                        IsEnabled="False"
+                        BackgroundColor="#6D5DF6"
+                        TextColor="White"
+                        FontAttributes="Bold"
+                        CornerRadius="12"
+                        HeightRequest="50"
+                         />
+
+            </VerticalStackLayout>
+        </Border>
     </Grid>
 </ContentPage>

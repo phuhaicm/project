@@ -1,29 +1,67 @@
-﻿namespace PoiNarration.Mobile.Services;
+﻿using PoiNarration.Mobile.Models;
+
+namespace PoiNarration.Mobile.Services;
 
 public class SyncService
 {
-    private readonly ApiService _api;
+    private readonly ApiService _apiService;
     private readonly AppDatabase _db;
 
-    public SyncService(ApiService api, AppDatabase db)
+    public SyncService(ApiService apiService, AppDatabase db)
     {
-        _api = api;
+        _apiService = apiService;
         _db = db;
     }
 
-    public async Task SyncAsync()
+    public async Task SyncBootstrapAsync()
     {
-        var payload = await _api.GetBootstrapAsync();
-        if (payload == null) return;
+        await _db.InitAsync();
 
-        foreach (var booth in payload.Booths)
-        {
+        var data = await _apiService.GetBootstrapAsync();
+        if (data == null) return;
+
+        foreach (var zone in data.Zones)
+            await _db.UpsertZoneAsync(zone);
+
+        foreach (var booth in data.Booths)
             await _db.UpsertBoothAsync(booth);
-        }
 
-        foreach (var menu in payload.MenuItems)
+        foreach (var item in data.MenuItems)
+            await _db.UpsertMenuItemAsync(item);
+
+        foreach (var item in data.BoothTranslations)
+            await _db.UpsertBoothTranslationAsync(item);
+
+        foreach (var item in data.MenuTranslations)
+            await _db.UpsertMenuTranslationAsync(item);
+    }
+    public async Task SyncPlaybackLogsAsync()
+    {
+        var unsyncedLogs = await _db.GetUnsyncedPlaybackLogsAsync();
+
+        foreach (var log in unsyncedLogs)
         {
-            await _db.UpsertMenuItemAsync(menu);
+            try
+            {
+                await _apiService.PostPlaybackLogAsync(new PlaybackLogRequest
+                {
+                    BoothId = log.BoothId,
+                    TriggerType = log.TriggerType,
+                    Language = log.Language,
+                    DurationSeconds = log.DurationSeconds,
+                    Lat = log.Lat,
+                    Lng = log.Lng,
+                    IsCompleted = log.IsCompleted,
+                    SessionId = log.SessionId
+                });
+
+                await _db.MarkPlaybackLogSyncedAsync(log.Id);
+            }
+            catch
+            {
+                // gặp lỗi thì dừng, để lần sau sync tiếp
+                break;
+            }
         }
     }
 }

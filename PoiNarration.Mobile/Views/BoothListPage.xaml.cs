@@ -1,79 +1,175 @@
-﻿using PoiNarration.Mobile.Services;
-using PoiNarration.Core.Models;
-using Microsoft.Extensions.DependencyInjection;
+﻿using PoiNarration.Core.Models;
+using PoiNarration.Mobile.Models;
+using PoiNarration.Mobile.Services;
 
 namespace PoiNarration.Mobile.Views;
 
 public partial class BoothListPage : ContentPage
 {
     private readonly AppDatabase _db;
-    private readonly SeedService _seed;
+    private readonly SyncService _syncService;
+    private readonly NarrationService _narrationService;
 
-    public BoothListPage()
+    private List<Booth> _allBooths = new();
+
+    public BoothListPage(AppDatabase db, SyncService syncService, NarrationService narrationService)
     {
         InitializeComponent();
 
-        // Cách đơn giản (không DI phức tạp): lấy service từ App.Current.Services
-
-        var services = Application.Current?.Handler?.MauiContext?.Services;
-        if (services == null)
-            throw new Exception("ServiceProvider is null. App chưa khởi tạo MauiContext.");
-
-        _db = services.GetRequiredService<AppDatabase>();
-
-        _seed = new SeedService(_db);
+        _db = db;
+        _syncService = syncService;
+        _narrationService = narrationService;
     }
 
     protected override async void OnAppearing()
     {
         base.OnAppearing();
 
-        await _seed.EnsureSeededAsync();
-
-        // Load tất cả booth (tuần 2)
-        var booths = await _db.GetAllBoothsAsync();
-
-        // map sang model hiển thị theo ngôn ngữ
-        BoothsView.ItemsSource = booths.Select(b => new BoothDisplay
+        try
         {
-            Id = b.Id,
-            Name = LanguageService.IsVi ? b.NameVi : b.NameEn,
-            Desc = LanguageService.IsVi ? b.DescVi : b.DescEn
-        }).ToList();
+            await _db.InitAsync();
+
+            LanguagePicker.SelectedItem = LanguageService.CurrentLanguage;
+            CurrentLanguageLabel.Text = LanguageService.CurrentLanguage;
+
+            await LoadBoothsAsync();
+        }
+        catch (Exception ex)
+        {
+            await DisplayAlertAsync("Lỗi", ex.Message, "OK");
+        }
     }
 
-    private async void OnScanGateClicked(object sender, EventArgs e)
+    private async Task LoadBoothsAsync()
     {
-        // Đổi hướng, không mở GateModePage nữa mà mở toang màn hình Camera!
-        await Navigation.PushAsync(new QRScanPage());
+        _allBooths = await _db.GetAllBoothsAsync();
+
+        TotalBoothsLabel.Text = _allBooths.Count.ToString();
+        SyncStatusLabel.Text = $"Đã tải {_allBooths.Count} booth";
+
+        ApplyFilter();
     }
-    private async void OnManualClicked(object sender, EventArgs e)
-        => await Shell.Current.GoToAsync(nameof(ZoneListPage));
-    // DÁN ĐOẠN NÀY VÀO DƯỚI HÀM OnManualClicked:
+
+    private void ApplyFilter()
+    {
+        var keyword = BoothSearchBar.Text?.Trim().ToLowerInvariant() ?? "";
+
+        var filtered = _allBooths
+            .Where(x =>
+                string.IsNullOrWhiteSpace(keyword) ||
+                x.NameVi.ToLowerInvariant().Contains(keyword) ||
+                x.NameEn.ToLowerInvariant().Contains(keyword) ||
+                x.ZoneId.ToLowerInvariant().Contains(keyword))
+            .Select(x => new BoothCardVm
+            {
+                Id = x.Id,
+                Title = string.IsNullOrWhiteSpace(x.NameVi) ? x.NameEn : x.NameVi,
+                Subtitle = string.IsNullOrWhiteSpace(x.NameEn) ? x.DescVi : x.NameEn,
+                ZoneText = x.ZoneId.ToUpper(),
+                PriorityText = $"Priority {x.Priority}",
+                RadiusText = $"{x.RadiusMeters}m",
+                ImageUrl = string.IsNullOrWhiteSpace(x.ImageUrl) ? "dotnet_bot.png" : x.ImageUrl!,
+                IsActive = x.IsActive
+            })
+            .ToList();
+
+        BoothsCollectionView.ItemsSource = filtered;
+    }
+
+    private void OnSearchTextChanged(object sender, TextChangedEventArgs e)
+    {
+        ApplyFilter();
+    }
+
+    private void OnLanguageChanged(object sender, EventArgs e)
+    {
+        if (LanguagePicker.SelectedItem is string lang)
+        {
+            LanguageService.Set(lang);
+            CurrentLanguageLabel.Text = lang;
+        }
+    }
+
+    private async void OnSyncClicked(object sender, EventArgs e)
+    {
+        try
+        {
+            SyncStatusLabel.Text = "Đang đồng bộ...";
+            await _syncService.SyncBootstrapAsync();
+            await LoadBoothsAsync();
+            SyncStatusLabel.Text = "Đồng bộ thành công";
+        }
+        catch (Exception ex)
+        {
+            SyncStatusLabel.Text = "Đồng bộ thất bại";
+            await DisplayAlertAsync("Lỗi sync", ex.Message, "OK");
+        }
+    }
+
     
-    private async void OnBoothSelected(object sender, SelectionChangedEventArgs e)
+
+    private async void OnGpsModeClicked(object sender, EventArgs e)
     {
-        if (e.CurrentSelection.FirstOrDefault() is not BoothDisplay booth) return;
-        await Shell.Current.GoToAsync($"{nameof(BoothDetailPage)}?BoothId={booth.Id}");
-        ((CollectionView)sender).SelectedItem = null;
+        // TODO: nếu bạn có GPS page riêng thì đổi route tại đây
+        await DisplayAlertAsync("GPS Mode", "Chuyển qua GPS mode / geofence tại page bạn đã làm.", "OK");
     }
 
-    private void OnLangVi(object sender, EventArgs e)
+    private async void OnMapClicked(object sender, EventArgs e)
     {
-        LanguageService.Set("vi");
-        OnAppearing(); // reload
+        try
+        {
+            await Shell.Current.GoToAsync("mappage");
+        }
+        catch (Exception ex)
+        {
+            await DisplayAlertAsync("Lỗi mở bản đồ", ex.Message, "OK");
+        }
     }
 
-    private void OnLangEn(object sender, EventArgs e)
+    private async void OnOpenBoothClicked(object sender, EventArgs e)
     {
-        LanguageService.Set("en");
-        OnAppearing(); // reload
+        try
+        {
+            if (sender is Button btn && btn.CommandParameter is string boothId)
+            {
+                await Shell.Current.GoToAsync($"boothdetail?boothId={boothId}");
+            }
+        }
+        catch (Exception ex)
+        {
+            await DisplayAlertAsync("Lỗi", ex.Message, "OK");
+        }
     }
-}
 
-public class BoothDisplay
-{
-    public string Id { get; set; } = "";
-    public string Name { get; set; } = "";
-    public string Desc { get; set; } = "";
+    private async void OnPreviewBoothClicked(object sender, EventArgs e)
+    {
+        try
+        {
+            if (sender is Button btn && btn.CommandParameter is string boothId)
+            {
+                var booth = await _db.GetBoothAsync(boothId);
+                if (booth == null) return;
+
+                await _narrationService.SpeakBoothAsync(booth, "Manual");
+            }
+        }
+        catch (Exception ex)
+        {
+            await DisplayAlertAsync("Lỗi phát thử", ex.Message, "OK");
+        }
+    }
+    private async void OnScanQrClicked(object sender, EventArgs e)
+    {
+        try
+        {
+            await Shell.Current.GoToAsync(nameof(QrScanPage));
+        }
+        catch (Exception ex)
+        {
+            await DisplayAlertAsync("Lỗi mở QR", ex.Message, "OK");
+        }
+    }
+    
+
+
 }

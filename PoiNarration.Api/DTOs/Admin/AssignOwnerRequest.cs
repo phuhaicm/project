@@ -2,5 +2,5 @@
 
 public class AssignOwnerRequest
 {
-    public string OwnerUserId { get; set; } = "";
+    public string? OwnerUserId { get; set; }
 }

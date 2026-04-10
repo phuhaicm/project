@@ -1,56 +1,19 @@
-using ZXing.Net.Maui;
+﻿namespace PoiNarration.Mobile.Views;
 
-namespace PoiNarration.Mobile.Views;
-
-public partial class QRScanPage : ContentPage
+public partial class QrScanPage : ContentPage
 {
-    private bool _handled = false;
-
-    public QRScanPage()
+    public QrScanPage()
     {
         InitializeComponent();
-
-        cameraView.Options = new BarcodeReaderOptions
-        {
-            Formats = BarcodeFormats.TwoDimensional,
-            AutoRotate = true,
-            Multiple = false
-        };
     }
 
-    private void OnBarcodesDetected(object sender, BarcodeDetectionEventArgs e)
+    private async void OnOpenBooth01Clicked(object sender, EventArgs e)
     {
-        if (_handled) return;
-
-        var result = e.Results?.FirstOrDefault();
-        if (result == null) return;
-
-        var text = result.Value?.Trim();
-        if (string.IsNullOrWhiteSpace(text)) return;
-
-        _handled = true;
-
-        MainThread.BeginInvokeOnMainThread(async () =>
-        {
-            if (text.StartsWith("booth:", StringComparison.OrdinalIgnoreCase))
-            {
-                var boothId = text.Substring("booth:".Length).Trim();
-
-                if (!string.IsNullOrWhiteSpace(boothId))
-                {
-                    await Shell.Current.GoToAsync($"{nameof(BoothDetailPage)}?boothId={boothId}");
-                    return;
-                }
-            }
-
-            await DisplayAlertAsync("QR không hợp lệ", text, "OK");
-            _handled = false;
-        });
+        await Shell.Current.GoToAsync($"{nameof(BoothDetailPage)}?boothId=booth-01");
     }
 
-    protected override void OnDisappearing()
+    private async void OnBackClicked(object sender, EventArgs e)
     {
-        base.OnDisappearing();
-        _handled = false;
+        await Shell.Current.GoToAsync("..");
     }
 }

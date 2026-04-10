@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using PoiNarration.Web.Models;
+using PoiNarration.Web.ViewModels;
 using System.Net.Http.Json;
 
 namespace PoiNarration.Web.Controllers;
@@ -16,19 +17,25 @@ public class DashboardController : Controller
     [HttpGet]
     public async Task<IActionResult> Index()
     {
-        var topBooths = await _http.GetFromJsonAsync<List<DashboardTopBoothDto>>("api/dashboard/top-booths")
-                        ?? new List<DashboardTopBoothDto>();
+        var vm = new DashboardIndexVm();
 
-        var booths = await _http.GetFromJsonAsync<List<BoothDto>>("api/booths")
-                    ?? new List<BoothDto>();
+        vm.Summary = await _http.GetFromJsonAsync<DashboardSummaryDto>("api/dashboard/summary")
+                     ?? new DashboardSummaryDto();
 
-        var owners = await _http.GetFromJsonAsync<List<AppUserDto>>("api/admin/booths/owners")
-                     ?? new List<AppUserDto>();
+        vm.TopBooths = await _http.GetFromJsonAsync<List<DashboardTopBoothDto>>("api/dashboard/top-booths")
+                      ?? new List<DashboardTopBoothDto>();
 
-        ViewBag.TotalBooths = booths.Count;
-        ViewBag.TotalOwners = owners.Count;
-        ViewBag.TotalPlayback = topBooths.Sum(x => x.Count);
+        vm.LatestLogs = await _http.GetFromJsonAsync<List<LatestPlaybackLogDto>>("api/dashboard/latest-logs")
+                       ?? new List<LatestPlaybackLogDto>();
 
-        return View(topBooths);
+        return View(vm);
+    }
+    [HttpGet]
+    public async Task<IActionResult> Activity()
+    {
+        var logs = await _http.GetFromJsonAsync<List<LatestPlaybackLogDto>>("api/dashboard/latest-logs")
+                   ?? new List<LatestPlaybackLogDto>();
+
+        return View(logs);
     }
 }

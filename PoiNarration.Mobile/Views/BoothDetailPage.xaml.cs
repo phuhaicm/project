@@ -12,7 +12,6 @@ public partial class BoothDetailPage : ContentPage
     private readonly ApiService _apiService;
 
     public string BoothId { get; set; } = "";
-
     private Booth? _currentBooth;
 
     public BoothDetailPage()
@@ -42,8 +41,21 @@ public partial class BoothDetailPage : ContentPage
 
         _currentBooth = booth;
 
-        BoothName.Text = LanguageService.IsVi ? booth.NameVi : booth.NameEn;
-        BoothDesc.Text = LanguageService.IsVi ? booth.DescVi : booth.DescEn;
+        // --- PHẦN THÊM MỚI: LOGIC ĐA NGÔN NGỮ ---
+        var lang = LanguageService.CurrentLanguage;
+
+        // Thử lấy bản dịch theo thứ tự ưu tiên
+        var translation = await _db.GetBoothTranslationAsync(booth.Id, lang)
+                         ?? await _db.GetBoothTranslationAsync(booth.Id, "en")
+                         ?? await _db.GetBoothTranslationAsync(booth.Id, "vi");
+
+        // Hiển thị Tên và Mô tả (Ưu tiên bản dịch, nếu không có dùng dữ liệu mặc định của Booth)
+        BoothName.Text = translation?.Name
+                         ?? (LanguageService.IsVi ? booth.NameVi : booth.NameEn);
+
+        BoothDesc.Text = translation?.Description
+                         ?? (LanguageService.IsVi ? booth.DescVi : booth.DescEn);
+        // --- KẾT THÚC PHẦN THÊM MỚI ---
 
         await LoadMenuAsync();
     }
@@ -53,15 +65,17 @@ public partial class BoothDetailPage : ContentPage
         try
         {
             var onlineMenu = await _apiService.GetMenuByBoothAsync(BoothId);
-
-            foreach (var item in onlineMenu)
+            if (onlineMenu != null)
             {
-                await _db.UpsertMenuItemAsync(item);
+                foreach (var item in onlineMenu)
+                {
+                    await _db.UpsertMenuItemAsync(item);
+                }
             }
         }
         catch
         {
-            // fallback offline
+            // Fallback offline nếu không có mạng
         }
 
         MenuView.ItemsSource = await _db.GetMenuByBoothAsync(BoothId);
@@ -71,6 +85,7 @@ public partial class BoothDetailPage : ContentPage
     {
         if (_currentBooth == null) return;
 
+        // NarrationService cũng đã được cập nhật logic đa ngôn ngữ để phát đúng script
         await _narrationService.SpeakBoothAsync(_currentBooth, "Manual");
     }
 

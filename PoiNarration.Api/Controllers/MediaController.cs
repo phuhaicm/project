@@ -15,41 +15,37 @@ public class MediaController : ControllerBase
     }
 
     [HttpPost("upload")]
-    public async Task<ActionResult<UploadMediaResponse>> Upload(IFormFile file)
+    public async Task<IActionResult> Upload(IFormFile file)
     {
         if (file == null || file.Length == 0)
-            return BadRequest("Không có file.");
+            return BadRequest("Chưa chọn file.");
 
         var allowedExtensions = new[] { ".jpg", ".jpeg", ".png", ".webp" };
-        var ext = Path.GetExtension(file.FileName).ToLowerInvariant();
+        var extension = Path.GetExtension(file.FileName).ToLowerInvariant();
 
-        if (!allowedExtensions.Contains(ext))
+        if (!allowedExtensions.Contains(extension))
             return BadRequest("Định dạng file không hợp lệ.");
 
-        if (file.Length > 5 * 1024 * 1024)
-            return BadRequest("File quá lớn. Giới hạn 5MB.");
+        const long maxSize = 5 * 1024 * 1024; // 5MB
+        if (file.Length > maxSize)
+            return BadRequest("File quá lớn. Tối đa 5MB.");
 
-        var webRoot = _env.WebRootPath;
-        if (string.IsNullOrWhiteSpace(webRoot))
+        var uploadsDir = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", "menu");
+        if (!Directory.Exists(uploadsDir))
+            Directory.CreateDirectory(uploadsDir);
+
+        var safeFileName = $"{Guid.NewGuid():N}{extension}";
+        var savePath = Path.Combine(uploadsDir, safeFileName);
+
+        using (var stream = new FileStream(savePath, FileMode.Create))
         {
-            webRoot = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot");
+            await file.CopyToAsync(stream);
         }
 
-        var uploadFolder = Path.Combine(webRoot, "uploads", "menu");
-        Directory.CreateDirectory(uploadFolder);
-
-        var safeFileName = $"{Guid.NewGuid()}{ext}";
-        var fullPath = Path.Combine(uploadFolder, safeFileName);
-
-        await using var stream = new FileStream(fullPath, FileMode.Create);
-        await file.CopyToAsync(stream);
-
         var baseUrl = $"{Request.Scheme}://{Request.Host}";
-        var fileUrl = $"{baseUrl}/uploads/menu/{safeFileName}";
+        var url = $"{baseUrl}/uploads/menu/{safeFileName}";
 
-        return Ok(new UploadMediaResponse
-        {
-            Url = fileUrl
-        });
+        return Ok(new { url });
     }
+
 }

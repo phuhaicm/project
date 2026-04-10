@@ -18,17 +18,79 @@ public class DashboardController : ControllerBase
     [HttpGet("top-booths")]
     public async Task<IActionResult> GetTopBooths()
     {
-        // Mình bắt đầu từ bảng Booths, sau đó đếm số Log tương ứng
-        var result = await _db.Booths
-            .Select(b => new
+        var result = await _db.PlaybackLogs
+            .GroupBy(x => x.BoothId)
+            .Select(g => new
             {
-                BoothId = b.Id,
-                BoothName = b.NameVi ?? "Chưa đặt tên", // Tránh lỗi null tên
-                Count = _db.PlaybackLogs.Count(log => log.BoothId == b.Id)
+                BoothId = g.Key,
+                Count = g.Count()
             })
-            .OrderByDescending(x => x.Count) // Thằng nào nghe nhiều nhất lên đầu
+            .OrderByDescending(x => x.Count)
+            .ToListAsync();
+
+        var boothIds = result.Select(x => x.BoothId).ToList();
+
+        var boothMap = await _db.Booths
+            .Where(x => boothIds.Contains(x.Id))
+            .ToDictionaryAsync(x => x.Id, x => x.NameVi);
+
+        var data = result.Select(x => new
+        {
+            boothId = x.BoothId,
+            boothName = boothMap.ContainsKey(x.BoothId) ? boothMap[x.BoothId] : x.BoothId,
+            count = x.Count
+        });
+
+        return Ok(data);
+    }
+    [HttpGet("summary")]
+    public async Task<IActionResult> GetSummary()
+    {
+        var todayUtc = DateTime.UtcNow.Date;
+
+        var totalBooths = await _db.Booths.CountAsync();
+        var totalOwners = await _db.AppUsers.CountAsync(x => x.Role == "Owner");
+        var totalPlaybackLogs = await _db.PlaybackLogs.CountAsync();
+        var playbackToday = await _db.PlaybackLogs.CountAsync(x => x.PlayedAtUtc >= todayUtc);
+
+        var avgDuration = await _db.PlaybackLogs.AnyAsync()
+            ? await _db.PlaybackLogs.AverageAsync(x => (double?)x.DurationSeconds) ?? 0
+            : 0;
+
+        return Ok(new
+        {
+            totalBooths,
+            totalOwners,
+            totalPlaybackLogs,
+            playbackToday,
+            averageDurationSeconds = avgDuration
+        });
+    }
+    [HttpGet("latest-logs")]
+    public async Task<IActionResult> GetLatestLogs()
+    {
+        var logs = await _db.PlaybackLogs
+            .OrderByDescending(x => x.PlayedAtUtc)
             .Take(10)
             .ToListAsync();
+
+        var boothIds = logs.Select(x => x.BoothId).Distinct().ToList();
+
+        var boothMap = await _db.Booths
+            .Where(x => boothIds.Contains(x.Id))
+            .ToDictionaryAsync(x => x.Id, x => x.NameVi);
+
+        var result = logs.Select(x => new
+        {
+            id = x.Id,
+            boothId = x.BoothId,
+            boothName = boothMap.ContainsKey(x.BoothId) ? boothMap[x.BoothId] : x.BoothId,
+            triggerType = x.TriggerType,
+            language = x.Language,
+            durationSeconds = x.DurationSeconds,
+            playedAtUtc = x.PlayedAtUtc
+        });
+
         return Ok(result);
     }
 }

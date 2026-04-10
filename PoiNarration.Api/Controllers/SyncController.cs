@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using PoiNarration.Api.Data;
-using PoiNarration.Api.DTOs.Sync;
 
 namespace PoiNarration.Api.Controllers;
 
@@ -17,17 +16,24 @@ public class SyncController : ControllerBase
     }
 
     [HttpGet("bootstrap")]
-    public async Task<ActionResult<BootstrapSyncResponse>> Bootstrap()
+    public async Task<IActionResult> Bootstrap()
     {
-        var booths = await _db.Booths.ToListAsync();
+        var booths = await _db.Booths
+            .OrderBy(x => x.Priority)
+            .ToListAsync();
+
         var menuItems = await _db.BoothMenuItems
             .Where(x => !x.IsDeleted)
             .ToListAsync();
+        var boothTranslations = await _db.BoothTranslations.ToListAsync();
+        var menuTranslations = await _db.BoothMenuItemTranslations.ToListAsync();
 
-        return Ok(new BootstrapSyncResponse
+        return Ok(new
         {
-            Booths = booths,
-            MenuItems = menuItems
+            booths,
+            boothTranslations,
+            menuItems,
+            menuTranslations
         });
     }
 }

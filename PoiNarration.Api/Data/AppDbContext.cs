@@ -9,7 +9,10 @@ public class AppDbContext : DbContext
     {
     }
 
-    public DbSet<Booth> Booths => Set<Booth>();
+    public DbSet<PoiNarration.Api.Models.Entities.Booth> Booths => Set<PoiNarration.Api.Models.Entities.Booth>();
+    public DbSet<BoothTranslation> BoothTranslations => Set<BoothTranslation>();
+    public DbSet<BoothMenuItemTranslation> BoothMenuItemTranslations => Set<BoothMenuItemTranslation>();
+
     public DbSet<BoothMenuItem> BoothMenuItems => Set<BoothMenuItem>();
     public DbSet<PlaybackLog> PlaybackLogs => Set<PlaybackLog>();
     public DbSet<AppUser> AppUsers => Set<AppUser>();
