@@ -41,7 +41,11 @@ public class LocationTrackingService
             LocationChanged?.Invoke(this, e.Location);
         }
     }
-
+    public async Task StartListeningAsync()
+    {
+        // Đây là lệnh kích hoạt GPS của MAUI
+        await Geolocation.Default.GetLocationAsync(new GeolocationRequest(GeolocationAccuracy.Medium));
+    }
     private static async Task<bool> EnsurePermissionAsync()
     {
         var status = await Permissions.CheckStatusAsync<Permissions.LocationWhenInUse>();
