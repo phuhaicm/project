@@ -4,6 +4,7 @@ using Microsoft.Maui.Maps;
 using PoiNarration.Core.Models;
 using PoiNarration.Core.Utils;
 using PoiNarration.Mobile.Services;
+using Location = Microsoft.Maui.Devices.Sensors.Location;
 
 namespace PoiNarration.Mobile.Views;
 
@@ -21,40 +22,71 @@ public partial class MapPage : ContentPage
     private List<Booth> _booths = new();
     private readonly Dictionary<Pin, Booth> _pinBoothMap = new();
     private Booth? _nearestBooth;
-
-    public MapPage(LocationTrackingService locationTrackingService, ApiService apiService)
+    private string? _lastTriggeredBoothId; // Thêm biến này để tránh lặp trigger
+                                           // Constructor mới: Tiêm thẳng tất cả các ông vào đây
+    private void UpdateMapPins()
+    {
+        // Đảm bảo chạy trên MainThread
+        MainThread.BeginInvokeOnMainThread(() =>
+        {
+            FoodMap.Pins.Clear();
+            foreach (var booth in _booths)
+            {
+                var pin = new Microsoft.Maui.Controls.Maps.Pin
+                {
+                    Label = booth.NameVi,
+                    Location = new Location(booth.Lat, booth.Lng),
+                    Type = Microsoft.Maui.Controls.Maps.PinType.Place
+                };
+                FoodMap.Pins.Add(pin);
+            }
+        });
+    }
+    public MapPage(
+        LocationTrackingService locationTrackingService,
+        ApiService apiService,
+        AppDatabase db,
+        LocationService locationService,
+        NarrationService narrationService,
+        GeofenceService geofenceService)
     {
         InitializeComponent();
 
-        var services = Application.Current?.Handler?.MauiContext?.Services
-                       ?? throw new Exception("Services is null");
-
-        _db = services.GetRequiredService<AppDatabase>();
-        _seed = new SeedService(_db);
-        _locationService = services.GetRequiredService<LocationService>();
-        _narrationService = services.GetRequiredService<NarrationService>();
-        _geofenceService = services.GetRequiredService<GeofenceService>();
         _locationTrackingService = locationTrackingService;
         _apiService = apiService;
+        _db = db;
+        _locationService = locationService;
+        _narrationService = narrationService;
+        _geofenceService = geofenceService;
+
+        _seed = new SeedService(_db);
     }
 
     protected override async void OnAppearing()
     {
         base.OnAppearing();
-        _locationTrackingService.LocationChanged -= OnGpsLocationChanged;
         _locationTrackingService.LocationChanged += OnGpsLocationChanged;
 
-        await _locationTrackingService.StartAsync();
+        // 1. Load dữ liệu từ SQLite
+        var booths = await _db.GetAllBoothsAsync();
+        // 2. Cập nhật UI phải bọc trong MainThread
+        MainThread.BeginInvokeOnMainThread(() =>
+        {
+            _booths.Clear();
+            foreach (var b in booths) _booths.Add(b);
 
+            // Cập nhật số lượng booth lên màn hình
+            BoothCountLabel.Text = $"Số booth: {booths.Count}";
 
-        await _seed.EnsureSeededAsync();
-        await _db.InitAsync();
+            // Vẽ lại các điểm ghim trên bản đồ
+            LoadBoothPins();
+        });
 
-        _booths = await _db.GetAllBoothsAsync();
-        LoadBoothPins();
-
-        await SetupGpsAsync();
+        // 3. Bật GPS
+        await _locationTrackingService.StartListeningAsync();
     }
+
+    // Các hàm UpdateMapAndNearest và LoadBoothPins giữ nguyên logic cũ của bạn là ổn rồi
 
     protected override void OnDisappearing()
     {
@@ -87,37 +119,7 @@ public partial class MapPage : ContentPage
     }
 
 
-    private async Task SetupGpsAsync()
-    {
-        var granted = await _locationService.EnsurePermissionAsync();
-
-        if (!granted)
-        {
-            GpsStatusLabel.Text = "GPS: chưa được cấp quyền";
-            return;
-        }
-
-        GpsStatusLabel.Text = "GPS: đã cấp quyền";
-
-        var location = await _locationService.GetCurrentLocationAsync();
-        if (location != null)
-        {
-            UpdateMapAndNearest(location);
-        }
-
-        _trackingCts = new CancellationTokenSource();
-
-        _ = _locationService.StartListeningAsync(async loc =>
-        {
-            MainThread.BeginInvokeOnMainThread(() =>
-            {
-                UpdateMapAndNearest(loc);
-            });
-
-            await CheckGeofenceAndNarrateAsync(loc);
-
-        }, _trackingCts.Token);
-    }
+    
 
     private void UpdateMapAndNearest(Location location)
     {
@@ -205,22 +207,42 @@ await _geofenceService.CheckAndGetTriggeredBoothAsync(
     }
     private async void OnGpsLocationChanged(object? sender, Microsoft.Maui.Devices.Sensors.Location loc)
     {
-        var booth = await _geofenceService.CheckAndGetTriggeredBoothAsync(
-            loc.Latitude,
-            loc.Longitude);
+        // 1. Cập nhật UI (Phải chạy trên MainThread để không bị crash JavaProxyThrowable)
+        MainThread.BeginInvokeOnMainThread(() =>
+        {
+            UpdateMapAndNearest(loc);
+        });
+
+        // 2. Kiểm tra vùng Geofence (Bán kính quanh booth)
+        var booth = await _geofenceService.CheckAndGetTriggeredBoothAsync(loc.Latitude, loc.Longitude);
 
         if (booth == null)
+        {
+            _lastTriggeredBoothId = null; // Đi ra khỏi vùng thì reset để lần sau vào lại vẫn báo
             return;
+        }
 
-        await _narrationService.SpeakBoothAsync(booth, "GPS");
+        // 3. CHỐNG SPAM: Nếu đang đứng yên ở booth cũ thì không làm gì cả
+        if (booth.Id == _lastTriggeredBoothId) return;
+
+        _lastTriggeredBoothId = booth.Id;
+
+        // 4. Đánh dấu đã chơi và phát giọng nói AI
         _geofenceService.MarkPlayed(booth.Id);
+        await _narrationService.SpeakBoothAsync(booth, "GPS");
 
-        await _apiService.PostPlaybackLogAsync(new PlaybackLogRequest
+        // 5. Tự động nhảy sang trang chi tiết (Phải chạy trên MainThread)
+        await MainThread.InvokeOnMainThreadAsync(async () =>
+        {
+            await Shell.Current.GoToAsync($"{nameof(BoothDetailPage)}?boothId={booth.Id}");
+        });
+
+        // 6. Gửi log về Server (Dùng IP 192.168.88.235)
+        _ = _apiService.PostPlaybackLogAsync(new PlaybackLogRequest
         {
             BoothId = booth.Id,
             TriggerType = "GPS",
             Language = LanguageService.IsVi ? "vi" : "en",
-            DurationSeconds = 10, // Hoặc lấy từ narration service nếu có
             Lat = loc.Latitude,
             Lng = loc.Longitude,
             IsCompleted = true,

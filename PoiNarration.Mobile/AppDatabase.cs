@@ -172,6 +172,7 @@ public class AppDatabase
         return await _database!.InsertOrReplaceAsync(zone);
     }
     // Thêm hàm này vào cuối class AppDatabase
+
     public async Task SaveBootstrapDataAsync(BootstrapSyncResponse data)
     {
         await InitAsync();

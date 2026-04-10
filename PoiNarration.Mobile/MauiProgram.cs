@@ -1,8 +1,7 @@
-﻿//using Android.Net;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 using PoiNarration.Mobile.Services;
 using PoiNarration.Mobile.Views;
-using ZXing.Net.Maui.Controls; // 1. Đảm bảo đã có dòng này
+using ZXing.Net.Maui.Controls;
 
 namespace PoiNarration.Mobile;
 
@@ -15,37 +14,33 @@ public static class MauiProgram
         builder
             .UseMauiApp<App>()
             .UseMauiMaps()
-            .UseBarcodeReader(); // 2. THÊM DÒNG NÀY VÀO ĐÂY (Cực kỳ quan trọng)
+            .UseBarcodeReader();
 
 #if DEBUG
         builder.Logging.AddDebug();
 #endif
 
-        var dbPath = Path.Combine(FileSystem.AppDataDirectory, "app.db3");
-
-        // Database
+        // 1. Database
         builder.Services.AddSingleton<AppDatabase>(_ =>
-    new AppDatabase(Constants.DatabasePath));
+            new AppDatabase(Constants.DatabasePath));
 
+        // 2. Services
+        // Thêm IGeolocation mặc định của máy để tính khoảng cách và lấy tọa độ
+        builder.Services.AddSingleton<IGeolocation>(Geolocation.Default);
 
-        // Services
-
-
+        builder.Services.AddSingleton<LocationService>();
         builder.Services.AddSingleton<ApiService>();
         builder.Services.AddSingleton<SyncService>();
         builder.Services.AddSingleton<NarrationService>();
         builder.Services.AddSingleton<GeofenceService>();
         builder.Services.AddSingleton<LocationTrackingService>();
 
-        // Pages
+        // 3. Pages
         builder.Services.AddTransient<BoothListPage>();
         builder.Services.AddTransient<BoothByZonePage>();
         builder.Services.AddTransient<BoothDetailPage>();
         builder.Services.AddTransient<MapPage>();
         builder.Services.AddTransient<QrScanPage>();
-
-
-
 
         return builder.Build();
     }

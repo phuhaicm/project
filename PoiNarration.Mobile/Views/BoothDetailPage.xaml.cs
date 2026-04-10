@@ -95,4 +95,10 @@ public partial class BoothDetailPage : ContentPage
         // Gọi hàm StopAsync trong Service của bạn để ngắt giọng đọc của AI ngay lập tức
         await _narrationService.StopAsync();
     }
+    // Thêm hàm này vào file BoothDetailPage.xaml.cs của bạn
+    private async void OnBackClicked(object sender, EventArgs e)
+    {
+        // Lệnh này để quay lại trang trước đó trong Shell
+        await Shell.Current.GoToAsync("..");
+    }
 }
