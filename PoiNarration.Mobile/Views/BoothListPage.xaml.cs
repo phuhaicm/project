@@ -62,13 +62,25 @@ public partial class BoothListPage : ContentPage
                 x.ZoneId.ToLowerInvariant().Contains(keyword))
             .Select(x => new BoothCardVm
             {
+                // Bê nguyên xi dữ liệu từ Database sang ViewModel
                 Id = x.Id,
-                Title = string.IsNullOrWhiteSpace(x.NameVi) ? x.NameEn : x.NameVi,
-                Subtitle = string.IsNullOrWhiteSpace(x.NameEn) ? x.DescVi : x.NameEn,
-                ZoneText = x.ZoneId.ToUpper(),
-                PriorityText = $"Priority {x.Priority}",
-                RadiusText = $"{x.RadiusMeters}m",
-                ImageUrl = string.IsNullOrWhiteSpace(x.ImageUrl) ? "dotnet_bot.png" : x.ImageUrl!,
+                ZoneId = x.ZoneId,
+                NameVi = x.NameVi,
+                NameEn = x.NameEn,
+                DescVi = x.DescVi,
+                DescEn = x.DescEn,
+                Lat = x.Lat,
+                Lng = x.Lng,
+                RadiusMeters = x.RadiusMeters,
+                Priority = x.Priority,
+                OwnerUserId = x.OwnerUserId,
+                // Nếu không có ảnh thì lấy ảnh mặc định của MAUI
+                ImageUrl = string.IsNullOrWhiteSpace(x.ImageUrl) ? "dotnet_bot.png" : x.ImageUrl,
+                MapUrl = x.MapUrl,
+                TtsScriptVi = x.TtsScriptVi,
+                TtsScriptEn = x.TtsScriptEn,
+                AudioUrlVi = x.AudioUrlVi,
+                AudioUrlEn = x.AudioUrlEn,
                 IsActive = x.IsActive
             })
             .ToList();

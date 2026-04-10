@@ -1,7 +1,9 @@
-﻿namespace PoiNarration.Core.Models;
+﻿using SQLite; // Nhớ thêm using này
+namespace PoiNarration.Core.Models;
 
 public class BoothMenuItem
 {
+    [PrimaryKey] // BẮT BUỘC PHẢI CÓ DÒNG NÀY
     public string Id { get; set; } = Guid.NewGuid().ToString();
     public string BoothId { get; set; } = "";
 

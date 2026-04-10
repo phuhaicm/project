@@ -1,15 +1,20 @@
-﻿namespace PoiNarration.Mobile.Services;
-
-public static class ApiConstants
+﻿namespace PoiNarration.Mobile.Services
 {
-    public static string GetBaseUrl()
+    public static class ApiConstants
     {
-        if (DeviceInfo.Platform == DevicePlatform.Android)
+        // THAY ĐỔI: Nhập đúng IP máy tính của bạn tại đây
+        private const string MyComputerIp = "192.168.1.36";
+        private const string HttpPort = "5151";
+
+        public static string GetBaseUrl()
+
         {
-            // Android emulator gọi máy host bằng 10.0.2.2
-            return "http://10.0.2.2:7115/";
+           
+            // Khi chạy trên ĐIỆN THOẠI THẬT:
+            // Phải dùng HTTP (không có 's') và IP thật của máy tính
+            return $"http://{MyComputerIp}:{HttpPort}/";
         }
 
-        return "https://localhost:7115/";
+        public static string BoothsEndpoint => $"{GetBaseUrl()}api/Booths";
     }
 }
