@@ -2,7 +2,7 @@
 
 namespace PoiNarration.Core.Models;
 
-public class PlaybackLogLocal
+public class PlaybackLog
 {
     [PrimaryKey, AutoIncrement]
     public int Id { get; set; }
@@ -20,5 +20,6 @@ public class PlaybackLogLocal
     public bool IsCompleted { get; set; } = true;
     public string? SessionId { get; set; }
 
+    // Trường này cực kỳ quan trọng để Mobile biết cái nào đã sync lên API rồi
     public bool IsSynced { get; set; } = false;
 }

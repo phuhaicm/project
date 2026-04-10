@@ -2,12 +2,12 @@
 using Microsoft.EntityFrameworkCore;
 using PoiNarration.Api.Data;
 using PoiNarration.Api.DTOs.Menu;
-using PoiNarration.Api.Models.Entities;
+using PoiNarration.Core.Models; // Sử dụng duy nhất nguồn Core
 
 namespace PoiNarration.Api.Controllers;
 
 [ApiController]
-[Route("api/boothmenu")] // Đổi lại Route cho khớp với Web
+[Route("api/boothmenu")]
 public class BoothMenuController : ControllerBase
 {
     private readonly AppDbContext _db;
@@ -17,7 +17,7 @@ public class BoothMenuController : ControllerBase
         _db = db;
     }
 
-    // 1. Lấy danh sách món ăn: GET /api/boothmenu/booth-01
+    // 1. Lấy danh sách món ăn
     [HttpGet("{boothId}")]
     public async Task<ActionResult<List<BoothMenuItem>>> GetByBooth(string boothId)
     {
@@ -29,21 +29,24 @@ public class BoothMenuController : ControllerBase
         return Ok(items);
     }
 
-    // 2. Thêm món mới: POST /api/boothmenu/booth-01
+    // 2. Thêm món mới
     [HttpPost("{boothId}")]
     public async Task<ActionResult<BoothMenuItem>> Create(string boothId, [FromBody] UpsertMenuItemRequest request)
     {
-        // Kiểm tra xem Booth có tồn tại không (tùy chọn)
         var boothExists = await _db.Booths.AnyAsync(x => x.Id == boothId);
         if (!boothExists)
             return NotFound("Không tìm thấy mã gian hàng này trong hệ thống.");
 
         var item = new BoothMenuItem
         {
+            Id = Guid.NewGuid().ToString(), // Khởi tạo ID mới
             BoothId = boothId,
             Name = request.Name,
+            NameEn = request.NameEn, // Cập nhật thêm trường tiếng Anh
             Description = request.Description,
+            DescriptionEn = request.DescriptionEn, // Cập nhật thêm trường tiếng Anh
             Price = request.Price,
+            PriceUsd = request.PriceUsd, // Cập nhật thêm giá USD
             ImageUrl = request.ImageUrl,
             UpdatedAtUtc = DateTime.UtcNow,
             IsDeleted = false
@@ -55,7 +58,7 @@ public class BoothMenuController : ControllerBase
         return Ok(item);
     }
 
-    // 3. Cập nhật món: PUT /api/boothmenu/booth-01/items/menuId
+    // 3. Cập nhật món
     [HttpPut("{boothId}/items/{menuId}")]
     public async Task<ActionResult<BoothMenuItem>> Update(string boothId, string menuId, [FromBody] UpsertMenuItemRequest request)
     {
@@ -66,8 +69,11 @@ public class BoothMenuController : ControllerBase
             return NotFound("Không tìm thấy món ăn cần sửa.");
 
         item.Name = request.Name;
+        item.NameEn = request.NameEn;
         item.Description = request.Description;
+        item.DescriptionEn = request.DescriptionEn;
         item.Price = request.Price;
+        item.PriceUsd = request.PriceUsd;
         item.ImageUrl = request.ImageUrl;
         item.UpdatedAtUtc = DateTime.UtcNow;
 
@@ -76,7 +82,7 @@ public class BoothMenuController : ControllerBase
         return Ok(item);
     }
 
-    // 4. Xóa món: DELETE /api/boothmenu/booth-01/items/menuId
+    // 4. Xóa món (Soft Delete)
     [HttpDelete("{boothId}/items/{menuId}")]
     public async Task<IActionResult> Delete(string boothId, string menuId)
     {
@@ -86,7 +92,6 @@ public class BoothMenuController : ControllerBase
         if (item == null)
             return NotFound();
 
-        // Xóa mềm (Soft Delete)
         item.IsDeleted = true;
         item.UpdatedAtUtc = DateTime.UtcNow;
 

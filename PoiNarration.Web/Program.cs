@@ -13,7 +13,7 @@ builder.Services.AddSession(options =>
 
 builder.Services.AddHttpClient("Api", client =>
 {
-    client.BaseAddress = new Uri("https://localhost:7115/");
+    client.BaseAddress = new Uri("https://localhost:7151/");
 });
 
 var app = builder.Build();

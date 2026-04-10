@@ -215,12 +215,12 @@ await _geofenceService.CheckAndGetTriggeredBoothAsync(
         await _narrationService.SpeakBoothAsync(booth, "GPS");
         _geofenceService.MarkPlayed(booth.Id);
 
-        await _apiService.PostPlaybackLogAsync(new PoiNarration.Mobile.Models.PlaybackLogRequest
+        await _apiService.PostPlaybackLogAsync(new PlaybackLogRequest
         {
             BoothId = booth.Id,
             TriggerType = "GPS",
             Language = LanguageService.IsVi ? "vi" : "en",
-            DurationSeconds = 10,
+            DurationSeconds = 10, // Hoặc lấy từ narration service nếu có
             Lat = loc.Latitude,
             Lng = loc.Longitude,
             IsCompleted = true,

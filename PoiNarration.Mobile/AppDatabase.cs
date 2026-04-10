@@ -27,7 +27,7 @@ public class AppDatabase
         await _database.CreateTableAsync<BoothMenuItem>();
 
         // ===== Bảng mới cho giai đoạn B =====
-        await _database.CreateTableAsync<PlaybackLogLocal>();
+        await _database.CreateTableAsync<PlaybackLog>();
         await _database.CreateTableAsync<BoothTranslationLocal>();
         await _database.CreateTableAsync<BoothMenuItemTranslationLocal>();
     }
@@ -106,16 +106,16 @@ public class AppDatabase
     // =====================================================
     // PLAYBACK LOG LOCAL (giai đoạn B)
     // =====================================================
-    public async Task<int> SavePlaybackLogAsync(PlaybackLogLocal item)
+    public async Task<int> SavePlaybackLogAsync(PlaybackLog item)
     {
         await InitAsync();
         return await _database!.InsertAsync(item);
     }
 
-    public async Task<List<PlaybackLogLocal>> GetUnsyncedPlaybackLogsAsync()
+    public async Task<List<PlaybackLog>> GetUnsyncedPlaybackLogsAsync()
     {
         await InitAsync();
-        return await _database!.Table<PlaybackLogLocal>()
+        return await _database!.Table<PlaybackLog>()
             .Where(x => !x.IsSynced)
             .ToListAsync();
     }
@@ -124,7 +124,7 @@ public class AppDatabase
     {
         await InitAsync();
 
-        var log = await _database!.Table<PlaybackLogLocal>()
+        var log = await _database!.Table<PlaybackLog>()
             .FirstOrDefaultAsync(x => x.Id == id);
 
         if (log == null)
@@ -170,6 +170,31 @@ public class AppDatabase
     {
         await InitAsync();
         return await _database!.InsertOrReplaceAsync(zone);
+    }
+    // Thêm hàm này vào cuối class AppDatabase
+    public async Task SaveBootstrapDataAsync(BootstrapSyncResponse data)
+    {
+        await InitAsync();
+
+        // Sử dụng RunInTransactionAsync để tất cả lệnh SQL chạy trong 1 phiên duy nhất
+        await _database!.RunInTransactionAsync(conn =>
+        {
+            // 1. Xóa dữ liệu cũ (Tùy chọn: Nếu bạn muốn làm sạch DB mỗi lần sync)
+            conn.DeleteAll<Booth>();
+            conn.DeleteAll<BoothMenuItem>();
+            conn.DeleteAll<BoothTranslationLocal>();
+            conn.DeleteAll<BoothMenuItemTranslationLocal>();
+            conn.DeleteAll<Zone>();
+
+            // 2. Chèn dữ liệu mới hàng loạt (Cực kỳ nhanh)
+            if (data.Zones?.Any() == true) conn.InsertAll(data.Zones);
+            if (data.Booths?.Any() == true) conn.InsertAll(data.Booths);
+            if (data.MenuItems?.Any() == true) conn.InsertAll(data.MenuItems);
+            if (data.BoothTranslations?.Any() == true) conn.InsertAll(data.BoothTranslations);
+            if (data.MenuTranslations?.Any() == true) conn.InsertAll(data.MenuTranslations);
+
+            System.Diagnostics.Debug.WriteLine("Đã lưu Bootstrap vào SQLite thành công!");
+        });
     }
 
 }

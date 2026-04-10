@@ -1,4 +1,4 @@
-﻿namespace PoiNarration.Mobile.Models;
+﻿namespace PoiNarration.Core.Models; // Đổi namespace sang Core
 
 public class PlaybackLogRequest
 {

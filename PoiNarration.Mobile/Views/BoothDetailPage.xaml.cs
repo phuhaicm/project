@@ -83,14 +83,16 @@ public partial class BoothDetailPage : ContentPage
 
     private async void OnPlayClicked(object sender, EventArgs e)
     {
-        if (_currentBooth == null) return;
-
-        // NarrationService cũng đã được cập nhật logic đa ngôn ngữ để phát đúng script
-        await _narrationService.SpeakBoothAsync(_currentBooth, "Manual");
+        if (_currentBooth != null)
+        {
+            // Truyền chữ "Manual" để báo cho Service biết đây là bấm bằng tay
+            await _narrationService.SpeakBoothAsync(_currentBooth, "Manual");
+        }
     }
 
     private async void OnStopClicked(object sender, EventArgs e)
     {
+        // Gọi hàm StopAsync trong Service của bạn để ngắt giọng đọc của AI ngay lập tức
         await _narrationService.StopAsync();
     }
 }

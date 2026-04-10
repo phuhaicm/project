@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using PoiNarration.Api.Data;
-using PoiNarration.Api.DTOs.PlaybackLogs;
-using PoiNarration.Api.Models.Entities;
+using PoiNarration.Core.Models; // Sử dụng Model và DTO từ Core
+using Microsoft.EntityFrameworkCore;
 
 namespace PoiNarration.Api.Controllers;
 
@@ -17,11 +17,12 @@ public class PlaybackLogsController : ControllerBase
     }
 
     [HttpPost]
-    public async Task<IActionResult> Create([FromBody] CreatePlaybackLogRequest request)
+    public async Task<IActionResult> Create([FromBody] PlaybackLogRequest request) // Đã đổi sang PlaybackLogRequest từ Core
     {
         if (string.IsNullOrWhiteSpace(request.BoothId))
             return BadRequest("BoothId là bắt buộc.");
 
+        // Tạo Entity PlaybackLog (đã được chuyển sang Core)
         var log = new PlaybackLog
         {
             BoothId = request.BoothId,
@@ -32,7 +33,8 @@ public class PlaybackLogsController : ControllerBase
             Lng = request.Lng,
             IsCompleted = request.IsCompleted,
             SessionId = request.SessionId,
-            PlayedAtUtc = DateTime.UtcNow
+            PlayedAtUtc = DateTime.UtcNow,
+            IsSynced = true // Vì lưu trực tiếp trên Server nên mặc định là đã Sync
         };
 
         _db.PlaybackLogs.Add(log);
