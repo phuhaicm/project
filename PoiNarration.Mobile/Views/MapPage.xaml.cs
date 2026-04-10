@@ -12,13 +12,17 @@ public partial class MapPage : ContentPage
     private readonly AppDatabase _db;
     private readonly SeedService _seed;
     private readonly LocationService _locationService;
+    private readonly LocationTrackingService _locationTrackingService;
+    private readonly ApiService _apiService;
     private CancellationTokenSource? _trackingCts;
     private readonly NarrationService _narrationService;
     private readonly GeofenceService _geofenceService;
     private bool _isHandlingTrigger = false;
     private List<Booth> _booths = new();
+    private readonly Dictionary<Pin, Booth> _pinBoothMap = new();
+    private Booth? _nearestBooth;
 
-    public MapPage()
+    public MapPage(LocationTrackingService locationTrackingService, ApiService apiService)
     {
         InitializeComponent();
 
@@ -30,11 +34,18 @@ public partial class MapPage : ContentPage
         _locationService = services.GetRequiredService<LocationService>();
         _narrationService = services.GetRequiredService<NarrationService>();
         _geofenceService = services.GetRequiredService<GeofenceService>();
+        _locationTrackingService = locationTrackingService;
+        _apiService = apiService;
     }
 
     protected override async void OnAppearing()
     {
         base.OnAppearing();
+        _locationTrackingService.LocationChanged -= OnGpsLocationChanged;
+        _locationTrackingService.LocationChanged += OnGpsLocationChanged;
+
+        await _locationTrackingService.StartAsync();
+
 
         await _seed.EnsureSeededAsync();
         await _db.InitAsync();
@@ -48,27 +59,31 @@ public partial class MapPage : ContentPage
     protected override void OnDisappearing()
     {
         base.OnDisappearing();
+        _locationTrackingService.LocationChanged -= OnGpsLocationChanged;
+        _locationTrackingService.Stop();
         _trackingCts?.Cancel();
     }
 
     private void LoadBoothPins()
     {
         FoodMap.Pins.Clear();
+        _pinBoothMap.Clear();
 
-        foreach (var booth in _booths)
+        // Chỉ hiện booth IsActive = true
+        foreach (var booth in _booths.Where(b => b.IsActive))
         {
             var pin = new Pin
             {
-                Label = booth.NameVi,
+                Label = string.IsNullOrWhiteSpace(booth.NameVi) ? "Booth " + booth.Id : booth.NameVi,
                 Address = booth.DescVi,
                 Type = PinType.Place,
                 Location = new Location(booth.Lat, booth.Lng)
             };
-
+            pin.MarkerClicked += OnPinMarkerClicked;
             FoodMap.Pins.Add(pin);
+            _pinBoothMap[pin] = booth;
         }
-
-        BoothCountLabel.Text = $"Số booth: {_booths.Count}, số pin: {FoodMap.Pins.Count}";
+        BoothCountLabel.Text = $"Số booth: {FoodMap.Pins.Count}";
     }
 
 
@@ -111,6 +126,12 @@ public partial class MapPage : ContentPage
         if (_booths.Count == 0)
         {
             NearestBoothLabel.Text = "Gian gần nhất: không có dữ liệu";
+
+            // Code mới tích hợp khi không có dữ liệu
+            _nearestBooth = null;
+            NearestBoothName.Text = "Chưa xác định";
+            NearestBoothDistance.Text = "";
+            OpenNearestButton.IsEnabled = false;
             return;
         }
 
@@ -127,11 +148,15 @@ public partial class MapPage : ContentPage
 
         NearestBoothLabel.Text = $"Gian gần nhất: {nearest.Booth.NameVi} ({nearest.Distance:F0}m)";
 
-        // ✅ Focus map vào TRUNG ĐIỂM giữa user và nearest booth
+        // Tích hợp code mới cập nhật UI cho Booth gần nhất
+        _nearestBooth = nearest.Booth;
+        NearestBoothName.Text = _nearestBooth.NameVi;
+        NearestBoothDistance.Text = $"Khoảng cách: {nearest.Distance:0} m";
+        OpenNearestButton.IsEnabled = true;
+
+        // Focus map vào TRUNG ĐIỂM giữa user và nearest booth
         var centerLat = (location.Latitude + nearest.Booth.Lat) / 2.0;
         var centerLng = (location.Longitude + nearest.Booth.Lng) / 2.0;
-
-        // ✅ Radius lớn hơn khoảng cách nearest để chắc chắn pin nằm trong vùng nhìn thấy
         var radiusMeters = Math.Max(500, nearest.Distance + 200);
 
         FoodMap.MoveToRegion(
@@ -154,7 +179,11 @@ public partial class MapPage : ContentPage
         if (_isHandlingTrigger) return;
         if (_narrationService == null || _geofenceService == null) return;
 
-        var triggeredBooth = await _geofenceService.CheckAndGetTriggeredBoothAsync(location, _booths);
+        var triggeredBooth =
+await _geofenceService.CheckAndGetTriggeredBoothAsync(
+    location.Latitude,
+    location.Longitude);
+
 
         if (triggeredBooth == null) return;
 
@@ -174,4 +203,49 @@ public partial class MapPage : ContentPage
             _isHandlingTrigger = false;
         }
     }
+    private async void OnGpsLocationChanged(object? sender, Microsoft.Maui.Devices.Sensors.Location loc)
+    {
+        var booth = await _geofenceService.CheckAndGetTriggeredBoothAsync(
+            loc.Latitude,
+            loc.Longitude);
+
+        if (booth == null)
+            return;
+
+        await _narrationService.SpeakBoothAsync(booth, "GPS");
+        _geofenceService.MarkPlayed(booth.Id);
+
+        await _apiService.PostPlaybackLogAsync(new PoiNarration.Mobile.Models.PlaybackLogRequest
+        {
+            BoothId = booth.Id,
+            TriggerType = "GPS",
+            Language = LanguageService.IsVi ? "vi" : "en",
+            DurationSeconds = 10,
+            Lat = loc.Latitude,
+            Lng = loc.Longitude,
+            IsCompleted = true,
+            SessionId = Guid.NewGuid().ToString()
+        });
+    }
+    // Hàm xử lý khi nhấn vào 1 Pin trên bản đồ
+    private async void OnPinMarkerClicked(object? sender, PinClickedEventArgs e)
+    {
+        e.HideInfoWindow = true; // Ẩn info window mặc định nếu muốn tự xử lý UI
+
+        if (sender is Pin pin && _pinBoothMap.TryGetValue(pin, out var booth))
+        {
+            // Điều hướng sang trang chi tiết của Booth được nhấn
+            await Shell.Current.GoToAsync($"{nameof(BoothDetailPage)}?boothId={booth.Id}");
+        }
+    }
+
+    // Hàm xử lý khi nhấn nút "Mở gian hàng gần nhất" (OpenNearestButton)
+    private async void OnOpenNearestClicked(object sender, EventArgs e)
+    {
+        if (_nearestBooth != null)
+        {
+            await Shell.Current.GoToAsync($"{nameof(BoothDetailPage)}?boothId={_nearestBooth.Id}");
+        }
+    }
+
 }

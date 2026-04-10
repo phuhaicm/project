@@ -4,43 +4,80 @@
     ViewData["Title"] = "Sửa món ăn";
 }
 
-<h2>Sửa món ăn</h2>
+<div class="row justify-content-center">
+    <div class="col-12 col-lg-8">
+        <div class="card card-shadow border-0 shadow-sm">
+            <div class="card-body p-4">
+                <h3 class="fw-bold mb-4">Sửa món ăn</h3>
 
-Edit
-    <input type="hidden" asp-for="BoothId" />
-    <input type="hidden" asp-for="MenuId" />
-    <input type="hidden" asp-for="ExistingImageUrl" />
+                @* SỬA LỖI 1: Thay chữ "Edit" lơ lửng bằng thẻ form có hỗ trợ upload file *@
+                <form asp-action="Edit" method="post" enctype="multipart/form-data">
+                    
+                    <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
 
-    <div style="margin-bottom:10px;">
-        <label>Tên món</label><br />
-        <input asp-for="Name" />
+                    @* Giữ nguyên các trường ẩn quan trọng *@
+                    <input type="hidden" asp-for="BoothId" />
+                    <input type="hidden" asp-for="MenuId" />
+                    <input type="hidden" asp-for="Id" />
+                    <input type="hidden" asp-for="ExistingImageUrl" />
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Tên món</label>
+                        <input asp-for="Name" class="form-control" />
+                        <span asp-validation-for="Name" class="text-danger small"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Mô tả</label>
+                        <textarea asp-for="Description" class="form-control" rows="4"></textarea>
+                        <span asp-validation-for="Description" class="text-danger small"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Giá (VNĐ)</label>
+                        <input asp-for="Price" type="number" step="1000" class="form-control" />
+                        <span asp-validation-for="Price" class="text-danger small"></span>
+                    </div>
+
+                    @* SỬA LỖI 2: Dùng thẻ <img> để hiển thị ảnh thay vì chỉ in ra text *@
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Ảnh hiện tại</label>
+                        <div class="mt-2">
+                            @if (!string.IsNullOrWhiteSpace(Model.ExistingImageUrl))
+                            {
+                                <img src="@Model.ExistingImageUrl" alt="Ảnh món ăn" class="img-thumbnail" style="max-height: 150px;" />
+                            }
+                            else
+                            {
+                                <span class="text-muted fst-italic">Chưa có ảnh</span>
+                            }
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Đổi ảnh mới (nếu muốn)</label>
+                        <input asp-for="ImageFile" type="file" class="form-control" accept=".jpg,.jpeg,.png,.webp" />
+                        <div class="form-text">Bỏ trống nếu bạn muốn giữ nguyên ảnh cũ.</div>
+                    </div>
+
+                    <hr class="my-4" />
+
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary px-4">
+                            <i class="bi bi-check-circle me-1"></i> Cập nhật
+                        </button>
+                        
+                        @* SỬA LỖI 3: Nối lại thẻ <a> bị đứt đoạn *@
+                        <a asp-action="Index" asp-route-boothId="@Model.BoothId" class="btn btn-outline-secondary px-4">
+                            Hủy bỏ
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
     </div>
+</div>
 
-    <div style="margin-bottom:10px;">
-        <label>Mô tả</label><br />
-        <textarea asp-for="Description"></textarea>
-    </div>
-
-    <div style="margin-bottom:10px;">
-        <label>Giá</label><br />
-        <input asp-for="Price" type="number" step="1000" />
-    </div>
-
-    <div style="margin-bottom:10px;">
-        <label>Ảnh hiện tại</label><br />
-        @if (!string.IsNullOrWhiteSpace(Model.ExistingImageUrl))
-        {
-            @Model.ExistingImageUrl
-        }
-    </div>
-
-    <div style="margin-bottom:10px;">
-        <label>Đổi ảnh mới (nếu muốn)</label><br />
-        <input asp-for="ImageFile" type="file" accept=".jpg,.jpeg,.png,.webp" />
-    </div>
-
-    <button type="submit">Cập nhật</button>
-</form>
-
-<p>
-    <a asp-action="Index" asp-route-bo
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

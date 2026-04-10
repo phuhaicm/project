@@ -29,7 +29,7 @@ public partial class App : Application
 
                 if (syncService != null)
                 {
-                    await syncService.SyncAsync();
+                    await syncService.SyncBootstrapAsync();
                 }
             }
             catch
@@ -39,5 +39,16 @@ public partial class App : Application
         });
         return new Window(new AppShell());
     }
+    protected override async void OnStart()
+    {
+        base.OnStart();
+
+        var services = Current?.Handler?.MauiContext?.Services;
+        if (services == null) return;
+
+        var syncService = services.GetRequiredService<PoiNarration.Mobile.Services.SyncService>();
+        await syncService.SyncBootstrapAsync();
+    }
+
 
 }

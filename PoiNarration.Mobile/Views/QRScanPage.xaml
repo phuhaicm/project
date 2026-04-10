@@ -1,25 +1,45 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentPage
-    x:Class="PoiNarration.Mobile.Views.QRScanPage"
+    x:Class="PoiNarration.Mobile.Views.QrScanPage"
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-    xmlns:zxing="clr-namespace:ZXing.Net.Maui.Controls;assembly=ZXing.Net.MAUI.Controls"
-    Title="Scan Booth QR">
+    Title="QR Scan"
+    BackgroundColor="#0B0B10">
 
-    <Grid>
-        <zxing:CameraBarcodeReaderView
-            x:Name="cameraView"
-            BarcodesDetected="OnBarcodesDetected" />
+    <Grid Padding="20">
+        <VerticalStackLayout Spacing="16" VerticalOptions="Center">
+            <Label Text="Quét QR"
+                   FontSize="24"
+                   FontAttributes="Bold"
+                   TextColor="White"
+                   HorizontalOptions="Center" />
 
-        <Grid VerticalOptions="End" Padding="16">
-            <Border BackgroundColor="#88000000"
+            <Label Text="Hiện tại page này là placeholder để giữ flow QR của đồ án. Bạn có thể gắn scanner thật sau."
+                   TextColor="#B8B8C7"
+                   HorizontalTextAlignment="Center" />
+
+            <Border Padding="20"
                     StrokeThickness="0"
-                    StrokeShape="RoundRectangle 12"
-                    Padding="12">
-                <Label Text="Đưa QR Booth vào khung hình"
-                       TextColor="White"
-                       HorizontalOptions="Center" />
+                    BackgroundColor="#161622"
+                    StrokeShape="RoundRectangle 20">
+                <VerticalStackLayout Spacing="12">
+                    <Label Text="Demo nhanh"
+                           FontAttributes="Bold"
+                           TextColor="White" />
+
+                    <Button Text="Mở booth-01"
+                            BackgroundColor="#6D5DF6"
+                            TextColor="White"
+                            CornerRadius="14"
+                            Clicked="OnOpenBooth01Clicked" />
+
+                    <Button Text="Quay lại"
+                            BackgroundColor="#2A2A38"
+                            TextColor="White"
+                            CornerRadius="14"
+                            Clicked="OnBackClicked" />
+                </VerticalStackLayout>
             </Border>
-        </Grid>
+        </VerticalStackLayout>
     </Grid>
 </ContentPage>

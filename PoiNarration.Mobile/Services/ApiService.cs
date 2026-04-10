@@ -1,5 +1,6 @@
-﻿using System.Net.Http.Json;
-using PoiNarration.Core.Models;
+﻿using PoiNarration.Core.Models;
+using PoiNarration.Mobile.Models;
+using System.Net.Http.Json;
 
 namespace PoiNarration.Mobile.Services;
 
@@ -25,4 +26,11 @@ public class ApiService
     {
         return await _http.GetFromJsonAsync<BootstrapSyncResponse>("api/sync/bootstrap");
     }
+
+    public async Task PostPlaybackLogAsync(PlaybackLogRequest request)
+    {
+        var response = await _http.PostAsJsonAsync("api/playbacklogs", request);
+        response.EnsureSuccessStatusCode();
+    }
+    
 }

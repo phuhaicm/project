@@ -1,4 +1,6 @@
-﻿namespace PoiNarration.Mobile
+﻿using PoiNarration.Mobile.Services;
+
+namespace PoiNarration.Mobile
 {
     public partial class MainPage : ContentPage
     {
@@ -19,6 +21,13 @@
                 CounterBtn.Text = $"Clicked {count} times";
 
             SemanticScreenReader.Announce(CounterBtn.Text);
+        }
+        private void OnLanguageChanged(object sender, EventArgs e)
+        {
+            if (LanguagePicker.SelectedItem is string lang)
+            {
+                LanguageService.CurrentLanguage = lang;
+            }
         }
     }
 }

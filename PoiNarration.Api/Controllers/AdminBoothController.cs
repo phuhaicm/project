@@ -23,7 +23,18 @@ public class AdminBoothController : ControllerBase
         if (booth == null)
             return NotFound("Không tìm thấy booth.");
 
-        var ownerExists = await _db.AppUsers.AnyAsync(x => x.Id == request.OwnerUserId && x.Role == "Owner");
+        // Nếu null hoặc rỗng => bỏ gán owner
+        if (string.IsNullOrWhiteSpace(request.OwnerUserId))
+        {
+            booth.OwnerUserId = null;
+            await _db.SaveChangesAsync();
+            return Ok(booth);
+        }
+
+        // Nếu có ownerUserId thì mới validate
+        var ownerExists = await _db.AppUsers
+            .AnyAsync(x => x.Id == request.OwnerUserId && x.Role == "Owner");
+
         if (!ownerExists)
             return BadRequest("Owner không hợp lệ.");
 
@@ -32,7 +43,6 @@ public class AdminBoothController : ControllerBase
 
         return Ok(booth);
     }
-
     [HttpGet("owners")]
     public async Task<IActionResult> GetOwners()
     {

@@ -3,44 +3,209 @@
     x:Class="PoiNarration.Mobile.Views.BoothListPage"
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-    Title="Booths">
+    xmlns:model="clr-namespace:PoiNarration.Mobile.Models"
+    x:Name="ThisPage"
+    Title="Booths"
+    BackgroundColor="#0B0B10">
 
-    <Grid RowDefinitions="Auto,*,Auto" Padding="10" RowSpacing="10">
+    <Grid RowDefinitions="Auto,Auto,Auto,Auto,*">
 
-        <!-- HEADER: giữ lại các thứ tuần 1 -->
-        <VerticalStackLayout Grid.Row="0" Spacing="8">
-            <Button Text="Scan Gate QR (Demo)" Clicked="OnScanGateClicked"/>
-            <Button Text="Manual Mode (Choose Zone)" Clicked="OnManualClicked"/>
-        </VerticalStackLayout>
+        <!-- Header -->
+        <Border Grid.Row="0"
+                Margin="16,16,16,8"
+                Padding="16"
+                StrokeThickness="0"
+                BackgroundColor="#161622"
+                StrokeShape="RoundRectangle 20">
+            <Grid ColumnDefinitions="*,Auto">
+                <VerticalStackLayout Spacing="4">
+                    <Label Text="PoiNarration"
+                           FontSize="22"
+                           FontAttributes="Bold"
+                           TextColor="White" />
 
-        <!-- LIST: tuần 2 sẽ đổ data từ SQLite -->
-        <CollectionView x:Name="BoothsView"
-                        Grid.Row="1"
-                        SelectionMode="Single"
-                        SelectionChanged="OnBoothSelected">
+                    <Label x:Name="SyncStatusLabel"
+                           Text="Sẵn sàng đồng bộ dữ liệu"
+                           FontSize="12"
+                           TextColor="#B8B8C7" />
+                </VerticalStackLayout>
+
+                <Button Grid.Column="1"
+                        Text="Đồng bộ"
+                        Clicked="OnSyncClicked"
+                        BackgroundColor="#6D5DF6"
+                        TextColor="White"
+                        CornerRadius="14"
+                        Padding="16,10" />
+            </Grid>
+        </Border>
+
+        <!-- Language + Search -->
+        <Grid Grid.Row="1"
+              Margin="16,0,16,8"
+              ColumnDefinitions="*,140"
+              ColumnSpacing="8">
+            <SearchBar x:Name="BoothSearchBar"
+                       Placeholder="Tìm booth..."
+                       SearchCommand="{x:Null}"
+                       TextChanged="OnSearchTextChanged"
+                       BackgroundColor="#161622"
+                       TextColor="White"
+                       PlaceholderColor="#B8B8C7" />
+
+            <Picker x:Name="LanguagePicker"
+                    Grid.Column="1"
+                    Title="Ngôn ngữ"
+                    SelectedIndexChanged="OnLanguageChanged"
+                    BackgroundColor="#161622"
+                    TextColor="White">
+                <Picker.ItemsSource>
+                    <x:Array Type="{x:Type x:String}">
+                        <x:String>vi</x:String>
+                        <x:String>en</x:String>
+                        <x:String>zh</x:String>
+                        <x:String>ja</x:String>
+                        <x:String>ko</x:String>
+                        <x:String>fr</x:String>
+                        <x:String>es</x:String>
+                        <x:String>it</x:String>
+                        <x:String>ru</x:String>
+                    </x:Array>
+                </Picker.ItemsSource>
+            </Picker>
+        </Grid>
+
+        <!-- Quick actions -->
+        <Grid Grid.Row="2"
+              Margin="16,0,16,8"
+              ColumnDefinitions="*,*,*"
+              ColumnSpacing="8">
+            <Button Text="Quét QR"
+                    Clicked="OnScanQrClicked"
+                    BackgroundColor="#6D5DF6"
+                    TextColor="White"
+                    CornerRadius="16" />
+
+            <Button Grid.Column="1"
+                    Text="GPS Mode"
+                    Clicked="OnGpsModeClicked"
+                    BackgroundColor="#2A2A38"
+                    TextColor="White"
+                    CornerRadius="16" />
+
+            <Button Grid.Column="2"
+                    Text="Bản đồ"
+                    Clicked="OnMapClicked"
+                    BackgroundColor="#2A2A38"
+                    TextColor="White"
+                    CornerRadius="16" />
+        </Grid>
+
+        <!-- Summary -->
+        <Grid Grid.Row="3"
+              Margin="16,0,16,8"
+              ColumnDefinitions="*,*"
+              ColumnSpacing="8">
+            <Border Padding="12"
+                    StrokeThickness="0"
+                    BackgroundColor="#161622"
+                    StrokeShape="RoundRectangle 18">
+                <VerticalStackLayout>
+                    <Label Text="Tổng Booth" FontSize="12" TextColor="#B8B8C7" />
+                    <Label x:Name="TotalBoothsLabel" Text="0" FontSize="24" FontAttributes="Bold" TextColor="White" />
+                </VerticalStackLayout>
+            </Border>
+
+            <Border Grid.Column="1"
+                    Padding="12"
+                    StrokeThickness="0"
+                    BackgroundColor="#161622"
+                    StrokeShape="RoundRectangle 18">
+                <VerticalStackLayout>
+                    <Label Text="Ngôn ngữ hiện tại" FontSize="12" TextColor="#B8B8C7" />
+                    <Label x:Name="CurrentLanguageLabel" Text="vi" FontSize="24" FontAttributes="Bold" TextColor="White" />
+                </VerticalStackLayout>
+            </Border>
+        </Grid>
+
+        <!-- Booth list -->
+        <CollectionView Grid.Row="4"
+                        x:Name="BoothsCollectionView"
+                        Margin="16,0,16,16"
+                        SelectionMode="None">
             <CollectionView.ItemTemplate>
-                <DataTemplate>
-                    <!-- Frame warning obsolete vẫn chạy OK; tuần 6 đổi Border -->
-                    <Frame Padding="12" Margin="10" CornerRadius="16">
-                        <VerticalStackLayout Spacing="4">
-                            <Label Text="{Binding Name}" FontSize="18" />
-                            <Label Text="{Binding Desc}"
-                                   FontSize="12"
-                                   Opacity="0.7"
-                                   LineBreakMode="TailTruncation"/>
-                        </VerticalStackLayout>
-                    </Frame>
+                <DataTemplate x:DataType="model:BoothCardVm">
+                    <Border Margin="0,0,0,12"
+                            Padding="12"
+                            StrokeThickness="0"
+                            BackgroundColor="#161622"
+                            StrokeShape="RoundRectangle 18">
+                        <Grid ColumnDefinitions="88,*" ColumnSpacing="12">
+
+                            <Border WidthRequest="88"
+                                    HeightRequest="88"
+                                    StrokeThickness="0"
+                                    StrokeShape="RoundRectangle 14"
+                                    BackgroundColor="#2A2A38">
+                                <Image Source="{Binding ImageUrl}"
+                                       Aspect="AspectFill" />
+                            </Border>
+
+                            <VerticalStackLayout Grid.Column="1" Spacing="6">
+                                <Label Text="{Binding Title}"
+                                       FontSize="16"
+                                       FontAttributes="Bold"
+                                       TextColor="White" />
+
+                                <Label Text="{Binding Subtitle}"
+                                       FontSize="12"
+                                       TextColor="#B8B8C7"
+                                       LineBreakMode="TailTruncation" />
+
+                                <HorizontalStackLayout Spacing="8">
+                                    <Border Padding="8,4"
+                                            StrokeThickness="0"
+                                            BackgroundColor="#2A2A38"
+                                            StrokeShape="RoundRectangle 10">
+                                        <Label Text="{Binding ZoneText}" FontSize="11" TextColor="White" />
+                                    </Border>
+
+                                    <Border Padding="8,4"
+                                            StrokeThickness="0"
+                                            BackgroundColor="#2A2A38"
+                                            StrokeShape="RoundRectangle 10">
+                                        <Label Text="{Binding PriorityText}" FontSize="11" TextColor="White" />
+                                    </Border>
+
+                                    <Border Padding="8,4"
+                                            StrokeThickness="0"
+                                            BackgroundColor="#2A2A38"
+                                            StrokeShape="RoundRectangle 10">
+                                        <Label Text="{Binding RadiusText}" FontSize="11" TextColor="White" />
+                                    </Border>
+                                </HorizontalStackLayout>
+
+                                <Grid ColumnDefinitions="*,*" ColumnSpacing="8">
+                                    <Button Text="Chi tiết"
+                                            CommandParameter="{Binding Id}"
+                                            Clicked="OnOpenBoothClicked"
+                                            BackgroundColor="#6D5DF6"
+                                            TextColor="White"
+                                            CornerRadius="12" />
+
+                                    <Button Grid.Column="1"
+                                            Text="Nghe thử"
+                                            CommandParameter="{Binding Id}"
+                                            Clicked="OnPreviewBoothClicked"
+                                            BackgroundColor="#2A2A38"
+                                            TextColor="White"
+                                            CornerRadius="12" />
+                                </Grid>
+                            </VerticalStackLayout>
+                        </Grid>
+                    </Border>
                 </DataTemplate>
             </CollectionView.ItemTemplate>
         </CollectionView>
-
-        <!-- LANGUAGE -->
-        <HorizontalStackLayout Grid.Row="2"
-                               HorizontalOptions="Center"
-                               Spacing="10">
-            <Button Text="VI" Clicked="OnLangVi"/>
-            <Button Text="EN" Clicked="OnLangEn"/>
-        </HorizontalStackLayout>
-
     </Grid>
 </ContentPage>

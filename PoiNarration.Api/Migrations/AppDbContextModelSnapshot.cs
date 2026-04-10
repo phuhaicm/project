@@ -59,7 +59,7 @@ namespace PoiNarration.Api.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Booths");
+                    b.ToTable("Booth");
                 });
 
             modelBuilder.Entity("PlaybackLog", b =>
@@ -126,6 +126,69 @@ namespace PoiNarration.Api.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("AppUsers");
+                });
+
+            modelBuilder.Entity("PoiNarration.Api.Models.Entities.Booth", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("AudioUrlEn")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("AudioUrlVi")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("DescEn")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("DescVi")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<double>("Lat")
+                        .HasColumnType("REAL");
+
+                    b.Property<double>("Lng")
+                        .HasColumnType("REAL");
+
+                    b.Property<string>("MapUrl")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("NameEn")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("NameVi")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("OwnerUserId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("Priority")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("RadiusMeters")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("TtsScriptEn")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("TtsScriptVi")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("ZoneId")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Booths");
                 });
 
             modelBuilder.Entity("PoiNarration.Api.Models.Entities.BoothMenuItem", b =>

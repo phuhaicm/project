@@ -13,4 +13,13 @@ public class BoothDto
     public int RadiusMeters { get; set; }
     public int Priority { get; set; }
     public string? OwnerUserId { get; set; }
+
+    // BỔ SUNG CÁC TRƯỜNG DƯỚI ĐÂY ĐỂ HẾT LỖI GẠCH ĐỎ
+    public string? ImageUrl { get; set; }
+    public string? MapUrl { get; set; }
+    public string? TtsScriptVi { get; set; }
+    public string? TtsScriptEn { get; set; }
+    public string? AudioUrlVi { get; set; }
+    public string? AudioUrlEn { get; set; }
+    public bool IsActive { get; set; }
 }

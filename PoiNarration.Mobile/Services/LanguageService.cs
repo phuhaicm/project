@@ -1,14 +1,31 @@
-﻿namespace PoiNarration.Mobile.Services;
+﻿using Microsoft.Maui.Storage;
+
+namespace PoiNarration.Mobile.Services;
 
 public static class LanguageService
 {
-    private const string Key = "lang";
-    public static string Current => Preferences.Get(Key, "vi");
+    private const string Key = "app_language";
 
-    public static void Set(string lang)
+    public static readonly List<string> SupportedLanguages = new()
     {
-        Preferences.Set(Key, lang);
+        "vi", "en", "zh", "ja", "ko", "fr", "es", "it", "ru"
+    };
+
+    public static string CurrentLanguage
+    {
+        get => Preferences.Get(Key, "vi");
+        set => Preferences.Set(Key, value);
     }
 
-    public static bool IsVi => Current == "vi";
+    public static bool IsVi => CurrentLanguage == "vi";
+
+    public static void Set(string languageCode)
+    {
+        CurrentLanguage = languageCode;
+    }
+
+    public static string Get()
+    {
+        return CurrentLanguage;
+    }
 }

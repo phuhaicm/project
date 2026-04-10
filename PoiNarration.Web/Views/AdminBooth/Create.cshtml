@@ -1,0 +1,135 @@
+﻿@model PoiNarration.Web.ViewModels.BoothCreateVm
+
+@{
+    ViewData["Title"] = "Thêm booth mới";
+}
+
+<div class="row justify-content-center">
+    <div class="col-12 col-lg-8">
+        <div class="card card-shadow border-0 shadow-sm mb-5">
+            <div class="card-body p-4">
+                <h3 class="fw-bold mb-4 text-primary">Thêm booth mới</h3>
+
+                @* Sửa lỗi quan trọng: Thêm enctype để upload được file ảnh *@
+                <form asp-action="Create" method="post" enctype="multipart/form-data">
+                    <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                    <div class="row g-3">
+                        @* Thông tin cơ bản *@
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Zone (Khu vực)</label>
+                            <select asp-for="ZoneId" class="form-select">
+                                <option value="">-- Chọn khu vực --</option>
+                                <option value="zone-a">Zone A</option>
+                                <option value="zone-b">Zone B</option>
+                            </select>
+                            <span asp-validation-for="ZoneId" class="text-danger small"></span>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Priority (Độ ưu tiên)</label>
+                            <input asp-for="Priority" class="form-control" type="number" placeholder="0" />
+                        </div>
+
+                        @* Upload Ảnh (Bổ sung để khớp với code C# của bạn) *@
+                        <div class="col-12">
+                            <label class="form-label fw-semibold">Ảnh đại diện Booth</label>
+                            <input asp-for="ImageFile" type="file" class="form-control" accept="image/*" />
+                            <div class="form-text">Chọn ảnh chất lượng cao để hiển thị trên ứng dụng.</div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Tên tiếng Việt</label>
+                            <input asp-for="NameVi" class="form-control" />
+                            <span asp-validation-for="NameVi" class="text-danger small"></span>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Tên tiếng Anh</label>
+                            <input asp-for="NameEn" class="form-control" />
+                        </div>
+
+                        <div class="col-12">
+                            <label class="form-label fw-semibold">Mô tả tiếng Việt</label>
+                            <textarea asp-for="DescVi" class="form-control" rows="2"></textarea>
+                        </div>
+
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold">Vĩ độ (Lat)</label>
+                            <input asp-for="Lat" class="form-control" type="number" step="any" />
+                        </div>
+
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold">Kinh độ (Lng)</label>
+                            <input asp-for="Lng" class="form-control" type="number" step="any" />
+                        </div>
+
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold">Bán kính (Radius)</label>
+                            <input asp-for="RadiusMeters" class="form-control" type="number" />
+                        </div>
+                    </div>
+
+                    @* PHẦN NỘI DUNG ĐA NGÔN NGỮ (THÊM VÀO ĐÂY) *@
+                    <hr class="my-4" />
+                    <div class="d-flex align-items-center mb-3">
+                        <i class="bi bi-translate fs-4 me-2 text-info"></i>
+                        <h5 class="mb-0">Nội dung bổ sung (Đa ngôn ngữ)</h5>
+                    </div>
+
+                    @if (Model.Translations != null && Model.Translations.Count > 0)
+                    {
+                        @for (int i = 0; i < Model.Translations.Count; i++)
+                        {
+                            <div class="border rounded p-3 mb-3 bg-light-subtle">
+                                <input type="hidden" asp-for="Translations[i].LanguageCode" />
+
+                                <div class="badge bg-dark mb-3">NGÔN NGỮ: @Model.Translations[i].LanguageCode.ToUpper()</div>
+
+                                <div class="row g-2">
+                                    <div class="col-md-12 mb-2">
+                                        <label class="form-label small fw-bold">Tên hiển thị</label>
+                                        <input asp-for="Translations[i].Name" class="form-control form-control-sm" />
+                                    </div>
+
+                                    <div class="col-md-6 mb-2">
+                                        <label class="form-label small fw-bold">Mô tả chi tiết</label>
+                                        <textarea asp-for="Translations[i].Description" class="form-control form-control-sm" rows="2"></textarea>
+                                    </div>
+
+                                    <div class="col-md-6 mb-2">
+                                        <label class="form-label small fw-bold">Kịch bản đọc (TTS)</label>
+                                        <textarea asp-for="Translations[i].TtsScript" class="form-control form-control-sm" rows="2"></textarea>
+                                    </div>
+
+                                    <div class="col-12">
+                                        <label class="form-label small fw-bold">Đường dẫn file Audio (URL)</label>
+                                        <input asp-for="Translations[i].AudioUrl" class="form-control form-control-sm" placeholder="https://..." />
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        <div class="alert alert-warning small">Không có cấu hình ngôn ngữ bổ sung.</div>
+                    }
+
+                    @* Nút bấm *@
+                    <div class="mt-4 d-flex gap-2">
+                        <button class="btn btn-primary btn-lg px-5" type="submit">
+                            <i class="bi bi-check-circle me-1"></i> Tạo Booth
+                        </button>
+                        <a class="btn btn-outline-secondary btn-lg px-4" asp-action="Index">Hủy</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

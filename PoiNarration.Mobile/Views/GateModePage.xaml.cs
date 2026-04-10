@@ -20,7 +20,7 @@ public partial class GateModePage : ContentPage
     }
     private async void OnBoothQrClicked(object sender, EventArgs e)
     {
-        await Shell.Current.GoToAsync(nameof(QRScanPage));
+        await Shell.Current.GoToAsync(nameof(QrScanPage));
     }
 
 }
