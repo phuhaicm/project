@@ -31,11 +31,15 @@ public class NarrationService
     public async Task SpeakBoothAsync(Booth booth, string triggerType, Location? currentLocation = null)
     {
         // 1. Kiểm tra Cooldown (Chỉ chặn nếu là phát tự động qua GPS, bấm Manual thì cho qua)
-        if (triggerType != "Manual" && _lastBoothId == booth.Id && DateTime.UtcNow - _lastPlayedUtc < _cooldown)
+        if (triggerType != "GPS")
         {
-            return;
+            if (_lastBoothId == booth.Id &&
+                DateTime.UtcNow - _lastPlayedUtc < _cooldown)
+            {
+                return;
+            }
         }
-   
+
 
         // 2. Lock để đảm bảo tại một thời điểm chỉ xử lý một yêu cầu phát
         await _speakLock.WaitAsync();

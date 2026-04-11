@@ -14,5 +14,6 @@ public class UpsertMenuItemRequest
     // Thêm ngăn chứa cho giá USD
     public decimal PriceUsd { get; set; }
 
+
     public string ImageUrl { get; set; } = "";
 }

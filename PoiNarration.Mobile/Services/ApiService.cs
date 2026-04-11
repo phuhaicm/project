@@ -61,7 +61,7 @@ namespace PoiNarration.Mobile.Services
                 return null;
             }
         }
-
+  
         // 4. Hàm cũ của bạn (Đã bọc try...catch)
         public async Task PostPlaybackLogAsync(PlaybackLogRequest request)
         {

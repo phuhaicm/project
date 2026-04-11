@@ -1,45 +1,35 @@
 <?xml version="1.0" encoding="utf-8" ?>
-<ContentPage
-    x:Class="PoiNarration.Mobile.Views.QrScanPage"
-    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-    Title="QR Scan"
-    BackgroundColor="#0B0B10">
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:zxing="clr-namespace:ZXing.Net.Maui.Controls;assembly=ZXing.Net.MAUI.Controls"
+             x:Class="PoiNarration.Mobile.Views.QrScanPage"
+             Title="Quét QR Gian Hàng"
+             BackgroundColor="#161622">
 
-    <Grid Padding="20">
-        <VerticalStackLayout Spacing="16" VerticalOptions="Center">
-            <Label Text="Quét QR"
-                   FontSize="24"
-                   FontAttributes="Bold"
+    <Grid>
+        <zxing:CameraBarcodeReaderView
+            x:Name="QrCameraView"
+            BarcodesDetected="BarcodesDetected"
+            IsDetecting="True" />
+
+        <Grid>
+            <Border Stroke="#6D5DF6" 
+                    StrokeThickness="4"
+                    WidthRequest="250" 
+                    HeightRequest="250"
+                    HorizontalOptions="Center" 
+                    VerticalOptions="Center"
+                    BackgroundColor="Transparent"
+                    StrokeShape="RoundRectangle 24"/>
+
+            <Label Text="Đưa mã QR của gian hàng vào khung hình"
                    TextColor="White"
-                   HorizontalOptions="Center" />
-
-            <Label Text="Hiện tại page này là placeholder để giữ flow QR của đồ án. Bạn có thể gắn scanner thật sau."
-                   TextColor="#B8B8C7"
-                   HorizontalTextAlignment="Center" />
-
-            <Border Padding="20"
-                    StrokeThickness="0"
-                    BackgroundColor="#161622"
-                    StrokeShape="RoundRectangle 20">
-                <VerticalStackLayout Spacing="12">
-                    <Label Text="Demo nhanh"
-                           FontAttributes="Bold"
-                           TextColor="White" />
-
-                    <Button Text="Mở booth-01"
-                            BackgroundColor="#6D5DF6"
-                            TextColor="White"
-                            CornerRadius="14"
-                            Clicked="OnOpenBooth01Clicked" />
-
-                    <Button Text="Quay lại"
-                            BackgroundColor="#2A2A38"
-                            TextColor="White"
-                            CornerRadius="14"
-                            Clicked="OnBackClicked" />
-                </VerticalStackLayout>
-            </Border>
-        </VerticalStackLayout>
+                   FontSize="14"
+                   FontAttributes="Bold"
+                   HorizontalOptions="Center"
+                   VerticalOptions="Center"
+                   Margin="0, 320, 0, 0" />
+        </Grid>
     </Grid>
+
 </ContentPage>
