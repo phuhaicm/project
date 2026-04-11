@@ -6,19 +6,20 @@ public class GeofenceService
 {
     private readonly AppDatabase _db;
 
+    // Booth đã trigger gần nhất
     private string? _activeBoothId;
+
+    // Booth gần nhất đang được theo dõi để chờ đủ dwell time
     private string? _candidateBoothId;
     private DateTime _candidateSinceUtc = DateTime.MinValue;
 
-    private readonly Dictionary<string, DateTime> _lastTriggeredUtc = new();
-
+    // Đứng gần 2 giây là trigger
     private readonly TimeSpan _dwellTime = TimeSpan.FromSeconds(2);
-    private readonly TimeSpan _sameBoothCooldown = TimeSpan.FromSeconds(10);
 
-    private const double MinEnterRadiusMeters = 50;
-    private const double ExitBufferMeters = 15;
-    private const double CandidateSwitchMarginMeters = 2;
-    private const double ActiveSwitchMarginMeters = 2;
+    // Thông số tinh chỉnh cho emulator / test indoor
+    private const double MinRadiusMeters = 60;      // tăng để dễ trigger hơn
+    private const double SwitchMarginMeters = 1.0;  // booth mới chỉ cần gần hơn ~1m là được ưu tiên
+    private const double ExitBufferMeters = 6;      // ra xa hơn bán kính cũ + 6m mới coi là rời booth
 
     public GeofenceService(AppDatabase db)
     {
@@ -38,34 +39,32 @@ public class GeofenceService
             {
                 Booth = x,
                 DistanceMeters = CalculateDistanceMeters(userLat, userLng, x.Lat, x.Lng),
-                EnterRadius = Math.Max(x.RadiusMeters, MinEnterRadiusMeters),
-                ExitRadius = Math.Max(x.RadiusMeters, MinEnterRadiusMeters) + ExitBufferMeters
+                RadiusMeters = Math.Max(x.RadiusMeters, MinRadiusMeters)
             })
             .OrderBy(x => x.DistanceMeters)
             .ThenBy(x => x.Booth.Priority)
             .ToList();
 
-        var nearestAny = distances.FirstOrDefault();
+        var nearest = distances.FirstOrDefault();
 
         var result = new GeofenceCheckResult
         {
-            NearestBooth = nearestAny?.Booth,
-            NearestDistanceMeters = nearestAny?.DistanceMeters ?? double.MaxValue,
+            NearestBooth = nearest?.Booth,
+            NearestDistanceMeters = nearest?.DistanceMeters ?? double.MaxValue,
             ActiveBoothId = _activeBoothId
         };
 
-        var insideCandidates = distances
-            .Where(x => x.DistanceMeters <= x.EnterRadius)
-            .OrderBy(x => x.DistanceMeters)
-            .ThenBy(x => x.Booth.Priority)
-            .ToList();
+        if (nearest == null)
+            return result;
 
-        if (!insideCandidates.Any())
+        // 1) Nếu nearest còn ở ngoài phạm vi -> chỉ update panel nearest booth, chưa trigger
+        if (nearest.DistanceMeters > nearest.RadiusMeters)
         {
+            // Nếu booth active cũ đã bị bỏ quá xa thì reset
             if (!string.IsNullOrWhiteSpace(_activeBoothId))
             {
-                var activeDistance = distances.FirstOrDefault(x => x.Booth.Id == _activeBoothId);
-                if (activeDistance == null || activeDistance.DistanceMeters > activeDistance.ExitRadius)
+                var active = distances.FirstOrDefault(x => x.Booth.Id == _activeBoothId);
+                if (active == null || active.DistanceMeters > active.RadiusMeters + ExitBufferMeters)
                 {
                     _activeBoothId = null;
                 }
@@ -77,85 +76,66 @@ public class GeofenceService
             return result;
         }
 
-        var nearestInside = insideCandidates.First();
-
-        // Ổn định candidate để tránh jitter khi nhiều booth gần nhau
-        if (string.IsNullOrWhiteSpace(_candidateBoothId))
+        // 2) Nearest booth đang trong phạm vi -> theo dõi candidate
+        if (_candidateBoothId != nearest.Booth.Id)
         {
-            _candidateBoothId = nearestInside.Booth.Id;
+            _candidateBoothId = nearest.Booth.Id;
             _candidateSinceUtc = DateTime.UtcNow;
             return result;
         }
 
-        var currentCandidate = insideCandidates.FirstOrDefault(x => x.Booth.Id == _candidateBoothId);
-
-        if (currentCandidate == null)
-        {
-            _candidateBoothId = nearestInside.Booth.Id;
-            _candidateSinceUtc = DateTime.UtcNow;
-            return result;
-        }
-
-        if (nearestInside.Booth.Id != _candidateBoothId)
-        {
-            if (nearestInside.DistanceMeters + CandidateSwitchMarginMeters < currentCandidate.DistanceMeters)
-            {
-                _candidateBoothId = nearestInside.Booth.Id;
-                _candidateSinceUtc = DateTime.UtcNow;
-            }
-
-            return result;
-        }
-
-        // Candidate đã ổn định, chờ đủ dwell 2 giây
+        // 3) Chưa đứng đủ gần 2 giây -> chưa trigger
         if (DateTime.UtcNow - _candidateSinceUtc < _dwellTime)
         {
             return result;
         }
 
+        // 4) Chưa có active booth -> trigger nearest ngay
+        if (string.IsNullOrWhiteSpace(_activeBoothId))
+        {
+            _activeBoothId = nearest.Booth.Id;
+            result.ActiveBoothId = _activeBoothId;
+            result.ShouldTrigger = true;
+            result.TriggeredBooth = nearest.Booth;
+            return result;
+        }
+
+        // 5) Booth active hiện tại chính là nearest -> không trigger lại
+        if (_activeBoothId == nearest.Booth.Id)
+        {
+            result.ActiveBoothId = _activeBoothId;
+            return result;
+        }
+
+        // 6) Xét có nên bỏ booth cũ để switch sang booth mới không
+        var currentActive = distances.FirstOrDefault(x => x.Booth.Id == _activeBoothId);
+
         bool shouldSwitch = false;
 
-        if (string.IsNullOrWhiteSpace(_activeBoothId))
+        if (currentActive == null)
         {
             shouldSwitch = true;
         }
-        else if (_activeBoothId == _candidateBoothId)
-        {
-            shouldSwitch = false;
-        }
         else
         {
-            var activeDistance = distances.FirstOrDefault(x => x.Booth.Id == _activeBoothId);
-            var candidateDistance = distances.FirstOrDefault(x => x.Booth.Id == _candidateBoothId);
-
-            if (candidateDistance == null)
-            {
-                shouldSwitch = false;
-            }
-            else if (activeDistance == null)
+            // booth cũ đã bị bỏ ra ngoài vùng
+            if (currentActive.DistanceMeters > currentActive.RadiusMeters + ExitBufferMeters)
             {
                 shouldSwitch = true;
             }
-            else if (activeDistance.DistanceMeters > activeDistance.ExitRadius)
-            {
-                shouldSwitch = true;
-            }
-            else if (candidateDistance.DistanceMeters + ActiveSwitchMarginMeters < activeDistance.DistanceMeters)
+            // booth mới gần hơn rõ ràng
+            else if (nearest.DistanceMeters + SwitchMarginMeters < currentActive.DistanceMeters)
             {
                 shouldSwitch = true;
             }
         }
 
-        if (shouldSwitch && CanTrigger(_candidateBoothId))
+        if (shouldSwitch)
         {
-            var booth = distances.First(x => x.Booth.Id == _candidateBoothId).Booth;
-
-            _activeBoothId = booth.Id;
-            _lastTriggeredUtc[booth.Id] = DateTime.UtcNow;
-
+            _activeBoothId = nearest.Booth.Id;
             result.ActiveBoothId = _activeBoothId;
             result.ShouldTrigger = true;
-            result.TriggeredBooth = booth;
+            result.TriggeredBooth = nearest.Booth;
         }
 
         return result;
@@ -166,20 +146,6 @@ public class GeofenceService
         _activeBoothId = null;
         _candidateBoothId = null;
         _candidateSinceUtc = DateTime.MinValue;
-    }
-
-    private bool CanTrigger(string? boothId)
-    {
-        if (string.IsNullOrWhiteSpace(boothId))
-            return false;
-
-        if (_lastTriggeredUtc.TryGetValue(boothId, out var lastTime))
-        {
-            if (DateTime.UtcNow - lastTime < _sameBoothCooldown)
-                return false;
-        }
-
-        return true;
     }
 
     private static double CalculateDistanceMeters(double lat1, double lng1, double lat2, double lng2)
@@ -207,8 +173,7 @@ public class GeofenceService
     {
         public Booth Booth { get; set; } = null!;
         public double DistanceMeters { get; set; }
-        public double EnterRadius { get; set; }
-        public double ExitRadius { get; set; }
+        public double RadiusMeters { get; set; }
     }
 }
 
@@ -216,7 +181,6 @@ public class GeofenceCheckResult
 {
     public Booth? NearestBooth { get; set; }
     public double NearestDistanceMeters { get; set; }
-
     public string? ActiveBoothId { get; set; }
 
     public bool ShouldTrigger { get; set; }

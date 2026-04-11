@@ -17,6 +17,5 @@ public partial class AppShell : Shell
         Routing.RegisterRoute("mappage", typeof(PoiNarration.Mobile.Views.MapPage));
         Routing.RegisterRoute("boothdetail", typeof(PoiNarration.Mobile.Views.BoothDetailPage));
         Routing.RegisterRoute("qrscan", typeof(PoiNarration.Mobile.Views.QrScanPage));
-
     }
 }

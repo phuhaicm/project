@@ -16,6 +16,8 @@ public class BoothCardVm
     public string? TtsScriptEn { get; set; }
     public string? AudioUrlVi { get; set; }
     public string? AudioUrlEn { get; set; }
+    public string DetailText { get; set; } = "";
+    public string PreviewText { get; set; } = "";
 
     public bool IsActive { get; set; }
 }

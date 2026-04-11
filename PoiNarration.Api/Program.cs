@@ -1,10 +1,12 @@
 using Microsoft.EntityFrameworkCore;
 using PoiNarration.Api.Data;
+using PoiNarration.Api.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // 1. Đăng ký Controllers
 builder.Services.AddControllers();
+builder.Services.AddScoped<ITranslationService, TranslationService>();
 
 // 2. Cấu hình CORS (Chỉ cần 1 đoạn này là đủ, đừng viết lặp lại)
 builder.Services.AddCors(options =>

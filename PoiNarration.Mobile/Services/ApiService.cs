@@ -61,7 +61,7 @@ namespace PoiNarration.Mobile.Services
                 return null;
             }
         }
-  
+
         // 4. Hàm cũ của bạn (Đã bọc try...catch)
         public async Task PostPlaybackLogAsync(PlaybackLogRequest request)
         {
@@ -76,5 +76,20 @@ namespace PoiNarration.Mobile.Services
                 // Có thể lưu local database ở đây nếu post thất bại để gửi lại sau
             }
         }
+
+        public string ResolveMediaUrl(string? path)
+        {
+            if (string.IsNullOrWhiteSpace(path))
+                return "dotnet_bot";
+
+            // Nếu đã là URL đầy đủ
+            if (Uri.TryCreate(path, UriKind.Absolute, out var absoluteUri))
+                return absoluteUri.ToString();
+
+            // Nếu là path tương đối, ghép với BaseAddress
+            return new Uri(_http.BaseAddress!, path.TrimStart('/')).ToString();
+        }
+
+        public string BaseUrl => _http.BaseAddress?.ToString() ?? "";
     }
-}
+    }

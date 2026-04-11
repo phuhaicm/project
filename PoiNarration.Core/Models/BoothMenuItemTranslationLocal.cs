@@ -12,4 +12,9 @@ public class BoothMenuItemTranslationLocal
 
     public string Name { get; set; } = "";
     public string Description { get; set; } = "";
+
+    // THÊM MỚI
+    public string CurrencyCode { get; set; } = "VND";
+    public decimal? LocalizedPrice { get; set; }
+    public string? PriceText { get; set; }
 }

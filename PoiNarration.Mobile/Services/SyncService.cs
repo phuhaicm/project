@@ -15,28 +15,18 @@ public class SyncService
         _db = db;
     }
 
+
     public async Task SyncBootstrapAsync()
     {
-        try
-        {
-            await _db.InitAsync();
+        await _db.InitAsync();
 
-            // 1. Gọi API lấy dữ liệu
-            var data = await _apiService.GetBootstrapAsync();
-            if (data == null) return;
+        var data = await _apiService.GetBootstrapAsync();
+        if (data == null)
+            throw new Exception("Không lấy được dữ liệu bootstrap từ API.");
 
-            // 2. Thay vì foreach từng cái, hãy gọi 1 hàm duy nhất để xử lý hàng loạt (Bulk Insert)
-            // Việc này nhanh hơn gấp 50-100 lần so với insert từng dòng
-            await _db.SaveBootstrapDataAsync(data);
-
-            Debug.WriteLine("Đồng bộ Bootstrap thành công!");
-        }
-        catch (Exception ex)
-        {
-            Debug.WriteLine($"[Lỗi SyncBootstrap]: {ex.Message}");
-            throw; // Ném lỗi để UI hiển thị thông báo cho người dùng
-        }
+        await _db.SaveBootstrapDataAsync(data);
     }
+
 
     public async Task SyncPlaybackLogsAsync()
     {

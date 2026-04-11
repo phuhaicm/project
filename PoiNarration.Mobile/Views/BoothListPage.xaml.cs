@@ -14,11 +14,15 @@ public partial class BoothListPage : ContentPage
     private List<Booth> _allBooths = new();
     private bool _gpsModeEnabled;
 
+
+    private readonly ApiService _apiService;
+
     public BoothListPage(
         AppDatabase db,
         SyncService syncService,
         NarrationService narrationService,
-        AutoBoothNavigatorService autoBoothNavigatorService)
+        AutoBoothNavigatorService autoBoothNavigatorService,
+        ApiService apiService)
     {
         InitializeComponent();
 
@@ -26,7 +30,9 @@ public partial class BoothListPage : ContentPage
         _syncService = syncService;
         _narrationService = narrationService;
         _autoBoothNavigatorService = autoBoothNavigatorService;
+        _apiService = apiService;
     }
+
 
     protected override async void OnAppearing()
     {
@@ -52,45 +58,68 @@ public partial class BoothListPage : ContentPage
         _allBooths = await _db.GetAllBoothsAsync();
         TotalBoothsLabel.Text = _allBooths.Count.ToString();
         SyncStatusLabel.Text = $"Đã tải {_allBooths.Count} booth";
-        ApplyFilter();
+        await ApplyFilterAsync();
     }
 
-    private void ApplyFilter()
+    private async Task ApplyFilterAsync()
     {
         var keyword = BoothSearchBar.Text?.Trim().ToLowerInvariant() ?? "";
+        var lang = LanguageService.CurrentLanguage;
 
-        var filtered = _allBooths
-            .Where(x =>
-                string.IsNullOrWhiteSpace(keyword) ||
-                x.NameVi.ToLowerInvariant().Contains(keyword) ||
-                x.NameEn.ToLowerInvariant().Contains(keyword))
-            .Select(x => new BoothCardVm
+        var filtered = new List<BoothCardVm>();
+
+        foreach (var booth in _allBooths)
+        {
+            var translation = await _db.GetBoothTranslationAsync(booth.Id, lang)
+                             ?? await _db.GetBoothTranslationAsync(booth.Id, "en")
+                             ?? await _db.GetBoothTranslationAsync(booth.Id, "vi");
+
+            var title = translation?.Name
+                        ?? (LanguageService.IsVi ? booth.NameVi : booth.NameEn);
+
+            var subtitle = translation?.Description
+                           ?? (LanguageService.IsVi ? booth.DescVi : booth.DescEn);
+
+            if (!string.IsNullOrWhiteSpace(keyword))
             {
-                Id = x.Id,
-                Title = x.NameVi,
-                Subtitle = x.NameEn,
-                ZoneText = x.ZoneId,
-                PriorityText = $"Priority {x.Priority}",
-                RadiusText = $"{x.RadiusMeters}m",
-                ImageUrl = string.IsNullOrWhiteSpace(x.ImageUrl) ? "dotnet_bot.png" : x.ImageUrl,
-                IsActive = x.IsActive
-            })
-            .ToList();
+                if (!title.ToLowerInvariant().Contains(keyword) &&
+                    !subtitle.ToLowerInvariant().Contains(keyword))
+                {
+                    continue;
+                }
+            }
+
+            filtered.Add(new BoothCardVm
+            {
+                Id = booth.Id,
+                Title = title,
+                Subtitle = subtitle,
+                ZoneText = booth.ZoneId,
+                PriorityText = $"{(LanguageService.IsVi ? "Ưu tiên" : "Priority")} {booth.Priority}",
+                RadiusText = $"{booth.RadiusMeters}m",
+                ImageUrl = _apiService.ResolveMediaUrl(booth.ImageUrl),
+
+                IsActive = booth.IsActive,
+                DetailText = LanguageService.IsVi ? "Chi tiết" : "Details",
+                PreviewText = LanguageService.IsVi ? "Nghe thử" : "Preview"
+            });
+        }
 
         BoothsCollectionView.ItemsSource = filtered;
     }
 
-    private void OnSearchTextChanged(object sender, TextChangedEventArgs e)
+    private async void OnSearchTextChanged(object sender, TextChangedEventArgs e)
     {
-        ApplyFilter();
+        await ApplyFilterAsync();
     }
 
-    private void OnLanguageChanged(object sender, EventArgs e)
+    private async void OnLanguageChanged(object sender, EventArgs e)
     {
         if (LanguagePicker.SelectedItem is string lang)
         {
             LanguageService.Set(lang);
             CurrentLanguageLabel.Text = lang;
+            await ApplyFilterAsync();
         }
     }
 
@@ -123,16 +152,27 @@ public partial class BoothListPage : ContentPage
                     return;
                 }
 
+                _autoBoothNavigatorService.SetAutoNarrationEnabled(true);
+
                 _gpsModeEnabled = true;
-                SyncStatusLabel.Text = "GPS Mode: ĐANG BẬT";
-                await DisplayAlertAsync("GPS Mode", "Đã bật GPS mode. Đứng gần gian hàng khoảng 2 giây là app sẽ tự nhảy vào và thuyết minh.", "OK");
+                SyncStatusLabel.Text = "GPS Mode: ĐANG BẬT AUTO";
+
+                await DisplayAlertAsync(
+                    "GPS Mode",
+                    "Đã bật GPS mode. Đứng gần gian hàng khoảng 2 giây là app sẽ tự nhảy vào và thuyết minh.",
+                    "OK");
             }
             else
             {
-                _autoBoothNavigatorService.Stop();
+                _autoBoothNavigatorService.SetAutoNarrationEnabled(true);
+
                 _gpsModeEnabled = false;
-                SyncStatusLabel.Text = "GPS Mode: ĐÃ TẮT";
-                await DisplayAlertAsync("GPS Mode", "Đã tắt GPS mode.", "OK");
+                SyncStatusLabel.Text = "GPS Mode: CHỈ THEO DÕI";
+
+                await DisplayAlertAsync(
+                    "GPS Mode",
+                    "Đã tắt tự động thuyết minh. Hệ thống vẫn tiếp tục theo dõi vị trí của bạn.",
+                    "OK");
             }
         }
         catch (Exception ex)
@@ -140,6 +180,7 @@ public partial class BoothListPage : ContentPage
             await DisplayAlertAsync("Lỗi GPS Mode", ex.ToString(), "OK");
         }
     }
+
 
     private async void OnMapClicked(object sender, EventArgs e)
     {

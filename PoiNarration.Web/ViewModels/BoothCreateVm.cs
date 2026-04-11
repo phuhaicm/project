@@ -13,10 +13,7 @@ public class BoothCreateVm
     [Required(ErrorMessage = "Tên tiếng Việt là bắt buộc")]
     public string NameVi { get; set; } = "";
 
-    public string NameEn { get; set; } = "";
-
     public string DescVi { get; set; } = "";
-    public string DescEn { get; set; } = "";
 
     public double Lat { get; set; }
     public double Lng { get; set; }
@@ -29,13 +26,9 @@ public class BoothCreateVm
 
     public string? MapUrl { get; set; }
 
+    // Chỉ nhập kịch bản tiếng Việt gốc, các ngôn ngữ khác API tự sinh
     public string? TtsScriptVi { get; set; }
-    public string? TtsScriptEn { get; set; }
-
     public string? AudioUrlVi { get; set; }
-    public string? AudioUrlEn { get; set; }
 
     public bool IsActive { get; set; } = true;
-    public List<BoothTranslationVm> Translations { get; set; } = new();
-
 }

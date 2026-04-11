@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using PoiNarration.Api.Data;
 using PoiNarration.Api.DTOs.Menu;
+using PoiNarration.Api.Services;
 using PoiNarration.Core.Models; // Sử dụng duy nhất nguồn Core
 
 namespace PoiNarration.Api.Controllers;
@@ -11,10 +12,13 @@ namespace PoiNarration.Api.Controllers;
 public class BoothMenuController : ControllerBase
 {
     private readonly AppDbContext _db;
+    private readonly ITranslationService _translationService;
 
-    public BoothMenuController(AppDbContext db)
+    // Hợp nhất thành một Constructor duy nhất
+    public BoothMenuController(AppDbContext db, ITranslationService translationService)
     {
         _db = db;
+        _translationService = translationService;
     }
 
     // 1. Lấy danh sách món ăn
@@ -39,14 +43,14 @@ public class BoothMenuController : ControllerBase
 
         var item = new BoothMenuItem
         {
-            Id = Guid.NewGuid().ToString(), // Khởi tạo ID mới
+            Id = Guid.NewGuid().ToString(),
             BoothId = boothId,
             Name = request.Name,
-            NameEn = request.NameEn, // Cập nhật thêm trường tiếng Anh
+            NameEn = request.NameEn,
             Description = request.Description,
-            DescriptionEn = request.DescriptionEn, // Cập nhật thêm trường tiếng Anh
+            DescriptionEn = request.DescriptionEn,
             Price = request.Price,
-            PriceUsd = request.PriceUsd, // Cập nhật thêm giá USD
+            PriceUsd = request.PriceUsd,
             ImageUrl = request.ImageUrl,
             UpdatedAtUtc = DateTime.UtcNow,
             IsDeleted = false
@@ -55,7 +59,13 @@ public class BoothMenuController : ControllerBase
         _db.BoothMenuItems.Add(item);
         await _db.SaveChangesAsync();
 
+        // --- THÊM THEO YÊU CẦU ---
+        var translations = await _translationService.BuildMenuTranslationsAsync(item);
+        _db.BoothMenuItemTranslations.AddRange(translations);
+
+        await _db.SaveChangesAsync();
         return Ok(item);
+        // ------------------------
     }
 
     // 3. Cập nhật món
@@ -79,7 +89,18 @@ public class BoothMenuController : ControllerBase
 
         await _db.SaveChangesAsync();
 
+        // --- THÊM THEO YÊU CẦU ---
+        var oldTranslations = _db.BoothMenuItemTranslations.Where(x => x.MenuItemId == item.Id);
+        _db.BoothMenuItemTranslations.RemoveRange(oldTranslations);
+
+        await _db.SaveChangesAsync();
+
+        var newTranslations = await _translationService.BuildMenuTranslationsAsync(item);
+        _db.BoothMenuItemTranslations.AddRange(newTranslations);
+
+        await _db.SaveChangesAsync();
         return Ok(item);
+        // ------------------------
     }
 
     // 4. Xóa món (Soft Delete)
