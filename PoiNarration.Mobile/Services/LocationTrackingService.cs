@@ -78,9 +78,7 @@ public class LocationTrackingService
         }
     }
 
-    /// <summary>
-    /// Logic tự động kiểm tra và yêu cầu quyền GPS (LocationWhenInUse)
-    /// </summary>
+
     private static async Task<bool> EnsurePermissionAsync()
     {
         var status = await Permissions.CheckStatusAsync<Permissions.LocationWhenInUse>();

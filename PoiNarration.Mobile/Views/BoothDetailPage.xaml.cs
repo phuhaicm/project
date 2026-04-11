@@ -121,8 +121,10 @@ public partial class BoothDetailPage : ContentPage
         await _narrationService.StopAsync();
     }
 
+
     private async void OnBackClicked(object sender, EventArgs e)
     {
         await Shell.Current.GoToAsync("..");
     }
 }
+

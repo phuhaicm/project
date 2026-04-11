@@ -3,7 +3,9 @@
     public static class ApiConstants
     {
         // THAY ĐỔI: Nhập đúng IP máy tính của bạn tại đây
+
         private const string MyComputerIp = "192.168.1.237";
+
         private const string HttpPort = "5151";
 
         public static string GetBaseUrl()
