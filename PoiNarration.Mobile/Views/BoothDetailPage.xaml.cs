@@ -1,4 +1,3 @@
-using Microsoft.Extensions.DependencyInjection;
 using PoiNarration.Core.Models;
 using PoiNarration.Mobile.Services;
 
@@ -10,52 +9,80 @@ public partial class BoothDetailPage : ContentPage
     private readonly AppDatabase _db;
     private readonly NarrationService _narrationService;
     private readonly ApiService _apiService;
+    private readonly AutoBoothNavigatorService _autoBoothNavigatorService;
 
     public string BoothId { get; set; } = "";
     private Booth? _currentBooth;
 
-    public BoothDetailPage()
+    public BoothDetailPage(
+        AppDatabase db,
+        NarrationService narrationService,
+        ApiService apiService,
+        AutoBoothNavigatorService autoBoothNavigatorService)
     {
         InitializeComponent();
 
-        var services = Application.Current?.Handler?.MauiContext?.Services
-                       ?? throw new Exception("Services is null");
-
-        _db = services.GetRequiredService<AppDatabase>();
-        _narrationService = services.GetRequiredService<NarrationService>();
-        _apiService = services.GetRequiredService<ApiService>();
+        _db = db;
+        _narrationService = narrationService;
+        _apiService = apiService;
+        _autoBoothNavigatorService = autoBoothNavigatorService;
     }
 
     protected override async void OnAppearing()
     {
         base.OnAppearing();
 
+        _autoBoothNavigatorService.BoothTriggered -= OnBoothTriggered;
+        _autoBoothNavigatorService.BoothTriggered += OnBoothTriggered;
+
         await _db.InitAsync();
 
-        if (string.IsNullOrWhiteSpace(BoothId))
+        if (!string.IsNullOrWhiteSpace(BoothId))
+        {
+            await LoadBoothAsync();
+        }
+    }
+
+    protected override void OnDisappearing()
+    {
+        base.OnDisappearing();
+        _autoBoothNavigatorService.BoothTriggered -= OnBoothTriggered;
+    }
+
+    private async void OnBoothTriggered(object? sender, Booth booth)
+    {
+        if (booth.Id == BoothId)
             return;
 
+        BoothId = booth.Id;
+
+        await MainThread.InvokeOnMainThreadAsync(async () =>
+        {
+            await LoadBoothAsync();
+        });
+    }
+
+    private async Task LoadBoothAsync()
+    {
         var booth = await _db.GetBoothAsync(BoothId);
         if (booth == null)
+        {
+            await DisplayAlertAsync("Lỗi", "Không tìm thấy booth.", "OK");
             return;
+        }
 
         _currentBooth = booth;
 
-        // --- PHẦN THÊM MỚI: LOGIC ĐA NGÔN NGỮ ---
         var lang = LanguageService.CurrentLanguage;
-
-        // Thử lấy bản dịch theo thứ tự ưu tiên
         var translation = await _db.GetBoothTranslationAsync(booth.Id, lang)
                          ?? await _db.GetBoothTranslationAsync(booth.Id, "en")
                          ?? await _db.GetBoothTranslationAsync(booth.Id, "vi");
 
-        // Hiển thị Tên và Mô tả (Ưu tiên bản dịch, nếu không có dùng dữ liệu mặc định của Booth)
         BoothName.Text = translation?.Name
                          ?? (LanguageService.IsVi ? booth.NameVi : booth.NameEn);
 
         BoothDesc.Text = translation?.Description
                          ?? (LanguageService.IsVi ? booth.DescVi : booth.DescEn);
-        // --- KẾT THÚC PHẦN THÊM MỚI ---
 
         await LoadMenuAsync();
     }
@@ -75,7 +102,7 @@ public partial class BoothDetailPage : ContentPage
         }
         catch
         {
-            // Fallback offline nếu không có mạng
+            // fallback offline
         }
 
         MenuView.ItemsSource = await _db.GetMenuByBoothAsync(BoothId);
@@ -85,20 +112,19 @@ public partial class BoothDetailPage : ContentPage
     {
         if (_currentBooth != null)
         {
-            // Truyền chữ "Manual" để báo cho Service biết đây là bấm bằng tay
             await _narrationService.SpeakBoothAsync(_currentBooth, "Manual");
         }
     }
 
     private async void OnStopClicked(object sender, EventArgs e)
     {
-        // Gọi hàm StopAsync trong Service của bạn để ngắt giọng đọc của AI ngay lập tức
         await _narrationService.StopAsync();
     }
-    // Thêm hàm này vào file BoothDetailPage.xaml.cs của bạn
+
+
     private async void OnBackClicked(object sender, EventArgs e)
     {
-        // Lệnh này để quay lại trang trước đó trong Shell
         await Shell.Current.GoToAsync("..");
     }
 }
+

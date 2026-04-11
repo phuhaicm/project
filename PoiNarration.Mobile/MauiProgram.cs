@@ -34,6 +34,7 @@ public static class MauiProgram
         builder.Services.AddSingleton<NarrationService>();
         builder.Services.AddSingleton<GeofenceService>();
         builder.Services.AddSingleton<LocationTrackingService>();
+        builder.Services.AddSingleton<AutoBoothNavigatorService>();
 
         // 3. Pages
         builder.Services.AddTransient<BoothListPage>();

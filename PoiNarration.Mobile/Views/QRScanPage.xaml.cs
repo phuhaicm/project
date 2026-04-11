@@ -76,7 +76,9 @@ public partial class QrScanPage : ContentPage
             }
             else
             {
-                await DisplayAlert("Lỗi mã QR", "Mã QR này không thuộc hệ thống PoiNarration!", "Thử lại");
+
+                await DisplayAlertAsync("Lỗi mã QR", "Mã QR này không thuộc hệ thống PoiNarration!", "Thử lại");
+
                 _isProcessing = false;
                 QrCameraView.IsDetecting = true; // Mở lại camera nếu quét sai
             }
