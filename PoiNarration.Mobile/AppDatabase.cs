@@ -1,5 +1,8 @@
-﻿using PoiNarration.Core.Models;
+﻿using System.Diagnostics;
+using System.IO;
+using PoiNarration.Core.Models;
 using SQLite;
+
 
 namespace PoiNarration.Mobile;
 
@@ -7,6 +10,7 @@ public class AppDatabase
 {
     private readonly string _databasePath;
     private SQLiteAsyncConnection? _database;
+    private readonly SemaphoreSlim _initLock = new(1, 1);
 
     // ===== Constructor khớp với MauiProgram.cs =====
     public AppDatabase(string databasePath)
@@ -16,25 +20,77 @@ public class AppDatabase
 
     public async Task InitAsync()
     {
-        if (_database != null)
-            return;
+        await _initLock.WaitAsync();
 
-        _database = new SQLiteAsyncConnection(_databasePath, Constants.Flags);
+        try
+        {
+            if (_database != null)
+            {
+                await EnsureSchemaAsync(_database);
+                return;
+            }
 
-        // ===== Bảng cũ tuần 5 =====
-        await _database.CreateTableAsync<Zone>();
-        await _database.CreateTableAsync<Booth>();
-        await _database.CreateTableAsync<BoothMenuItem>();
+            var conn = new SQLiteAsyncConnection(_databasePath, Constants.Flags);
 
-        // ===== Bảng mới cho giai đoạn B =====
-        await _database.CreateTableAsync<PlaybackLog>();
-        await _database.CreateTableAsync<BoothTranslationLocal>();
-        await _database.CreateTableAsync<BoothMenuItemTranslationLocal>();
+            try
+            {
+                // Tạo bảng chính trước
+                await conn.CreateTableAsync<Booth>();
+                await conn.CreateTableAsync<BoothMenuItem>();
+                await conn.CreateTableAsync<PlaybackLog>();
+                await conn.CreateTableAsync<BoothTranslationLocal>();
+                await conn.CreateTableAsync<BoothMenuItemTranslationLocal>();
+                await conn.CreateTableAsync<Zone>();
+
+                await EnsureSchemaAsync(conn);
+                await EnsureMenuTranslationSchemaAsync(conn);
+
+
+                _database = conn;
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"[InitAsync lỗi khi tạo bảng]: {ex}");
+
+                try
+                {
+                    await conn.CloseAsync();
+                }
+                catch
+                {
+                    // ignore
+                }
+
+                if (File.Exists(_databasePath))
+                {
+                    try
+                    {
+                        File.Delete(_databasePath);
+                    }
+                    catch
+                    {
+                        // ignore
+                    }
+                }
+
+                _database = null;
+                throw;
+            }
+        }
+        finally
+        {
+            _initLock.Release();
+        }
+    }
+    private static async Task EnsureSchemaAsync(SQLiteAsyncConnection conn)
+    {
+        var boothTableExists = await conn.ExecuteScalarAsync<int>(
+            "SELECT COUNT(*) FROM sqlite_master WHERE type='table' AND name='Booth'");
+
+        if (boothTableExists == 0)
+            throw new Exception("Bảng Booth chưa được tạo trong SQLite.");
     }
 
-    // =====================================================
-    // ZONE
-    // =====================================================
     public async Task<int> CountZonesAsync()
     {
         await InitAsync();
@@ -46,24 +102,19 @@ public class AppDatabase
         await InitAsync();
         return await _database!.Table<Zone>().ToListAsync();
     }
+    public async Task<int> UpsertBoothAsync(Booth booth)
+    {
+        await InitAsync();
+        return await _database!.InsertOrReplaceAsync(booth);
+    }
 
-    // =====================================================
-    // GENERIC INSERT ALL (phục vụ SeedService tuần 5)
-    // =====================================================
     public async Task<int> InsertAllAsync<T>(IEnumerable<T> items) where T : new()
     {
         await InitAsync();
         return await _database!.InsertAllAsync(items);
     }
 
-    // =====================================================
-    // BOOTH
-    // =====================================================
-    public async Task<int> UpsertBoothAsync(Booth booth)
-    {
-        await InitAsync();
-        return await _database!.InsertOrReplaceAsync(booth);
-    }
+  
 
     public async Task<List<Booth>> GetAllBoothsAsync()
     {
@@ -86,9 +137,6 @@ public class AppDatabase
             .ToListAsync();
     }
 
-    // =====================================================
-    // MENU
-    // =====================================================
     public async Task<int> UpsertMenuItemAsync(BoothMenuItem item)
     {
         await InitAsync();
@@ -103,9 +151,6 @@ public class AppDatabase
             .ToListAsync();
     }
 
-    // =====================================================
-    // PLAYBACK LOG LOCAL (giai đoạn B)
-    // =====================================================
     public async Task<int> SavePlaybackLogAsync(PlaybackLog item)
     {
         await InitAsync();
@@ -197,5 +242,52 @@ public class AppDatabase
             System.Diagnostics.Debug.WriteLine("Đã lưu Bootstrap vào SQLite thành công!");
         });
     }
+    public async Task ClearSyncTablesAsync()
+    {
+        await InitAsync();
+
+
+        await _database!.DeleteAllAsync<Zone>();
+        await _database!.DeleteAllAsync<Booth>();
+        await _database.DeleteAllAsync<BoothMenuItem>();
+        await _database.DeleteAllAsync<BoothTranslationLocal>();
+        await _database.DeleteAllAsync<BoothMenuItemTranslationLocal>();
+    }
+    private static async Task EnsureMenuTranslationSchemaAsync(SQLiteAsyncConnection conn)
+    {
+        var tableInfo = await conn.QueryAsync<TableInfoRow>(
+            "PRAGMA table_info('BoothMenuItemTranslationLocal')");
+
+        var columnNames = tableInfo.Select(x => x.name).ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+        if (!columnNames.Contains("CurrencyCode"))
+        {
+            await conn.ExecuteAsync(
+                "ALTER TABLE BoothMenuItemTranslationLocal ADD COLUMN CurrencyCode TEXT NOT NULL DEFAULT 'VND'");
+        }
+
+        if (!columnNames.Contains("LocalizedPrice"))
+        {
+            await conn.ExecuteAsync(
+                "ALTER TABLE BoothMenuItemTranslationLocal ADD COLUMN LocalizedPrice REAL NULL");
+        }
+
+        if (!columnNames.Contains("PriceText"))
+        {
+            await conn.ExecuteAsync(
+                "ALTER TABLE BoothMenuItemTranslationLocal ADD COLUMN PriceText TEXT NULL");
+        }
+    }
+
+    private class TableInfoRow
+    {
+        public int cid { get; set; }
+        public string name { get; set; } = "";
+        public string type { get; set; } = "";
+        public int notnull { get; set; }
+        public string? dflt_value { get; set; }
+        public int pk { get; set; }
+    }
+
 
 }

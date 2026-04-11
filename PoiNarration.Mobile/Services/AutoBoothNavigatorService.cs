@@ -16,6 +16,14 @@ public class AutoBoothNavigatorService
     private bool _isStarted;
     private bool _isNavigating;
 
+    // TÁCH GPS TRACKING và AUTO NARRATION
+    private bool _autoNarrationEnabled = true;
+
+    // Chặn trigger lặp quá nhanh cùng 1 booth
+    private string? _lastTriggeredBoothId;
+    private DateTime _lastTriggeredUtc = DateTime.MinValue;
+    private readonly TimeSpan _triggerGuard = TimeSpan.FromMilliseconds(800);
+
     public Booth? CurrentNearestBooth { get; private set; }
     public double CurrentNearestDistanceMeters { get; private set; } = double.MaxValue;
     public Location? CurrentLocation { get; private set; }
@@ -33,10 +41,22 @@ public class AutoBoothNavigatorService
         _narrationService = narrationService;
     }
 
+    public bool IsStarted => _isStarted;
+    public bool AutoNarrationEnabled => _autoNarrationEnabled;
+
+    public void SetAutoNarrationEnabled(bool enabled)
+    {
+        _autoNarrationEnabled = enabled;
+    }
+
     public async Task<bool> StartAsync()
     {
         if (_isStarted)
+        {
+            // Đã bật rồi thì ép lấy điểm GPS mới nhất ngay
+            await _locationTrackingService.StartListeningAsync();
             return true;
+        }
 
         var ok = await _locationTrackingService.StartAsync();
         if (!ok)
@@ -46,7 +66,19 @@ public class AutoBoothNavigatorService
         _locationTrackingService.LocationChanged += OnLocationChanged;
 
         _isStarted = true;
+
+        // ép lấy ngay điểm đầu tiên để UI map / nearest booth update
+        await _locationTrackingService.StartListeningAsync();
+
         return true;
+    }
+
+    public async Task ForceRefreshAsync()
+    {
+        if (_isStarted)
+        {
+            await _locationTrackingService.StartListeningAsync();
+        }
     }
 
     public void Stop()
@@ -60,6 +92,11 @@ public class AutoBoothNavigatorService
 
         _isStarted = false;
         _isNavigating = false;
+        _autoNarrationEnabled = true;
+
+        _lastTriggeredBoothId = null;
+        _lastTriggeredUtc = DateTime.MinValue;
+
         CurrentNearestBooth = null;
         CurrentNearestDistanceMeters = double.MaxValue;
         CurrentLocation = null;
@@ -83,6 +120,7 @@ public class AutoBoothNavigatorService
             CurrentNearestBooth = result.NearestBooth;
             CurrentNearestDistanceMeters = result.NearestDistanceMeters;
 
+            // 1) Luôn update UI nearest booth
             StateChanged?.Invoke(this, new AutoBoothStateChangedEventArgs
             {
                 CurrentLocation = loc,
@@ -91,14 +129,30 @@ public class AutoBoothNavigatorService
                 ActiveBoothId = result.ActiveBoothId
             });
 
+            // 2) Nếu chỉ muốn tracking mà không auto narration thì dừng ở đây
+            if (!_autoNarrationEnabled)
+                return;
+
+            // 3) Chưa đủ điều kiện trigger
             if (!result.ShouldTrigger || result.TriggeredBooth == null)
                 return;
 
             var booth = result.TriggeredBooth;
 
-            // báo cho panel/detail biết booth mới
+            // 4) Chặn trigger lặp quá nhanh cùng 1 booth
+            if (_lastTriggeredBoothId == booth.Id &&
+                DateTime.UtcNow - _lastTriggeredUtc < _triggerGuard)
+            {
+                return;
+            }
+
+            _lastTriggeredBoothId = booth.Id;
+            _lastTriggeredUtc = DateTime.UtcNow;
+
+            // 5) Báo cho BoothDetailPage đổi booth
             BoothTriggered?.Invoke(this, booth);
 
+            // 6) Nếu đang điều hướng rồi thì không chồng thêm
             if (_isNavigating)
                 return;
 
@@ -108,51 +162,27 @@ public class AutoBoothNavigatorService
             {
                 var currentPage = Shell.Current?.CurrentPage;
 
-                if (currentPage is Views.BoothDetailPage)
-                {
-                    // BoothDetailPage sẽ tự đổi booth qua event
-                }
-                else
+                // Nếu đang ở detail thì không push page mới nữa
+                if (currentPage is not Views.BoothDetailPage)
                 {
                     await Shell.Current.GoToAsync($"{nameof(Views.BoothDetailPage)}?boothId={booth.Id}");
                 }
             });
 
-            await Task.Delay(400);
+            // chờ page dựng xong
+            await Task.Delay(300);
 
-            await _narrationService.SpeakBoothAsync(booth, "GPS");
+            await _narrationService.SpeakBoothAsync(booth, "GPS", loc);
         }
         catch (Exception ex)
         {
-            await MainThread.InvokeOnMainThreadAsync(async () =>
-            {
-                var page = GetCurrentPage();
-                if (page != null)
-                {
-                    await page.DisplayAlertAsync(
-                        "Lỗi GPS Auto Booth",
-                        ex.ToString(),
-                        "OK");
-                }
-            });
+            System.Diagnostics.Debug.WriteLine($"AutoBoothNavigatorService.OnLocationChanged lỗi: {ex}");
         }
         finally
         {
             _isNavigating = false;
             _gpsLock.Release();
         }
-    }
-
-    private static Page? GetCurrentPage()
-    {
-        var app = Application.Current;
-        if (app == null)
-            return null;
-
-        if (app.Windows.Count > 0)
-            return app.Windows[0].Page;
-
-        return null;
     }
 }
 

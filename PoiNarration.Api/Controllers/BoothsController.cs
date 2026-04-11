@@ -2,7 +2,8 @@
 using Microsoft.EntityFrameworkCore;
 using PoiNarration.Api.Data;
 using PoiNarration.Api.DTOs.Booths;
-using PoiNarration.Core.Models; // Đã có sẵn để dùng đồ từ Core
+using PoiNarration.Api.Services;
+using PoiNarration.Core.Models;
 
 namespace PoiNarration.Api.Controllers;
 
@@ -11,10 +12,13 @@ namespace PoiNarration.Api.Controllers;
 public class BoothsController : ControllerBase
 {
     private readonly AppDbContext _db;
+    private readonly ITranslationService _translationService;
 
-    public BoothsController(AppDbContext db)
+    // HỢP NHẤT CONSTRUCTOR: Nhận cả DB và Service
+    public BoothsController(AppDbContext db, ITranslationService translationService)
     {
         _db = db;
+        _translationService = translationService;
     }
 
     [HttpGet]
@@ -43,15 +47,14 @@ public class BoothsController : ControllerBase
         if (string.IsNullOrWhiteSpace(request.NameVi))
             return BadRequest("Tên booth tiếng Việt là bắt buộc.");
 
-        // FIX TẠI ĐÂY: Dùng trực tiếp class Booth từ Core
         var booth = new Booth
         {
             Id = Guid.NewGuid().ToString(),
             ZoneId = request.ZoneId,
             NameVi = request.NameVi,
-            NameEn = request.NameEn,
+            NameEn = "", // API sẽ tự sinh translation EN
             DescVi = request.DescVi,
-            DescEn = request.DescEn,
+            DescEn = "", // API sẽ tự sinh translation EN
             Lat = request.Lat,
             Lng = request.Lng,
             RadiusMeters = request.RadiusMeters,
@@ -59,32 +62,23 @@ public class BoothsController : ControllerBase
             ImageUrl = request.ImageUrl,
             MapUrl = request.MapUrl,
             TtsScriptVi = request.TtsScriptVi,
-            TtsScriptEn = request.TtsScriptEn,
+            TtsScriptEn = null,
             AudioUrlVi = request.AudioUrlVi,
-            AudioUrlEn = request.AudioUrlEn,
+            AudioUrlEn = null,
             IsActive = request.IsActive,
             OwnerUserId = null
         };
 
         _db.Booths.Add(booth);
 
-        if (request.Translations != null && request.Translations.Any())
+        // SỬ DỤNG SERVICE ĐỂ BUILD TRANSLATIONS TỰ ĐỘNG
+        var translations = await _translationService.BuildBoothTranslationsAsync(booth);
+        if (translations != null && translations.Any())
         {
-            // FIX TẠI ĐÂY: Đổi BoothTranslation thành BoothTranslationLocal
-            var translations = request.Translations.Select(x => new BoothTranslationLocal
-            {
-                BoothId = booth.Id,
-                LanguageCode = x.LanguageCode,
-                Name = x.Name,
-                Description = x.Description,
-                TtsScript = x.TtsScript,
-                AudioUrl = x.AudioUrl
-            });
-
             _db.BoothTranslations.AddRange(translations);
         }
-        await _db.SaveChangesAsync();
 
+        await _db.SaveChangesAsync();
         return Ok(booth);
     }
 
@@ -97,9 +91,9 @@ public class BoothsController : ControllerBase
 
         booth.ZoneId = request.ZoneId;
         booth.NameVi = request.NameVi;
-        booth.NameEn = request.NameEn;
+        booth.NameEn = "";
         booth.DescVi = request.DescVi;
-        booth.DescEn = request.DescEn;
+        booth.DescEn = "";
         booth.Lat = request.Lat;
         booth.Lng = request.Lng;
         booth.RadiusMeters = request.RadiusMeters;
@@ -107,28 +101,19 @@ public class BoothsController : ControllerBase
         booth.ImageUrl = request.ImageUrl;
         booth.MapUrl = request.MapUrl;
         booth.TtsScriptVi = request.TtsScriptVi;
-        booth.TtsScriptEn = request.TtsScriptEn;
+        booth.TtsScriptEn = null;
         booth.AudioUrlVi = request.AudioUrlVi;
-        booth.AudioUrlEn = request.AudioUrlEn;
+        booth.AudioUrlEn = null;
         booth.IsActive = request.IsActive;
 
-        // Xóa bản dịch cũ
+        // XÓA BẢN DỊCH CŨ
         var oldTranslations = _db.BoothTranslations.Where(x => x.BoothId == booth.Id);
         _db.BoothTranslations.RemoveRange(oldTranslations);
 
-        // Thêm bản dịch mới (Dùng BoothTranslationLocal)
-        if (request.Translations != null && request.Translations.Any())
+        // SỬ DỤNG SERVICE ĐỂ BUILD LẠI BẢN DỊCH MỚI SAU KHI UPDATE
+        var translationsToAdd = await _translationService.BuildBoothTranslationsAsync(booth);
+        if (translationsToAdd != null && translationsToAdd.Any())
         {
-            var translationsToAdd = request.Translations.Select(x => new BoothTranslationLocal
-            {
-                BoothId = booth.Id,
-                LanguageCode = x.LanguageCode,
-                Name = x.Name,
-                Description = x.Description,
-                TtsScript = x.TtsScript,
-                AudioUrl = x.AudioUrl
-            });
-
             _db.BoothTranslations.AddRange(translationsToAdd);
         }
 

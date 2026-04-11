@@ -3,13 +3,14 @@
     x:Class="PoiNarration.Mobile.Views.BoothDetailPage"
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-    xmlns:core_model="clr-namespace:PoiNarration.Core.Models;assembly=PoiNarration.Core"
+    xmlns:view="clr-namespace:PoiNarration.Mobile.Views"
     Title="Chi tiết Trạm"
     BackgroundColor="#0B0B10"
     Shell.NavBarIsVisible="False">
 
     <Grid RowDefinitions="Auto,*">
 
+        <!-- Header / Booth info -->
         <VerticalStackLayout Grid.Row="0" Margin="16,16,16,8" Spacing="16">
 
             <Button Text="← Quay lại"
@@ -26,8 +27,15 @@
                     BackgroundColor="#161622"
                     StrokeShape="RoundRectangle 20">
                 <VerticalStackLayout Spacing="8">
+
+                    <Image x:Name="BoothImage"
+                           HeightRequest="190"
+                           Aspect="AspectFill"
+                           BackgroundColor="#1E1E2D"
+                           Margin="0,0,0,12" />
+
                     <Label x:Name="BoothName"
-                           FontSize="22"
+                           FontSize="26"
                            FontAttributes="Bold"
                            TextColor="White" />
 
@@ -41,14 +49,16 @@
                                 Clicked="OnPlayClicked"
                                 BackgroundColor="#6D5DF6"
                                 TextColor="White"
-                                CornerRadius="14" />
+                                CornerRadius="14"
+                                HeightRequest="46" />
 
                         <Button Grid.Column="1"
                                 Text="■ Dừng"
                                 Clicked="OnStopClicked"
                                 BackgroundColor="#2A2A38"
                                 TextColor="White"
-                                CornerRadius="14" />
+                                CornerRadius="14"
+                                HeightRequest="46" />
                     </Grid>
                 </VerticalStackLayout>
             </Border>
@@ -60,64 +70,57 @@
                    Margin="0,8,0,0" />
         </VerticalStackLayout>
 
+        <!-- Menu list -->
         <CollectionView Grid.Row="1"
                         x:Name="MenuView"
                         Margin="16,0,16,16"
                         SelectionMode="None">
             <CollectionView.ItemTemplate>
-
-                <DataTemplate x:DataType="core_model:BoothMenuItem">
-
-                    <Border Margin="0,0,0,12"
+                <DataTemplate x:DataType="view:MenuItemDisplayVm">
+                    <Border Margin="0,8,0,0"
                             Padding="12"
                             StrokeThickness="0"
-                            BackgroundColor="#161622"
-                            StrokeShape="RoundRectangle 18">
+                            BackgroundColor="#141421"
+                            StrokeShape="RoundRectangle 20">
 
-                        <Grid ColumnDefinitions="100,*" ColumnSpacing="12">
+                        <Grid ColumnDefinitions="96,*" ColumnSpacing="12">
 
-                            <Border WidthRequest="100"
-                                    HeightRequest="100"
+                            <Border Grid.Column="0"
+                                    BackgroundColor="#232334"
                                     StrokeThickness="0"
-                                    StrokeShape="RoundRectangle 14"
-                                    BackgroundColor="#2A2A38">
-                                <Image Aspect="AspectFill">
-                                    <Image.Source>
-                                        <UriImageSource Uri="{Binding ImageUrl}"
-                                                        CachingEnabled="True"
-                                                        CacheValidity="7.00:00:00" />
-                                    </Image.Source>
-                                </Image>
+                                    StrokeShape="RoundRectangle 16">
+                                <Image Source="{Binding ImageUrl}"
+                                       Aspect="AspectFill"
+                                       HeightRequest="96"
+                                       WidthRequest="96" />
                             </Border>
 
-                            <VerticalStackLayout Grid.Column="1" Spacing="6" VerticalOptions="Center">
+                            <VerticalStackLayout Grid.Column="1" Spacing="6">
                                 <Label Text="{Binding Name}"
-                                       FontSize="16"
+                                       FontSize="20"
                                        FontAttributes="Bold"
                                        TextColor="White" />
 
                                 <Label Text="{Binding Description}"
-                                       FontSize="12"
+                                       FontSize="14"
                                        TextColor="#B8B8C7"
-                                       MaxLines="2"
-                                       LineBreakMode="TailTruncation" />
+                                       LineBreakMode="WordWrap"
+                                       MaxLines="2" />
 
-                                <Border Padding="8,4"
+                                <Border BackgroundColor="#1E1E2D"
                                         StrokeThickness="0"
-                                        BackgroundColor="#2A2A38"
-                                        StrokeShape="RoundRectangle 10"
-                                        HorizontalOptions="Start"
-                                        Margin="0,4,0,0">
-                                    <Label Text="{Binding Price, StringFormat='{0:N0} đ'}"
+                                        Padding="10,4"
+                                        StrokeShape="RoundRectangle 12"
+                                        HorizontalOptions="Start">
+                                    <Label Text="{Binding PriceText}"
                                            FontSize="14"
                                            FontAttributes="Bold"
-                                           TextColor="#4ade80" />
+                                           TextColor="#31E981" />
                                 </Border>
                             </VerticalStackLayout>
 
                         </Grid>
                     </Border>
-
                 </DataTemplate>
             </CollectionView.ItemTemplate>
         </CollectionView>

@@ -84,28 +84,93 @@ public partial class BoothDetailPage : ContentPage
         BoothDesc.Text = translation?.Description
                          ?? (LanguageService.IsVi ? booth.DescVi : booth.DescEn);
 
-        await LoadMenuAsync();
-    }
-
-    private async Task LoadMenuAsync()
-    {
-        try
+        if (BoothImage != null)
         {
-            var onlineMenu = await _apiService.GetMenuByBoothAsync(BoothId);
-            if (onlineMenu != null)
+            BoothImage.Source = _apiService.ResolveMediaUrl(booth.ImageUrl);
+        }
+
+        await BindMenuFromLocalAsync();
+
+        _ = Task.Run(async () =>
+        {
+            try
             {
-                foreach (var item in onlineMenu)
+                var onlineMenu = await _apiService.GetMenuByBoothAsync(BoothId);
+                if (onlineMenu != null)
                 {
-                    await _db.UpsertMenuItemAsync(item);
+                    foreach (var item in onlineMenu)
+                    {
+                        await _db.UpsertMenuItemAsync(item);
+                    }
+
+                    await MainThread.InvokeOnMainThreadAsync(async () =>
+                    {
+                        await BindMenuFromLocalAsync();
+                    });
                 }
             }
-        }
-        catch
+            catch
+            {
+                // fallback offline
+            }
+        });
+    }
+
+    private async Task BindMenuFromLocalAsync()
+    {
+        var rawMenu = await _db.GetMenuByBoothAsync(BoothId);
+        var lang = LanguageService.CurrentLanguage;
+
+        var menuDisplay = new List<MenuItemDisplayVm>();
+
+        foreach (var item in rawMenu)
         {
-            // fallback offline
+            var translations = await _db.GetMenuTranslationsAsync(item.Id);
+
+            var menuTranslation = translations.FirstOrDefault(x => x.LanguageCode == lang)
+                               ?? translations.FirstOrDefault(x => x.LanguageCode == "en")
+                               ?? translations.FirstOrDefault(x => x.LanguageCode == "vi");
+
+            var translatedName = menuTranslation?.Name
+                ?? (LanguageService.IsVi
+                    ? item.Name
+                    : (!string.IsNullOrWhiteSpace(item.NameEn) ? item.NameEn : item.Name));
+
+            var translatedDesc = menuTranslation?.Description
+                ?? (LanguageService.IsVi
+                    ? item.Description
+                    : (!string.IsNullOrWhiteSpace(item.DescriptionEn) ? item.DescriptionEn : item.Description));
+
+            var priceText = menuTranslation?.PriceText;
+            if (string.IsNullOrWhiteSpace(priceText))
+            {
+                priceText = BuildPriceText(item, lang);
+            }
+
+            menuDisplay.Add(new MenuItemDisplayVm
+            {
+                Id = item.Id,
+                Name = translatedName,
+                Description = translatedDesc,
+                PriceText = priceText,
+                ImageUrl = _apiService.ResolveMediaUrl(item.ImageUrl)
+            });
         }
 
-        MenuView.ItemsSource = await _db.GetMenuByBoothAsync(BoothId);
+        MenuView.ItemsSource = menuDisplay;
+    }
+
+    private static decimal ConvertCurrency(decimal vnd, string currencyCode)
+    {
+        return currencyCode switch
+        {
+            "CNY" => Math.Round(vnd / 3500m, 2),
+            "JPY" => Math.Round(vnd / 170m, 0),
+            "KRW" => Math.Round(vnd / 18m, 0),
+            "EUR" => Math.Round(vnd / 27000m, 2),
+            "RUB" => Math.Round(vnd / 300m, 2),
+            _ => vnd
+        };
     }
 
     private async void OnPlayClicked(object sender, EventArgs e)
@@ -121,10 +186,32 @@ public partial class BoothDetailPage : ContentPage
         await _narrationService.StopAsync();
     }
 
-
     private async void OnBackClicked(object sender, EventArgs e)
     {
         await Shell.Current.GoToAsync("..");
     }
+    private static string BuildPriceText(BoothMenuItem item, string lang)
+    {
+        return lang switch
+        {
+            "vi" => $"{item.Price:N0} đ",
+            "en" => item.PriceUsd > 0 ? $"${item.PriceUsd:0.##}" : $"{item.Price:N0}",
+            "zh" => $"¥{Math.Round(item.Price / 3500m, 2):0.##}",
+            "ja" => $"¥{Math.Round(item.Price / 170m, 0):0}",
+            "ko" => $"₩{Math.Round(item.Price / 18m, 0):0}",
+            "fr" or "es" or "it" => $"€{Math.Round(item.Price / 27000m, 2):0.##}",
+            "ru" => $"₽{Math.Round(item.Price / 300m, 2):0.##}",
+            _ => item.PriceUsd > 0 ? $"${item.PriceUsd:0.##}" : $"{item.Price:N0}"
+        };
+    }
+
 }
 
+public class MenuItemDisplayVm
+{
+    public string Id { get; set; } = "";
+    public string Name { get; set; } = "";
+    public string Description { get; set; } = "";
+    public string PriceText { get; set; } = "";
+    public string ImageUrl { get; set; } = "";
+}

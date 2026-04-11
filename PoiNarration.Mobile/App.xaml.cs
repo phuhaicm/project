@@ -1,35 +1,28 @@
 ﻿using PoiNarration.Mobile.Services;
+
 namespace PoiNarration.Mobile;
 
 public partial class App : Application
 {
-    public App(AppDatabase db)
-    {
-        // Seed async (fire-and-forget an toàn)
-        Task.Run(async () =>
-        {
-            var seedService = new SeedService(db);
-            await seedService.EnsureSeededAsync();
-        });
-    }
+    private readonly SyncService? _syncService;
 
-    public App()
+    public App(SyncService? syncService = null)
     {
         InitializeComponent();
+        _syncService = syncService;
     }
 
     protected override Window CreateWindow(IActivationState? activationState)
     {
+        var window = new Window(new AppShell());
+
         MainThread.BeginInvokeOnMainThread(async () =>
         {
             try
             {
-                var services = Current?.Handler?.MauiContext?.Services;
-                var syncService = services?.GetService<PoiNarration.Mobile.Services.SyncService>();
-
-                if (syncService != null)
+                if (_syncService != null)
                 {
-                    await syncService.SyncBootstrapAsync();
+                    await _syncService.SyncBootstrapAsync();
                 }
             }
             catch
@@ -37,18 +30,7 @@ public partial class App : Application
                 // fallback offline
             }
         });
-        return new Window(new AppShell());
+
+        return window;
     }
-    protected override async void OnStart()
-    {
-        base.OnStart();
-
-        var services = Current?.Handler?.MauiContext?.Services;
-        if (services == null) return;
-
-        var syncService = services.GetRequiredService<PoiNarration.Mobile.Services.SyncService>();
-        await syncService.SyncBootstrapAsync();
-    }
-
-
 }

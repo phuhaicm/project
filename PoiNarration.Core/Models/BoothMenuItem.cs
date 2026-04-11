@@ -17,7 +17,7 @@ public class BoothMenuItem
 
     // Giá cả (VND - USD)
     public decimal Price { get; set; }            // Giá VND
-    public decimal? PriceUsd { get; set; }        // Giá USD (nếu có)
+    public decimal PriceUsd { get; set; }        // Giá USD (nếu có)
 
     public string ImageUrl { get; set; } = "";
 

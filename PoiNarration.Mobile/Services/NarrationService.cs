@@ -1,36 +1,35 @@
 ﻿using PoiNarration.Core.Models;
 using PoiNarration.Mobile.Models;
-using System.Runtime.Versioning;
 
 namespace PoiNarration.Mobile.Services;
 
-
 public class NarrationService
 {
-    private readonly SemaphoreSlim _speakLock = new(1, 1);
+    private readonly SemaphoreSlim _stateLock = new(1, 1);
+
     private CancellationTokenSource? _currentCts;
+    private CancellationTokenSource? _speakCts;
 
     private string? _lastBoothId;
     private DateTime _lastPlayedUtc = DateTime.MinValue;
-
     private readonly TimeSpan _cooldown = TimeSpan.FromMinutes(2);
+
     private readonly AppDatabase _db;
     private readonly ApiService _apiService;
+
     private bool _isSpeaking = false;
-    private CancellationTokenSource? _speakCts;
 
     public NarrationService(AppDatabase db, ApiService apiService)
     {
         _db = db;
         _apiService = apiService;
-
     }
 
     public bool IsSpeaking => _isSpeaking;
 
     public async Task SpeakBoothAsync(Booth booth, string triggerType, Location? currentLocation = null)
     {
-        // 1. Kiểm tra Cooldown (Chỉ chặn nếu là phát tự động qua GPS, bấm Manual thì cho qua)
+        // Chỉ chặn lặp với Manual/QR; GPS phải được ưu tiên chen vào ngay
         if (triggerType != "GPS")
         {
             if (_lastBoothId == booth.Id &&
@@ -40,113 +39,130 @@ public class NarrationService
             }
         }
 
+        CancellationTokenSource speakCts;
 
-        // 2. Lock để đảm bảo tại một thời điểm chỉ xử lý một yêu cầu phát
-        await _speakLock.WaitAsync();
+        // Chuẩn bị state + hủy lời đọc cũ
+        await _stateLock.WaitAsync();
         try
         {
-            if (_isSpeaking) return;
-
-            // --- BẮT ĐẦU PHẦN THÊM MỚI: LOGIC ĐA NGÔN NGỮ ---
-            var lang = LanguageService.CurrentLanguage;
-
-            // Tìm bản dịch theo thứ tự ưu tiên: Ngôn ngữ hiện tại -> Tiếng Anh -> Tiếng Việt
-            var translation = await _db.GetBoothTranslationAsync(booth.Id, lang)
-                             ?? await _db.GetBoothTranslationAsync(booth.Id, "en")
-                             ?? await _db.GetBoothTranslationAsync(booth.Id, "vi");
-
-            // Chọn kịch bản đọc (Script) theo thứ tự ưu tiên
-            var script = translation?.TtsScript
-                        ?? booth.TtsScriptEn
-                        ?? booth.TtsScriptVi
-                        ?? booth.DescVi;
-
-            // Lấy Audio URL (nếu sau này bạn muốn phát file thay vì đọc text)
-            var audioUrl = translation?.AudioUrl;
-
-            if (string.IsNullOrWhiteSpace(script)) return;
-            // --- KẾT THÚC PHẦN THÊM MỚI ---
-
-            _isSpeaking = true;
             _currentCts?.Cancel();
+            _speakCts?.Cancel();
+
             _currentCts = new CancellationTokenSource();
             _speakCts = CancellationTokenSource.CreateLinkedTokenSource(_currentCts.Token);
+            speakCts = _speakCts;
 
-            try
+            _isSpeaking = true;
+        }
+        finally
+        {
+            _stateLock.Release();
+        }
+
+        try
+        {
+            var lang = LanguageService.CurrentLanguage;
+
+            var translation = await _db.GetBoothTranslationAsync(booth.Id, lang)
+                              ?? await _db.GetBoothTranslationAsync(booth.Id, "en")
+                              ?? await _db.GetBoothTranslationAsync(booth.Id, "vi");
+
+            // --- ĐOẠN 1: Xử lý Script ưu tiên (Thay thế theo yêu cầu) ---
+            var script = translation?.TtsScript
+                         ?? (lang == "vi" ? booth.TtsScriptVi : booth.TtsScriptEn)
+                         ?? booth.DescVi;
+
+            if (string.IsNullOrWhiteSpace(script))
+                return;
+
+            // --- ĐOẠN 2: Mapping Locale linh hoạt (Thay thế theo yêu cầu) ---
+            var locales = await TextToSpeech.Default.GetLocalesAsync();
+            var localePrefix = LanguageService.GetTtsLocalePrefix(lang);
+
+            Locale? locale = locales.FirstOrDefault(x => x.Language.StartsWith(localePrefix))
+                          ?? locales.FirstOrDefault(x => x.Language.StartsWith("en"));
+
+            // Debug danh sách locale nếu cần
+            foreach (var l in locales)
             {
-                var locales = await TextToSpeech.Default.GetLocalesAsync();
-                Locale? locale = null;
+                System.Diagnostics.Debug.WriteLine($"TTS locale available: {l.Language} - {l.Name}");
+            }
 
-                // Chọn giọng đọc phù hợp với ngôn ngữ hiện tại
-                if (LanguageService.IsVi)
-                    locale = locales.FirstOrDefault(x => x.Language.StartsWith("vi"));
-                else
-                    locale = locales.FirstOrDefault(x => x.Language.StartsWith("en"));
-
-                // Thực hiện đọc văn bản
-                await TextToSpeech.Default.SpeakAsync(script, new SpeechOptions
+            await TextToSpeech.Default.SpeakAsync(
+                script,
+                new SpeechOptions
                 {
                     Locale = locale,
                     Pitch = 1.0f,
                     Volume = 1.0f
-                }, _speakCts.Token);
+                },
+                speakCts.Token);
 
-                // 3. Lưu Log Local sau khi phát xong
-                var log = new PlaybackLog
+            // Ghi log kết quả
+            var log = new PlaybackLog
+            {
+                BoothId = booth.Id,
+                TriggerType = triggerType,
+                Language = lang,
+                PlayedAtUtc = DateTime.UtcNow,
+                Lat = currentLocation?.Latitude ?? 0,
+                Lng = currentLocation?.Longitude ?? 0,
+                DurationSeconds = 10,
+                IsCompleted = true,
+                SessionId = Guid.NewGuid().ToString(),
+                IsSynced = false
+            };
+
+            await _db.SavePlaybackLogAsync(log);
+
+            try
+            {
+                await _apiService.PostPlaybackLogAsync(new PlaybackLogRequest
                 {
                     BoothId = booth.Id,
                     TriggerType = triggerType,
-                    Language = lang, // Sử dụng ngôn ngữ thực tế đã chọn
-                    PlayedAtUtc = DateTime.UtcNow,
-                    Lat = currentLocation?.Latitude ?? 0,
-                    Lng = currentLocation?.Longitude ?? 0,
-                    DurationSeconds = 10, // Bạn có thể tính toán thời gian thực tế nếu cần
+                    Language = lang,
+                    DurationSeconds = 10,
                     IsCompleted = true,
-                    SessionId = Guid.NewGuid().ToString(),
-                    IsSynced = false
-                };
+                    SessionId = log.SessionId
+                });
+
+                log.IsSynced = true;
                 await _db.SavePlaybackLogAsync(log);
-
-                // 4. Đồng bộ lên API Server
-                try
-                {
-                    await _apiService.PostPlaybackLogAsync(new PlaybackLogRequest
-                    {
-                        BoothId = booth.Id,
-                        TriggerType = triggerType,
-                        Language = lang,
-                        DurationSeconds = 10,
-                        IsCompleted = true,
-                        SessionId = log.SessionId
-                    });
-                    log.IsSynced = true;
-                    await _db.SavePlaybackLogAsync(log); // Cập nhật trạng thái đã sync
-                }
-                catch
-                {
-                    // Offline thì log vẫn nằm ở Local với IsSynced = false để sync sau
-                }
-
-                // Cập nhật trạng thái lần phát cuối
-                _lastBoothId = booth.Id;
-                _lastPlayedUtc = DateTime.UtcNow;
             }
-            finally
+            catch
             {
-                _isSpeaking = false;
+                // offline -> giữ local để sync sau
             }
+
+            _lastBoothId = booth.Id;
+            _lastPlayedUtc = DateTime.UtcNow;
+        }
+        catch (OperationCanceledException)
+        {
+            // Booth cũ bị hủy để ưu tiên booth mới
         }
         finally
         {
-            _speakLock.Release();
+            await _stateLock.WaitAsync();
+            try
+            {
+                if (_speakCts == speakCts)
+                {
+                    _isSpeaking = false;
+                }
+            }
+            finally
+            {
+                _stateLock.Release();
+            }
         }
     }
+
     public Task StopAsync()
     {
         _speakCts?.Cancel();
         _currentCts?.Cancel();
         return Task.CompletedTask;
     }
-
-
 }
