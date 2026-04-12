@@ -6,51 +6,49 @@
 
 <div class="row justify-content-center">
     <div class="col-12 col-lg-8">
-        <div class="card card-shadow">
+        <div class="card card-shadow shadow-sm border-0">
             <div class="card-body">
-                <h3 class="mb-3">Thêm món ăn</h3>
+                <h3 class="mb-4">Thêm món ăn mới</h3>
 
-                @* SỬA LỖI 1: Thêm thẻ mở form hoàn chỉnh.
-                   QUAN TRỌNG: Phải có enctype="multipart/form-data" để upload được ảnh *@
+                @* SỬA LỖI: Thêm enctype để upload file và sửa asp-validation-summary *@
                 <form asp-action="Create" method="post" enctype="multipart/form-data">
-                    
-                    @* Hiển thị thông báo lỗi nếu dữ liệu nhập vào không hợp lệ *@
                     <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
 
                     <input type="hidden" asp-for="BoothId" />
 
                     <div class="mb-3">
-                        <label class="form-label">Tên món</label>
-                        <input asp-for="Name" class="form-control" />
+                        <label asp-for="Name" class="form-label fw-bold">Tên món</label>
+                        <input asp-for="Name" class="form-control" placeholder="Ví dụ: Bún chả, Phở bò..." />
                         <span asp-validation-for="Name" class="text-danger small"></span>
                     </div>
 
                     <div class="mb-3">
-                        <label class="form-label">Mô tả</label>
-                        <textarea asp-for="Description" class="form-control" rows="4"></textarea>
+                        <label asp-for="Description" class="form-label fw-bold">Mô tả</label>
+                        <textarea asp-for="Description" class="form-control" rows="4" placeholder="Mô tả ngắn gọn về món ăn..."></textarea>
                         <span asp-validation-for="Description" class="text-danger small"></span>
                     </div>
 
                     <div class="mb-3">
-                        <label class="form-label">Giá</label>
+                        <label asp-for="Price" class="form-label fw-bold">Giá (VNĐ)</label>
                         <input asp-for="Price" type="number" step="1000" class="form-control" />
                         <span asp-validation-for="Price" class="text-danger small"></span>
                     </div>
 
                     <div class="mb-3">
-                        <label class="form-label">Ảnh món</label>
-                        @* asp-for="ImageFile" khớp với thuộc tính IFormFile trong ViewModel *@
+                        <label asp-for="ImageFile" class="form-label fw-bold">Ảnh món ăn</label>
                         <input asp-for="ImageFile" type="file" class="form-control" accept=".jpg,.jpeg,.png,.webp" />
+                        <div class="form-text">Định dạng hỗ trợ: JPG, PNG, WebP.</div>
+                        <span asp-validation-for="ImageFile" class="text-danger small"></span>
                     </div>
 
-                    <div class="d-flex gap-2">
+                    <div class="d-flex gap-2 mt-4">
                         <button class="btn btn-primary" type="submit">
-                            <i class="bi bi-check-circle me-1"></i> Lưu món
+                            <i class="bi bi-check-circle me-1"></i> Lưu món ăn
                         </button>
 
-                        @* SỬA LỖI 2: Hoàn thiện thẻ <a> quay lại *@
+                        @* SỬA LỖI: Hoàn thiện nút quay lại *@
                         <a class="btn btn-outline-secondary" asp-action="Index" asp-route-boothId="@Model.BoothId">
-                            Hủy bỏ
+                            <i class="bi bi-x-circle me-1"></i> Hủy bỏ
                         </a>
                     </div>
                 </form>
@@ -59,12 +57,8 @@
     </div>
 </div>
 
-@* Thêm Script để kiểm tra lỗi ngay tại máy khách (Validation) *@
 @section Scripts {
     @{
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
     }
-}
-@section Scripts {
-    <partial name="_ValidationScriptsPartial" />
 }
