@@ -22,7 +22,7 @@
                     BackgroundColor="Transparent"
                     StrokeShape="RoundRectangle 24"/>
 
-            <Label Text="Đưa mã QR của gian hàng vào khung hình"
+            <Label Text="{DynamicResource Ui_QrInstruction}"
                    TextColor="White"
                    FontSize="14"
                    FontAttributes="Bold"

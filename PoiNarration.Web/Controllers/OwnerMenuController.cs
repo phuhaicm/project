@@ -57,7 +57,6 @@ public class OwnerMenuController : Controller
         return View(menu);
     }
 
-
     [HttpGet]
     public IActionResult Create(string boothId)
     {
@@ -68,6 +67,7 @@ public class OwnerMenuController : Controller
     }
 
     [HttpPost]
+    [ValidateAntiForgeryToken]
     public async Task<IActionResult> Create(OwnerMenuItemVm model)
     {
         var guard = EnsureOwner();
@@ -98,7 +98,8 @@ public class OwnerMenuController : Controller
             imageUrl = imageUrl
         };
 
-        var res = await _http.PostAsJsonAsync($"api/booths/{model.BoothId}/menu", payload);
+        // ROUTE ĐÚNG
+        var res = await _http.PostAsJsonAsync($"api/boothmenu/{model.BoothId}", payload);
         res.EnsureSuccessStatusCode();
 
         return RedirectToAction(nameof(Index), new { boothId = model.BoothId });
@@ -130,6 +131,7 @@ public class OwnerMenuController : Controller
     }
 
     [HttpPost]
+    [ValidateAntiForgeryToken]
     public async Task<IActionResult> Edit(OwnerMenuItemVm model)
     {
         var guard = EnsureOwner();
@@ -160,19 +162,22 @@ public class OwnerMenuController : Controller
             imageUrl = imageUrl
         };
 
-        var res = await _http.PutAsJsonAsync($"api/booths/{model.BoothId}/menu/{model.MenuId}", payload);
+        // ROUTE ĐÚNG
+        var res = await _http.PutAsJsonAsync($"api/boothmenu/{model.BoothId}/items/{model.MenuId}", payload);
         res.EnsureSuccessStatusCode();
 
         return RedirectToAction(nameof(Index), new { boothId = model.BoothId });
     }
 
     [HttpPost]
+    [ValidateAntiForgeryToken]
     public async Task<IActionResult> Delete(string boothId, string menuId)
     {
         var guard = EnsureOwner();
         if (guard != null) return guard;
 
-        var res = await _http.DeleteAsync($"api/booths/{boothId}/menu/{menuId}");
+        // ROUTE ĐÚNG
+        var res = await _http.DeleteAsync($"api/boothmenu/{boothId}/items/{menuId}");
         res.EnsureSuccessStatusCode();
 
         return RedirectToAction(nameof(Index), new { boothId });

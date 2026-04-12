@@ -10,6 +10,7 @@
         <div class="text-muted small">Gán Owner và quản lý trạng thái gian hàng</div>
     </div>
 
+    @* SỬA LỖI: Thêm thẻ mở <a> và thuộc tính asp-action *@
     <a asp-action="Create" class="btn btn-primary">
         <i class="bi bi-plus-circle me-1"></i> Thêm booth
     </a>
@@ -37,7 +38,7 @@
                         <th>Booth</th>
                         <th>Owner hiện tại</th>
                         <th style="width: 320px;">Gán owner mới</th>
-                        <th class="text-end" style="width: 120px;">Thao tác</th>
+                        <th class="text-end" style="width: 230px;">Thao tác</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -46,121 +47,185 @@
                     }
                     @foreach (var booth in Model)
                     {
-                        <tr>
-                            <td class="fw-bold text-muted">
-                                @stt
-                                @{
-                                    stt++;
-                                }
-                            </td>
-                                @* Biểu tượng chữ i nhỏ gọn, rê chuột vào sẽ thấy ID ẩn *@
-                                <td>
-                                    <div class="fw-semibold">@booth.NameVi</div>
-    
-                                    @* Nút Copy 1 chạm (Tự động bọc sẵn chữ booth: vào ID) *@
-                                    <span class="badge bg-light text-secondary border mt-1"
-                                          title="Nhấn để copy mã QR"
-                                          style="cursor: pointer;"
-                                          onclick="copyQrCode(this, '@booth.Id')">
-                                        <i class="bi bi-clipboard"></i> Copy mã QR
-                                    </span>
-                                </td>
-                            
-                            <td>
-                                @if (!string.IsNullOrWhiteSpace(booth.OwnerUserId))
-                                {
-                                    <span class="badge bg-success-subtle text-success border border-success">@booth.OwnerUserId</span>
-                                }
-                                else
-                                {
-                                    <span class="badge bg-secondary-subtle text-secondary border border-secondary">Chưa gán</span>
-                                }
-                            </td>
-                            <td>
-                                <form asp-action="AssignOwner" method="post" class="d-flex gap-1">
-                                    <input type="hidden" name="boothId" value="@booth.Id" />
-                                    <select class="form-select form-select-sm" name="ownerUserId">
-                                        <option value="">-- Chọn owner --</option>
-                                        @foreach (var owner in owners)
-                                        {
-                                            <option value="@owner.Id" selected="@(booth.OwnerUserId == owner.Id)">
-                                                @owner.Username
-                                            </option>
-                                        }
-                                    </select>
-                                    <button class="btn btn-primary btn-sm text-nowrap" type="submit">
-                                        Gán
-                                    </button>
-                                </form>
-                            </td>
-                            @* PHẦN CODE MỚI ĐÃ SỬA LỖI CÚ PHÁP *@
-                            <td class="text-end">
-                                <div class="d-flex justify-content-end gap-1">
-                                    @* Nút Sửa *@
-                                    <a class="btn btn-outline-primary btn-sm" asp-action="Edit" asp-route-id="@booth.Id" title="Chỉnh sửa">
-                                        <i class="bi bi-pencil"></i>
-                                    </a>
+                        var qrUrl = !string.IsNullOrWhiteSpace(booth.QrCodeUrl)
+                            ? booth.QrCodeUrl
+                            : Url.Content($"~/uploads/qrcodes/qr-{booth.Id}.png");
 
-                                    @* Nút Ẩn/Hiện *@
-                                    <form asp-action="ToggleActive" method="post" class="d-inline">
-                                        <input type="hidden" name="id" value="@booth.Id" />
-            
-                                        @* Kiểm tra trạng thái: Nếu đang Active (Mở) thì hiện nút Đóng (Màu cam) *@
-                                        @if (booth.IsActive)
-                                        {
-                                            <button class="btn btn-outline-warning btn-sm" type="submit"
-                                                    onclick="return confirm('Bạn có chắc chắn muốn ẨN gian hàng này khỏi Ứng dụng?');"
-                                                    title="Đang bật - Bấm để ẩn">
-                                                <i class="bi bi-eye-slash"></i>
-                                            </button>
-                                        }
-                                        @* Nếu đang bị Ẩn thì hiện nút Mở lại (Màu xanh) *@
-                                        else
-                                        {
-                                            <button class="btn btn-outline-success btn-sm" type="submit"
-                                                    onclick="return confirm('Bạn muốn MỞ LẠI gian hàng này trên Ứng dụng?');"
-                                                    title="Đang ẩn - Bấm để mở lại">
-                                                <i class="bi bi-eye"></i>
-                                            </button>
-                                        }
-                                    </form>
-                                </div>
-                            </td>
-                        </tr>
-                    }
-                </tbody>
-            </table>
+                        <tr>
+                            <td class="fw-bold text-muted">@stt @{
+                                stt++;
+                            }
+                        </td>
+
+                        <td>
+                            <div class="fw-semibold">@booth.NameVi</div>
+                            <div class="small text-muted">@booth.Id</div>
+
+                            <div class="mt-2 d-flex flex-wrap gap-1">
+                                <span class="badge bg-light text-secondary border"
+                                      title="Nhấn để copy boothId"
+                                      style="cursor: pointer;"
+                                      onclick="copyQrCode(this, '@booth.Id')">
+                                    <i class="bi bi-clipboard"></i> Copy mã QR
+                                </span>
+
+                                <button type="button"
+                                        class="badge bg-dark-subtle text-dark border"
+                                        style="cursor: pointer;"
+                                        title="Xem mã QR"
+                                        onclick="showQr('@booth.NameVi', '@booth.Id', '@qrUrl')">
+                                    <i class="bi bi-qr-code"></i> Xem QR
+                                </button>
+                            </div>
+                        </td>
+
+                        <td>
+                            @if (!string.IsNullOrWhiteSpace(booth.OwnerUserId))
+                            {
+                                <span class="badge bg-success-subtle text-success border border-success">@booth.OwnerUserId</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-secondary-subtle text-secondary border border-secondary">Chưa gán</span>
+                            }
+                        </td>
+
+                        <td>
+                            @* SỬA LỖI: Thêm thẻ mở <form> *@
+                            <form asp-action="AssignOwner" method="post" class="d-flex gap-1">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="boothId" value="@booth.Id" />
+                                <select class="form-select form-select-sm" name="ownerUserId">
+                                    <option value="">-- Chọn owner --</option>
+                                    @foreach (var owner in owners)
+                                    {
+                                        <option value="@owner.Id" selected="@(booth.OwnerUserId == owner.Id)">@owner.Username</option>
+                                    }
+                                </select>
+                                <button class="btn btn-primary btn-sm text-nowrap" type="submit">Gán</button>
+                            </form>
+                        </td>
+
+                        <td class="text-end">
+                            <div class="d-flex justify-content-end gap-1 flex-wrap">
+                                <button type="button" class="btn btn-outline-dark btn-sm" title="Xem mã QR"
+                                        onclick="showQr('@booth.NameVi', '@booth.Id', '@qrUrl')">
+                                    <i class="bi bi-qr-code"></i>
+                                </button>
+
+                                <a href="@qrUrl" target="_blank" class="btn btn-outline-secondary btn-sm" title="Mở / tải QR">
+                                    <i class="bi bi-download"></i>
+                                </a>
+
+                                <a class="btn btn-outline-primary btn-sm" asp-action="Edit" asp-route-id="@booth.Id" title="Sửa">
+                                    <i class="bi bi-pencil"></i>
+                                </a>
+
+                                @* SỬA LỖI: Sửa form ToggleActive (Xóa lặp 'boothbooth.Id' và thêm thẻ đóng) *@
+                                <form asp-action="ToggleActive" method="post" class="d-inline">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="id" value="@booth.Id" />
+                                    @if (booth.IsActive)
+                                    {
+                                        <button class="btn btn-outline-warning btn-sm" type="submit"
+                                                onclick="return confirm('Ẩn gian hàng này?');" title="Đang bật">
+                                            <i class="bi bi-eye-slash"></i>
+                                        </button>
+                                    }
+                                    else
+                                    {
+                                        <button class="btn btn-outline-success btn-sm" type="submit"
+                                                onclick="return confirm('Mở lại gian hàng này?');" title="Đang ẩn">
+                                            <i class="bi bi-eye"></i>
+                                        </button>
+                                    }
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+</div>
+
+@* Modal xem QR *@
+<div class="modal fade" id="qrModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header">
+                <div>
+                    <h5 class="modal-title mb-0">Mã QR Booth</h5>
+                    <div id="qrBoothName" class="text-muted small"></div>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body text-center">
+                <div class="mb-2 text-muted small">Dữ liệu QR đang dùng:</div>
+                <div id="qrBoothId" class="fw-semibold text-dark border rounded px-3 py-2 d-inline-block mb-3 bg-light"></div>
+                <div class="border rounded p-3 bg-white">
+                    <img id="qrImage" src="" alt="QR Booth" class="img-fluid" style="max-width: 300px;" />
+                </div>
+                <div id="qrImageError" class="alert alert-warning mt-3 d-none mb-0">Không tìm thấy file QR.</div>
+            </div>
+            <div class="modal-footer justify-content-between">
+                <button type="button" class="btn btn-outline-secondary" onclick="copyQrValueOnly()">
+                    <i class="bi bi-clipboard me-1"></i> Copy boothId
+                </button>
+                <a id="qrDownloadLink" href="#" target="_blank" class="btn btn-primary">
+                    <i class="bi bi-download me-1"></i> Mở / Tải QR
+                </a>
+            </div>
         </div>
     </div>
 </div>
 
 @section Scripts {
-
     <script>
+        let currentQrValue = "";
+
         document.getElementById('searchBox').addEventListener('input', function () {
             const q = this.value.toLowerCase();
             const rows = document.querySelectorAll('#boothTable tbody tr');
             rows.forEach(r => {
-                const boothContent = r.querySelector('td:first-child').innerText.toLowerCase();
+                const boothContent = r.querySelector('td:nth-child(2)').innerText.toLowerCase();
                 r.style.display = boothContent.includes(q) ? '' : 'none';
             });
         });
+
         function copyQrCode(buttonElement, textToCopy) {
-            // Lệnh copy text vào Clipboard của máy tính
-            navigator.clipboard.writeText(textToCopy).then(function() {
-                // Lưu lại nội dung cũ của nút
+            navigator.clipboard.writeText(textToCopy).then(function () {
                 const originalHtml = buttonElement.innerHTML;
-                
-                // Đổi nút thành màu xanh báo hiệu thành công
                 buttonElement.innerHTML = '<i class="bi bi-check-circle-fill text-success"></i> Đã copy!';
-                
-                // Trả lại hình dáng cũ sau 2 giây
-                setTimeout(() => {
-                    buttonElement.innerHTML = originalHtml;
-                }, 2000);
-            }).catch(function(err) {
-                alert('Không thể copy, lỗi: ' + err);
+                setTimeout(() => { buttonElement.innerHTML = originalHtml; }, 2000);
             });
+        }
+
+        function copyQrValueOnly() {
+            if (!currentQrValue) return;
+            navigator.clipboard.writeText(currentQrValue).then(function () {
+                alert('Đã copy boothId: ' + currentQrValue);
+            });
+        }
+
+        function showQr(boothName, boothId, qrUrl) {
+            currentQrValue = boothId;
+            document.getElementById("qrBoothName").innerText = boothName;
+            document.getElementById("qrBoothId").innerText = boothId;
+            
+            const qrImage = document.getElementById("qrImage");
+            const qrImageError = document.getElementById("qrImageError");
+            const qrDownloadLink = document.getElementById("qrDownloadLink");
+
+            qrImageError.classList.add("d-none");
+            qrImage.src = qrUrl;
+            qrDownloadLink.href = qrUrl;
+
+            qrImage.onerror = () => qrImageError.classList.remove("d-none");
+            
+            const modal = new bootstrap.Modal(document.getElementById("qrModal"));
+            modal.show();
         }
     </script>
 }

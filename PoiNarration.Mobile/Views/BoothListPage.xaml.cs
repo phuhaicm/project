@@ -57,7 +57,7 @@ public partial class BoothListPage : ContentPage
     {
         _allBooths = await _db.GetAllBoothsAsync();
         TotalBoothsLabel.Text = _allBooths.Count.ToString();
-        SyncStatusLabel.Text = $"Đã tải {_allBooths.Count} booth";
+        SyncStatusLabel.Text = $"{LanguageService.T("Ui_SyncSuccess")}: {_allBooths.Count} booth";
         await ApplyFilterAsync();
     }
 
@@ -96,11 +96,11 @@ public partial class BoothListPage : ContentPage
                 Subtitle = subtitle,
                 ZoneText = booth.ZoneId,
                 PriorityText = $"{(LanguageService.IsVi ? "Ưu tiên" : "Priority")} {booth.Priority}",
-                RadiusText = $"{booth.RadiusMeters}m",
-                ImageUrl = string.IsNullOrEmpty(booth.ImageUrl) ? "default_image.png" : booth.ImageUrl,
+                DetailText = LanguageService.T("Ui_Detail"),
+                PreviewText = LanguageService.T("Ui_Preview"),
+                ImageUrl = _apiService.ResolveMediaUrl(booth.ImageUrl),
                 IsActive = booth.IsActive,
-                DetailText = LanguageService.IsVi ? "Chi tiết" : "Details",
-                PreviewText = LanguageService.IsVi ? "Nghe thử" : "Preview"
+                
             });
         }
 
@@ -126,15 +126,18 @@ public partial class BoothListPage : ContentPage
     {
         try
         {
-            SyncStatusLabel.Text = "Đang đồng bộ...";
+            SyncStatusLabel.Text = LanguageService.T("Ui_Syncing");
             await _syncService.SyncBootstrapAsync();
             await LoadBoothsAsync();
-            SyncStatusLabel.Text = "Đồng bộ thành công";
+            SyncStatusLabel.Text = LanguageService.T("Ui_SyncSuccess");
         }
         catch (Exception ex)
         {
-            SyncStatusLabel.Text = "Đồng bộ thất bại";
-            await DisplayAlertAsync("Lỗi sync", ex.ToString(), "OK");
+            SyncStatusLabel.Text = LanguageService.T("Ui_SyncFailed");
+            await DisplayAlertAsync(
+                LanguageService.T("Ui_Alert_SyncError"),
+                ex.ToString(),
+                LanguageService.T("Ui_Alert_Ok"));
         }
     }
 
@@ -147,36 +150,36 @@ public partial class BoothListPage : ContentPage
                 var ok = await _autoBoothNavigatorService.StartAsync();
                 if (!ok)
                 {
-                    await DisplayAlertAsync("GPS Mode", "Không bật được GPS hoặc chưa cấp quyền vị trí.", "OK");
+                    await DisplayAlertAsync(LanguageService.T("Ui_GpsMode"), LanguageService.T("Ui_GpsNotEnabledOrPermissionDenied"), LanguageService.T("Ui_Alert_Ok"));
                     return;
                 }
 
                 _autoBoothNavigatorService.SetAutoNarrationEnabled(true);
 
                 _gpsModeEnabled = true;
-                SyncStatusLabel.Text = "GPS Mode: ĐANG BẬT AUTO";
+                SyncStatusLabel.Text = $"{LanguageService.T("Ui_GpsMode")}: {LanguageService.T("Ui_GpsAutoEnabled")}";
 
                 await DisplayAlertAsync(
-                    "GPS Mode",
-                    "Đã bật GPS mode. Đứng gần gian hàng khoảng 2 giây là app sẽ tự nhảy vào và thuyết minh.",
-                    "OK");
+                    LanguageService.T("Ui_GpsMode"),
+                    LanguageService.T("Ui_GpsAutoEnabledMessage"),
+                    LanguageService.T("Ui_Alert_Ok"));
             }
             else
             {
-                _autoBoothNavigatorService.SetAutoNarrationEnabled(true);
+                _autoBoothNavigatorService.SetAutoNarrationEnabled(false);
 
                 _gpsModeEnabled = false;
-                SyncStatusLabel.Text = "GPS Mode: CHỈ THEO DÕI";
+                SyncStatusLabel.Text = $"{LanguageService.T("Ui_GpsMode")}: {LanguageService.T("Ui_GpsManualEnabled")}";
 
                 await DisplayAlertAsync(
-                    "GPS Mode",
-                    "Đã tắt tự động thuyết minh. Hệ thống vẫn tiếp tục theo dõi vị trí của bạn.",
-                    "OK");
+                    LanguageService.T("Ui_GpsMode"),
+                    LanguageService.T("Ui_GpsManualEnabledMessage"),
+                    LanguageService.T("Ui_Alert_Ok"));
             }
         }
         catch (Exception ex)
         {
-            await DisplayAlertAsync("Lỗi GPS Mode", ex.ToString(), "OK");
+            await DisplayAlertAsync(LanguageService.T("Ui_GpsModeError"), ex.ToString(), LanguageService.T("Ui_Alert_Ok"));
         }
     }
 

@@ -7,6 +7,7 @@ var builder = WebApplication.CreateBuilder(args);
 // 1. Đăng ký Controllers
 builder.Services.AddControllers();
 builder.Services.AddScoped<ITranslationService, TranslationService>();
+builder.Services.AddScoped<IQrCodeService, QrCodeService>();
 
 // 2. Cấu hình CORS (Chỉ cần 1 đoạn này là đủ, đừng viết lặp lại)
 builder.Services.AddCors(options =>

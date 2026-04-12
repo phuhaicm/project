@@ -1,45 +1,211 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using PoiNarration.Api.Data; // Thay bằng namespace DbContext của bạn
-using PoiNarration.Api.Models.Entities;
+using Microsoft.AspNetCore.Mvc;
+using PoiNarration.Web.Models;
+using System.Net.Http.Json;
+
+namespace PoiNarration.Web.Controllers;
 
 public class UserController : Controller
 {
-    private readonly AppDbContext _db;
+    private readonly HttpClient _http;
 
-    public UserController(AppDbContext db) => _db = db;
-
-    // 1. Trang danh sách người dùng
-    public IActionResult Index()
+    public UserController(IHttpClientFactory factory)
     {
-        var users = _db.AppUsers.ToList();
-        return View(users);
+        _http = factory.CreateClient("Api");
     }
 
-    // 2. Trang tạo mới (Giao diện)
-    public IActionResult Create() => View();
+    private string? CurrentRole => HttpContext.Session.GetString("Role");
+    private string? CurrentUserId => HttpContext.Session.GetString("UserId");
 
-    // 3. Xử lý lưu (Hành động)
-    [HttpPost]
-    public async Task<IActionResult> Create(PoiNarration.Web.Models.UserCreateViewModel model)
+    private IActionResult? EnsureAdmin()
     {
-        if (_db.AppUsers.Any(u => u.Username == model.Username))
+        if (CurrentRole != "Admin")
+            return RedirectToAction("Login", "Account");
+
+        return null;
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> Index()
+    {
+        var guard = EnsureAdmin();
+        if (guard != null) return guard;
+
+        try
         {
-            ModelState.AddModelError("Username", "Tên đăng nhập đã tồn tại!");
+            var users = await _http.GetFromJsonAsync<List<AppUserDto>>("api/users");
+            return View(users ?? new List<AppUserDto>());
+        }
+        catch (Exception ex)
+        {
+            TempData["Error"] = $"Không tải được danh sách tài khoản: {ex.Message}";
+            return View(new List<AppUserDto>());
+        }
+    }
+
+    [HttpGet]
+    public IActionResult Create()
+    {
+        var guard = EnsureAdmin();
+        if (guard != null) return guard;
+
+        return View(new UserCreateViewModel());
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Create(UserCreateViewModel model)
+    {
+        var guard = EnsureAdmin();
+        if (guard != null) return guard;
+
+        if (!ModelState.IsValid)
+            return View(model);
+
+        try
+        {
+            var response = await _http.PostAsJsonAsync("api/users", new
+            {
+                username = model.Username,
+                fullName = model.FullName,
+                password = model.Password,
+                role = model.Role
+            });
+
+            if (!response.IsSuccessStatusCode)
+            {
+                var error = await response.Content.ReadAsStringAsync();
+                TempData["Error"] = $"Không tạo được tài khoản: {error}";
+                return View(model);
+            }
+
+            TempData["Success"] = "Tạo tài khoản thành công.";
+            return RedirectToAction(nameof(Index));
+        }
+        catch (Exception ex)
+        {
+            TempData["Error"] = $"Lỗi tạo tài khoản: {ex.Message}";
+            return View(model);
+        }
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> Edit(string id)
+    {
+        var guard = EnsureAdmin();
+        if (guard != null) return guard;
+
+        if (string.IsNullOrWhiteSpace(id))
+        {
+            TempData["Error"] = "Thiếu mã người dùng cần sửa.";
+            return RedirectToAction(nameof(Index));
+        }
+
+        try
+        {
+            var user = await _http.GetFromJsonAsync<AppUserDto>($"api/users/{id}");
+            if (user == null)
+            {
+                TempData["Error"] = "Không tìm thấy tài khoản.";
+                return RedirectToAction(nameof(Index));
+            }
+
+            var vm = new UserCreateViewModel
+            {
+                Id = user.Id,
+                Username = user.Username,
+                FullName = user.FullName,
+                Role = user.Role,
+                Password = ""
+            };
+
+            return View(vm);
+        }
+        catch (Exception ex)
+        {
+            TempData["Error"] = $"Không tải được dữ liệu tài khoản: {ex.Message}";
+            return RedirectToAction(nameof(Index));
+        }
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Edit(UserCreateViewModel model)
+    {
+        var guard = EnsureAdmin();
+        if (guard != null) return guard;
+
+        if (!ModelState.IsValid)
+            return View(model);
+
+        if (string.IsNullOrWhiteSpace(model.Id))
+        {
+            TempData["Error"] = "Thiếu mã người dùng cần cập nhật.";
             return View(model);
         }
 
-        var newUser = new AppUser
+        try
         {
-            Id = Guid.NewGuid().ToString(),
-            Username = model.Username,
-            FullName = model.FullName,
-            Password = model.Password, // Lưu ý: thực tế nên dùng PasswordHash
-            PasswordHash = model.Password,
-            Role = model.Role
-        };
+            var response = await _http.PutAsJsonAsync($"api/users/{model.Id}", new
+            {
+                fullName = model.FullName,
+                password = string.IsNullOrWhiteSpace(model.Password) ? null : model.Password,
+                role = model.Role
+            });
 
-        _db.AppUsers.Add(newUser);
-        await _db.SaveChangesAsync();
-        return RedirectToAction("Index");
+            if (!response.IsSuccessStatusCode)
+            {
+                var error = await response.Content.ReadAsStringAsync();
+                TempData["Error"] = $"Cập nhật tài khoản thất bại: {error}";
+                return View(model);
+            }
+
+            TempData["Success"] = "Cập nhật tài khoản thành công.";
+            return RedirectToAction(nameof(Index));
+        }
+        catch (Exception ex)
+        {
+            TempData["Error"] = $"Lỗi cập nhật tài khoản: {ex.Message}";
+            return View(model);
+        }
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Delete(string id)
+    {
+        var guard = EnsureAdmin();
+        if (guard != null) return guard;
+
+        if (string.IsNullOrWhiteSpace(id))
+        {
+            TempData["Error"] = "Thiếu mã người dùng cần xóa.";
+            return RedirectToAction(nameof(Index));
+        }
+
+        if (id == CurrentUserId)
+        {
+            TempData["Error"] = "Bạn không thể tự xóa chính mình.";
+            return RedirectToAction(nameof(Index));
+        }
+
+        try
+        {
+            var response = await _http.DeleteAsync($"api/users/{id}");
+
+            if (!response.IsSuccessStatusCode)
+            {
+                var error = await response.Content.ReadAsStringAsync();
+                TempData["Error"] = $"Xóa tài khoản thất bại: {error}";
+                return RedirectToAction(nameof(Index));
+            }
+
+            TempData["Success"] = "Xóa tài khoản thành công.";
+            return RedirectToAction(nameof(Index));
+        }
+        catch (Exception ex)
+        {
+            TempData["Error"] = $"Lỗi xóa tài khoản: {ex.Message}";
+            return RedirectToAction(nameof(Index));
+        }
     }
 }

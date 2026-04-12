@@ -167,7 +167,7 @@ public class NarrationService
                 IsSynced = false
             };
 
-            await _db.SavePlaybackLogAsync(log);
+            //await _db.SavePlaybackLogAsync(log);
 
             try
             {
@@ -181,8 +181,8 @@ public class NarrationService
                     SessionId = log.SessionId
                 });
 
-                log.IsSynced = true;
-                await _db.SavePlaybackLogAsync(log);
+                //log.IsSynced = true;
+                //await _db.SavePlaybackLogAsync(log);
             }
             catch
             {

@@ -5,26 +5,64 @@
 
     <Application.Resources>
         <ResourceDictionary>
-
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="Resources/Styles/Colors.xaml" />
                 <ResourceDictionary Source="Resources/Styles/Styles.xaml" />
             </ResourceDictionary.MergedDictionaries>
-            <x:String x:Key="Ui_SyncReady">Sẵn sàng đồng bộ</x:String>
+
+            <!-- default values, LanguageService sẽ update runtime -->
+            <x:String x:Key="Ui_AppTitle">PoiNarration</x:String>
+            <x:String x:Key="Ui_Tab_Booths">Booths</x:String>
+            <x:String x:Key="Ui_Tab_Map">Bản đồ</x:String>
+            <x:String x:Key="Ui_Tab_Qr">QR</x:String>
+
+            <x:String x:Key="Ui_Page_BoothList">Danh sách trạm</x:String>
+            <x:String x:Key="Ui_Page_BoothDetail">Chi tiết trạm</x:String>
+            <x:String x:Key="Ui_Page_Map">Bản đồ</x:String>
+            <x:String x:Key="Ui_Page_Qr">Quét QR gian hàng</x:String>
+            <x:String x:Key="Ui_Page_GateMode">Chọn chế độ</x:String>
+            <x:String x:Key="Ui_Page_ZoneList">Chọn khu vực</x:String>
+            <x:String x:Key="Ui_Page_BoothByZone">Danh sách gian hàng</x:String>
+
+            <x:String x:Key="Ui_SyncReady">Sẵn sàng đồng bộ dữ liệu</x:String>
+            <x:String x:Key="Ui_SyncSuccess">Đồng bộ thành công</x:String>
+            <x:String x:Key="Ui_SyncFailed">Đồng bộ thất bại</x:String>
+            <x:String x:Key="Ui_Syncing">Đang đồng bộ...</x:String>
+            <x:String x:Key="Ui_Sync">Đồng bộ</x:String>
             <x:String x:Key="Ui_ScanQR">Quét QR</x:String>
             <x:String x:Key="Ui_GpsMode">GPS Mode</x:String>
             <x:String x:Key="Ui_Map">Bản đồ</x:String>
             <x:String x:Key="Ui_PlayAudio">▶ Phát âm thanh</x:String>
             <x:String x:Key="Ui_StopAudio">■ Dừng</x:String>
-            <x:String x:Key="Ui_Sync">Đồng bộ</x:String>
-            <x:String x:Key="Ui_TotalBooth">Tổng Booth</x:String>
+            <x:String x:Key="Ui_TotalBooth">Tổng số booth</x:String>
             <x:String x:Key="Ui_CurrentLang">Ngôn ngữ hiện tại</x:String>
             <x:String x:Key="Ui_Back">← Quay lại</x:String>
             <x:String x:Key="Ui_MenuHeader">Menu / Sản phẩm</x:String>
             <x:String x:Key="Ui_SearchPlaceholder">Tìm booth...</x:String>
             <x:String x:Key="Ui_LangTitle">Ngôn ngữ</x:String>
-            <x:String x:Key="Ui_PageTitle">Danh sách Trạm</x:String>
+            <x:String x:Key="Ui_Detail">Chi tiết</x:String>
+            <x:String x:Key="Ui_Preview">Nghe thử</x:String>
+            <x:String x:Key="Ui_OpenDetail">Mở chi tiết</x:String>
+            <x:String x:Key="Ui_Refresh">Làm mới</x:String>
+
+            <x:String x:Key="Ui_LocationChecking">Vị trí: Đang xác định...</x:String>
+            <x:String x:Key="Ui_GpsChecking">GPS: Đang kiểm tra...</x:String>
+            <x:String x:Key="Ui_GpsActive">GPS: Đang hoạt động</x:String>
+            <x:String x:Key="Ui_GpsAutoOn">GPS: ĐANG BẬT AUTO</x:String>
+            <x:String x:Key="Ui_GpsTrackingOnly">GPS: CHỈ THEO DÕI</x:String>
+            <x:String x:Key="Ui_NearestBoothHeader">BOOTH GẦN NHẤT</x:String>
+            <x:String x:Key="Ui_NearestUnknown">Chưa xác định</x:String>
+            <x:String x:Key="Ui_NearestNotFound">Chưa tìm thấy booth gần nhất</x:String>
+
+            <x:String x:Key="Ui_QrInstruction">Đưa mã QR của gian hàng vào khung hình</x:String>
+            <x:String x:Key="Ui_GateScanned">Bạn vừa quét QR ở cổng</x:String>
+            <x:String x:Key="Ui_ChooseMode">Chọn chế độ</x:String>
+            <x:String x:Key="Ui_ModeGpsAuto">1) GPS Tracking (Tự động)</x:String>
+            <x:String x:Key="Ui_ModeManual">2) Thủ công (Chọn khu vực)</x:String>
+            <x:String x:Key="Ui_ModeBoothQr">Quét QR Booth</x:String>
+            <x:String x:Key="Ui_ChooseZone">Chọn khu vực</x:String>
+            <x:String x:Key="Ui_ZoneA">Khu A</x:String>
+            <x:String x:Key="Ui_ZoneB">Khu B</x:String>
         </ResourceDictionary>
     </Application.Resources>
-
 </Application>

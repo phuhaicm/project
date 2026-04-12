@@ -1,12 +1,9 @@
-﻿
-using Microsoft.AspNetCore.Mvc;
-using PoiNarration.Web.Models;
+﻿using Microsoft.AspNetCore.Mvc;
 using PoiNarration.Web.ViewModels;
 using System.Net.Http.Json;
 
 namespace PoiNarration.Web.Controllers;
 
-[Route("Account/[action]")] // Ép định tuyến về đúng nhà Web
 public class AccountController : Controller
 {
     private readonly HttpClient _http;
@@ -15,47 +12,58 @@ public class AccountController : Controller
     {
         _http = factory.CreateClient("Api");
     }
+
     [HttpGet]
-    [Route("~/")] // Biến trang Login thành trang chủ mặc định
-    [Route("~/Account/Login")]
     public IActionResult Login()
     {
         return View(new LoginVm());
     }
 
     [HttpPost]
+    [ValidateAntiForgeryToken]
     public async Task<IActionResult> Login(LoginVm model)
     {
         if (!ModelState.IsValid)
             return View(model);
 
-        var response = await _http.PostAsJsonAsync("api/auth/login", new
+        try
         {
-            username = model.Username,
-            password = model.Password
-        });
+            var response = await _http.PostAsJsonAsync("api/auth/login", new
+            {
+                username = model.Username,
+                password = model.Password
+            });
 
-        if (!response.IsSuccessStatusCode)
+            if (!response.IsSuccessStatusCode)
+            {
+                ViewBag.Error = "Tài khoản hoặc mật khẩu không đúng.";
+                return View(model);
+            }
+
+            var result = await response.Content.ReadFromJsonAsync<LoginResponseVm>();
+            if (result == null)
+            {
+                ViewBag.Error = "Không đọc được dữ liệu trả về từ API.";
+                return View(model);
+            }
+
+            HttpContext.Session.SetString("UserId", result.UserId ?? "");
+            HttpContext.Session.SetString("Username", result.Username ?? "");
+            HttpContext.Session.SetString("Role", result.Role ?? "");
+
+            if (result.Role == "Admin")
+                return RedirectToAction("Index", "AdminBooth");
+
+            if (result.Role == "Owner")
+                return RedirectToAction("MyBooths", "OwnerMenu");
+
+            return RedirectToAction(nameof(Login));
+        }
+        catch (Exception ex)
         {
-            ViewBag.Error = "Đăng nhập thất bại.";
+            ViewBag.Error = $"Lỗi hệ thống: {ex.Message}";
             return View(model);
         }
-
-        var login = await response.Content.ReadFromJsonAsync<LoginResponse>();
-        if (login == null)
-        {
-            ViewBag.Error = "Không đọc được dữ liệu đăng nhập.";
-            return View(model);
-        }
-
-        HttpContext.Session.SetString("UserId", login.UserId);
-        HttpContext.Session.SetString("Username", login.Username);
-        HttpContext.Session.SetString("Role", login.Role);
-
-        if (login.Role == "Admin")
-            return RedirectToAction("Index", "AdminBooth");
-
-        return RedirectToAction("MyBooths", "OwnerMenu");
     }
 
     [HttpGet]
@@ -63,5 +71,12 @@ public class AccountController : Controller
     {
         HttpContext.Session.Clear();
         return RedirectToAction(nameof(Login));
+    }
+
+    private class LoginResponseVm
+    {
+        public string? UserId { get; set; }
+        public string? Username { get; set; }
+        public string? Role { get; set; }
     }
 }

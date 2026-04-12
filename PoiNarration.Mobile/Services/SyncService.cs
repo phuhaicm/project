@@ -20,11 +20,19 @@ public class SyncService
     {
         await _db.InitAsync();
 
-        var data = await _apiService.GetBootstrapAsync();
-        if (data == null)
-            throw new Exception("Không lấy được dữ liệu bootstrap từ API.");
+        try
+        {
+            var data = await _apiService.GetBootstrapAsync();
+            if (data == null)
+                throw new Exception("API trả về dữ liệu bootstrap null.");
 
-        await _db.SaveBootstrapDataAsync(data);
+            await _db.SaveBootstrapDataAsync(data);
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine($"[SyncBootstrapAsync lỗi]: {ex}");
+            throw new Exception($"Không đồng bộ được bootstrap. Chi tiết: {ex.Message}", ex);
+        }
     }
 
 

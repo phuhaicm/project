@@ -13,12 +13,15 @@ public class BoothsController : ControllerBase
 {
     private readonly AppDbContext _db;
     private readonly ITranslationService _translationService;
-
-    // HỢP NHẤT CONSTRUCTOR: Nhận cả DB và Service
-    public BoothsController(AppDbContext db, ITranslationService translationService)
+    private readonly IQrCodeService _qrCodeService;
+    public BoothsController(
+    AppDbContext db,
+    ITranslationService translationService,
+    IQrCodeService qrCodeService)
     {
         _db = db;
         _translationService = translationService;
+        _qrCodeService = qrCodeService;
     }
 
     [HttpGet]
@@ -49,17 +52,17 @@ public class BoothsController : ControllerBase
 
         var booth = new Booth
         {
-            Id = Guid.NewGuid().ToString(),
+            Id = Guid.NewGuid().ToString(), // boothId gốc
             ZoneId = request.ZoneId,
             NameVi = request.NameVi,
-            NameEn = "", // API sẽ tự sinh translation EN
+            NameEn = "",
             DescVi = request.DescVi,
-            DescEn = "", // API sẽ tự sinh translation EN
+            DescEn = "",
             Lat = request.Lat,
             Lng = request.Lng,
             RadiusMeters = request.RadiusMeters,
             Priority = request.Priority,
-            ImageUrl = request.ImageUrl,
+            ImageUrl = request.ImageUrl ?? "",
             MapUrl = request.MapUrl,
             TtsScriptVi = request.TtsScriptVi,
             TtsScriptEn = null,
@@ -69,17 +72,26 @@ public class BoothsController : ControllerBase
             OwnerUserId = null
         };
 
+        // Tạo QR từ đúng boothId gốc
+        var qrCodeUrl = await _qrCodeService.GenerateAndSaveQrCodeAsync(booth.Id);
+
+        // Nếu model Booth có cột QrCodeUrl
+        booth.QrCodeUrl = qrCodeUrl;
+
         _db.Booths.Add(booth);
 
-        // SỬ DỤNG SERVICE ĐỂ BUILD TRANSLATIONS TỰ ĐỘNG
         var translations = await _translationService.BuildBoothTranslationsAsync(booth);
-        if (translations != null && translations.Any())
-        {
+        if (translations.Any())
             _db.BoothTranslations.AddRange(translations);
-        }
 
         await _db.SaveChangesAsync();
-        return Ok(booth);
+
+        return Ok(new
+        {
+            booth.Id,
+            booth.NameVi,
+            booth.QrCodeUrl
+        });
     }
 
     [HttpPut("{id}")]
@@ -98,24 +110,31 @@ public class BoothsController : ControllerBase
         booth.Lng = request.Lng;
         booth.RadiusMeters = request.RadiusMeters;
         booth.Priority = request.Priority;
-        booth.ImageUrl = request.ImageUrl;
-        booth.MapUrl = request.MapUrl;
-        booth.TtsScriptVi = request.TtsScriptVi;
+
+        // GIỮ ẢNH CŨ NẾU REQUEST KHÔNG CÓ ẢNH MỚI
+        if (!string.IsNullOrWhiteSpace(request.ImageUrl))
+            booth.ImageUrl = request.ImageUrl;
+
+        // GIỮ FIELD CŨ NẾU REQUEST RỖNG
+        if (!string.IsNullOrWhiteSpace(request.MapUrl))
+            booth.MapUrl = request.MapUrl;
+
+        if (!string.IsNullOrWhiteSpace(request.TtsScriptVi))
+            booth.TtsScriptVi = request.TtsScriptVi;
+
+        if (!string.IsNullOrWhiteSpace(request.AudioUrlVi))
+            booth.AudioUrlVi = request.AudioUrlVi;
+
         booth.TtsScriptEn = null;
-        booth.AudioUrlVi = request.AudioUrlVi;
         booth.AudioUrlEn = null;
         booth.IsActive = request.IsActive;
 
-        // XÓA BẢN DỊCH CŨ
         var oldTranslations = _db.BoothTranslations.Where(x => x.BoothId == booth.Id);
         _db.BoothTranslations.RemoveRange(oldTranslations);
 
-        // SỬ DỤNG SERVICE ĐỂ BUILD LẠI BẢN DỊCH MỚI SAU KHI UPDATE
         var translationsToAdd = await _translationService.BuildBoothTranslationsAsync(booth);
-        if (translationsToAdd != null && translationsToAdd.Any())
-        {
+        if (translationsToAdd.Any())
             _db.BoothTranslations.AddRange(translationsToAdd);
-        }
 
         await _db.SaveChangesAsync();
 
@@ -140,6 +159,43 @@ public class BoothsController : ControllerBase
             booth.MapUrl,
             booth.IsActive,
             Translations = updatedTranslations
+        });
+    }
+    [HttpPost("{id}/generate-qr")]
+    public async Task<IActionResult> GenerateQr(string id)
+    {
+        var booth = await _db.Booths.FirstOrDefaultAsync(x => x.Id == id);
+        if (booth == null)
+            return NotFound("Không tìm thấy booth.");
+
+        var qrCodeUrl = await _qrCodeService.GenerateAndSaveQrCodeAsync(booth.Id);
+
+        booth.QrCodeUrl = qrCodeUrl;
+        await _db.SaveChangesAsync();
+
+        return Ok(new
+        {
+            booth.Id,
+            booth.QrCodeUrl
+        });
+    }
+    [HttpPost("generate-qr-all")]
+    public async Task<IActionResult> GenerateQrForAll()
+    {
+        var booths = await _db.Booths.ToListAsync();
+
+        foreach (var booth in booths)
+        {
+            var qrCodeUrl = await _qrCodeService.GenerateAndSaveQrCodeAsync(booth.Id);
+            booth.QrCodeUrl = qrCodeUrl;
+        }
+
+        await _db.SaveChangesAsync();
+
+        return Ok(new
+        {
+            message = "Đã tạo QR cho tất cả booth.",
+            count = booths.Count
         });
     }
 }
