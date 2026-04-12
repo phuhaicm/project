@@ -22,11 +22,38 @@ public static class LanguageService
     public static void Set(string languageCode)
     {
         CurrentLanguage = languageCode;
+        // Tự động cập nhật giao diện ngay khi set ngôn ngữ mới
+        UpdateUiResources(languageCode);
     }
 
     public static string Get()
     {
         return CurrentLanguage;
+    }
+
+    // --- HÀM MỚI: ĐỔ CHỮ VÀO RESOURCE ---
+    public static void UpdateUiResources(string lang)
+    {
+        var res = Application.Current.Resources;
+        bool isVi = (lang == "vi");
+
+        // Gán giá trị cho cái tên bị báo lỗi
+        res["Ui_PageTitle"] = isVi ? "Danh sách Trạm" : "Booths";
+
+        // Gán giá trị cho các nút bấm khác
+        res["Ui_SyncReady"] = isVi ? "Sẵn sàng đồng bộ dữ liệu" : "Ready to sync";
+        res["Ui_Sync"] = isVi ? "Đồng bộ" : "Sync";
+        res["Ui_ScanQR"] = isVi ? "Quét QR" : "Scan QR";
+        res["Ui_GpsMode"] = "GPS Mode";
+        res["Ui_Map"] = isVi ? "Bản đồ" : "Map";
+        res["Ui_TotalBooth"] = isVi ? "Tổng Booth" : "Total Booths";
+        res["Ui_CurrentLang"] = isVi ? "Ngôn ngữ hiện tại" : "Current Language";
+        res["Ui_SearchPlaceholder"] = isVi ? "Tìm booth..." : "Search booth...";
+        res["Ui_LangTitle"] = isVi ? "Ngôn ngữ" : "Language";
+        res["Ui_Back"] = isVi ? "← Quay lại" : "← Back";
+        res["Ui_PlayAudio"] = isVi ? "▶ Phát âm thanh" : "▶ Play Audio";
+        res["Ui_StopAudio"] = isVi ? "■ Dừng" : "■ Stop";
+        res["Ui_MenuHeader"] = isVi ? "Menu / Sản phẩm" : "Menu / Products";
     }
 
     public static string GetDefaultCurrencyCode(string languageCode)

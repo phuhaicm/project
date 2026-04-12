@@ -34,12 +34,20 @@
                         @if (role == "Admin")
                         {
                             <li class="nav-item">
-                                <a class="nav-link" asp-controller="AdminBooth" asp-action="Index">
+                                <a class="nav-link @(ViewContext.RouteData.Values["Controller"]?.ToString() == "AdminBooth" ? "active fw-bold" : "")"
+                                       asp-controller="AdminBooth" asp-action="Index">
                                     <i class="bi bi-diagram-3 me-1"></i> Quản lý Booth
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link" asp-controller="Dashboard" asp-action="Index">
+                                <a class="nav-link @(ViewContext.RouteData.Values["Controller"]?.ToString() == "User" ? "active fw-bold" : "")"
+                                       asp-controller="User" asp-action="Index">
+                                    <i class="bi bi-people me-1"></i> Quản lý Người dùng
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link @(ViewContext.RouteData.Values["Controller"]?.ToString() == "Dashboard" ? "active fw-bold" : "")"
+                                       asp-controller="Dashboard" asp-action="Index">
                                     <i class="bi bi-bar-chart-line me-1"></i> Dashboard
                                 </a>
                             </li>
@@ -87,7 +95,6 @@
     </header>
 
     <main class="container py-4">
-        @* Thông báo thành công *@
         @if (TempData["Success"] != null)
         {
             <div class="alert alert-success alert-dismissible fade show border-0 shadow-sm">
@@ -95,26 +102,9 @@
                 <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
             </div>
         }
-
-        @* Thông báo lỗi *@
         @if (TempData["Error"] != null)
         {
             <div class="alert alert-danger alert-dismissible fade show border-0 shadow-sm">
-                <i class="bi bi-exclamation-triangle me-1"></i> @TempData["Error"]
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-            </div>
-        }
-        @if (TempData["Success"] != null)
-        {
-            <div class="alert alert-success alert-dismissible fade show">
-                <i class="bi bi-check-circle me-1"></i> @TempData["Success"]
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-            </div>
-        }
-
-        @if (TempData["Error"] != null)
-        {
-            <div class="alert alert-danger alert-dismissible fade show">
                 <i class="bi bi-exclamation-triangle me-1"></i> @TempData["Error"]
                 <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
             </div>

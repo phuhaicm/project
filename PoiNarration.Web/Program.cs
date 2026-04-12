@@ -1,6 +1,12 @@
+using Microsoft.EntityFrameworkCore;
+using PoiNarration.Api.Data; // Đảm bảo có dòng này để nhận diện AppDbContext
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddControllersWithViews();
+builder.Services.AddDbContext<AppDbContext>(options =>
+    options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+builder.Services.AddControllersWithViews()
+    .AddApplicationPart(typeof(PoiNarration.Web.Controllers.AccountController).Assembly);
 
 builder.Services.AddDistributedMemoryCache();
 builder.Services.AddSession(options =>
@@ -28,6 +34,7 @@ app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.UseRouting();
 app.UseSession();
+app.MapControllers();
 
 app.MapControllerRoute(
     name: "default",

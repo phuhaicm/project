@@ -172,6 +172,18 @@ public partial class BoothDetailPage : ContentPage
             _ => vnd
         };
     }
+    private async void OnPlayMenuItemClicked(object sender, EventArgs e)
+    {
+        // Khi nút được bấm, nó sẽ mang theo một "gói hàng" (CommandParameter)
+        // Gói hàng này chính là đoạn Text mà mình sẽ gắn ở file XAML (Bước 3)
+        if (sender is Button btn && btn.CommandParameter is string textToRead)
+        {
+            var lang = LanguageService.CurrentLanguage;
+
+            // Gọi cô trợ lý ra đọc đoạn text đó
+            await _narrationService.SpeakTextAsync(textToRead, lang);
+        }
+    }
 
     private async void OnPlayClicked(object sender, EventArgs e)
     {
@@ -206,6 +218,7 @@ public partial class BoothDetailPage : ContentPage
     }
 
 }
+
 
 public class MenuItemDisplayVm
 {

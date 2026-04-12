@@ -24,6 +24,18 @@ public class Booth
     public string? OwnerUserId { get; set; }
 
     public string? ImageUrl { get; set; }
+    [Ignore]
+    public string DisplayImageUrl
+    {
+        get
+        {
+            if (string.IsNullOrEmpty(ImageUrl))
+                return "default_image.png";
+
+            // Trả về thẳng ImageUrl vì link này sẽ được mình xử lý "sạch" ở Bước 2
+            return ImageUrl;
+        }
+    }
     public string? MapUrl { get; set; }
 
     public string? TtsScriptVi { get; set; }

@@ -5,10 +5,26 @@
 
     <Application.Resources>
         <ResourceDictionary>
+
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="Resources/Styles/Colors.xaml" />
                 <ResourceDictionary Source="Resources/Styles/Styles.xaml" />
             </ResourceDictionary.MergedDictionaries>
+            <x:String x:Key="Ui_SyncReady">Sẵn sàng đồng bộ</x:String>
+            <x:String x:Key="Ui_ScanQR">Quét QR</x:String>
+            <x:String x:Key="Ui_GpsMode">GPS Mode</x:String>
+            <x:String x:Key="Ui_Map">Bản đồ</x:String>
+            <x:String x:Key="Ui_PlayAudio">▶ Phát âm thanh</x:String>
+            <x:String x:Key="Ui_StopAudio">■ Dừng</x:String>
+            <x:String x:Key="Ui_Sync">Đồng bộ</x:String>
+            <x:String x:Key="Ui_TotalBooth">Tổng Booth</x:String>
+            <x:String x:Key="Ui_CurrentLang">Ngôn ngữ hiện tại</x:String>
+            <x:String x:Key="Ui_Back">← Quay lại</x:String>
+            <x:String x:Key="Ui_MenuHeader">Menu / Sản phẩm</x:String>
+            <x:String x:Key="Ui_SearchPlaceholder">Tìm booth...</x:String>
+            <x:String x:Key="Ui_LangTitle">Ngôn ngữ</x:String>
+            <x:String x:Key="Ui_PageTitle">Danh sách Trạm</x:String>
         </ResourceDictionary>
     </Application.Resources>
+
 </Application>

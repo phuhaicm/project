@@ -10,10 +10,9 @@
 
     <Grid RowDefinitions="Auto,*">
 
-        <!-- Header / Booth info -->
         <VerticalStackLayout Grid.Row="0" Margin="16,16,16,8" Spacing="16">
 
-            <Button Text="← Quay lại"
+            <Button Text="{DynamicResource Ui_Back}"
                     Clicked="OnBackClicked"
                     HorizontalOptions="Start"
                     BackgroundColor="#2A2A38"
@@ -45,7 +44,7 @@
                            LineBreakMode="WordWrap" />
 
                     <Grid ColumnDefinitions="*,*" ColumnSpacing="12" Margin="0,8,0,0">
-                        <Button Text="▶ Phát âm thanh"
+                        <Button Text="{DynamicResource Ui_PlayAudio}"
                                 Clicked="OnPlayClicked"
                                 BackgroundColor="#6D5DF6"
                                 TextColor="White"
@@ -53,7 +52,7 @@
                                 HeightRequest="46" />
 
                         <Button Grid.Column="1"
-                                Text="■ Dừng"
+                                Text="{DynamicResource Ui_StopAudio}"
                                 Clicked="OnStopClicked"
                                 BackgroundColor="#2A2A38"
                                 TextColor="White"
@@ -63,14 +62,13 @@
                 </VerticalStackLayout>
             </Border>
 
-            <Label Text="Menu / Sản phẩm"
+            <Label Text="{DynamicResource Ui_MenuHeader}"
                    FontSize="18"
                    FontAttributes="Bold"
                    TextColor="White"
                    Margin="0,8,0,0" />
         </VerticalStackLayout>
 
-        <!-- Menu list -->
         <CollectionView Grid.Row="1"
                         x:Name="MenuView"
                         Margin="16,0,16,16"
@@ -83,7 +81,7 @@
                             BackgroundColor="#141421"
                             StrokeShape="RoundRectangle 20">
 
-                        <Grid ColumnDefinitions="96,*" ColumnSpacing="12">
+                        <Grid ColumnDefinitions="96,*,Auto" ColumnSpacing="12">
 
                             <Border Grid.Column="0"
                                     BackgroundColor="#232334"
@@ -95,7 +93,7 @@
                                        WidthRequest="96" />
                             </Border>
 
-                            <VerticalStackLayout Grid.Column="1" Spacing="6">
+                            <VerticalStackLayout Grid.Column="1" Spacing="6" VerticalOptions="Center">
                                 <Label Text="{Binding Name}"
                                        FontSize="20"
                                        FontAttributes="Bold"
@@ -119,6 +117,22 @@
                                 </Border>
                             </VerticalStackLayout>
 
+                            <Button Grid.Column="2"
+                                    Text="▶"
+                                    WidthRequest="45"
+                                    HeightRequest="45"
+                                    CornerRadius="25"
+                                    BackgroundColor="#6D5DF6"
+                                    TextColor="White"
+                                    VerticalOptions="Center"
+                                    Clicked="OnPlayMenuItemClicked">
+                                <Button.CommandParameter>
+                                    <MultiBinding StringFormat="{}{0}. {1}">
+                                        <Binding Path="Name" />
+                                        <Binding Path="Description" />
+                                    </MultiBinding>
+                                </Button.CommandParameter>
+                            </Button>
                         </Grid>
                     </Border>
                 </DataTemplate>

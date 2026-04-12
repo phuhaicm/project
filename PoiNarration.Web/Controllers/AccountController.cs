@@ -6,6 +6,7 @@ using System.Net.Http.Json;
 
 namespace PoiNarration.Web.Controllers;
 
+[Route("Account/[action]")] // Ép định tuyến về đúng nhà Web
 public class AccountController : Controller
 {
     private readonly HttpClient _http;
@@ -14,8 +15,9 @@ public class AccountController : Controller
     {
         _http = factory.CreateClient("Api");
     }
-
     [HttpGet]
+    [Route("~/")] // Biến trang Login thành trang chủ mặc định
+    [Route("~/Account/Login")]
     public IActionResult Login()
     {
         return View(new LoginVm());

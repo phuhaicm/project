@@ -929,7 +929,7 @@ new Booth { Id = "booth-10", ZoneId = "zone-b", NameVi = "Cà Phê & Trà Sữa"
                 MenuItemId = "booth-01-menu-01",
                 LanguageCode = "vi",
                 Name = "Phở Hà Nội Phở đặc biệt",
-                Description = "Phở đặc biệt của Phở Hà Nội, dữ liệu phù hợp với schema hiện tại.",
+                Description = "Phở đặc biệt của Phở Hà Nội.",
                 CurrencyCode = "VND",
                 LocalizedPrice = 65000m,
                 PriceText = "65.000đ"

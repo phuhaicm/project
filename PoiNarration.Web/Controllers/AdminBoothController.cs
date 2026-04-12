@@ -224,18 +224,18 @@ public class AdminBoothController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Delete(string id)
+    public async Task<IActionResult> ToggleActive(string id) // Đã đổi tên hàm cho khớp Giao diện
     {
         var guard = EnsureAdmin();
         if (guard != null) return guard;
 
         if (string.IsNullOrWhiteSpace(id))
         {
-            TempData["Error"] = "Thiếu mã booth cần ẩn.";
+            TempData["Error"] = "Thiếu mã booth cần thao tác.";
             return RedirectToAction(nameof(Index));
         }
 
-
+        // 1. Lấy thông tin booth hiện tại
         var booth = await _http.GetFromJsonAsync<BoothDto>($"api/booths/{id}");
         if (booth == null)
         {
@@ -243,7 +243,7 @@ public class AdminBoothController : Controller
             return RedirectToAction(nameof(Index));
         }
 
-        // Giữ dữ liệu tiếng Việt gốc, chỉ chuyển IsActive = false
+        // 2. Tạo payload mới, CHỈ ĐẢO NGƯỢC trạng thái IsActive
         var payload = new
         {
             zoneId = booth.ZoneId,
@@ -257,19 +257,22 @@ public class AdminBoothController : Controller
             mapUrl = booth.MapUrl,
             ttsScriptVi = booth.TtsScriptVi,
             audioUrlVi = booth.AudioUrlVi,
-            isActive = false
+
+            isActive = !booth.IsActive // <--- ĐIỂM ĂN TIỀN LÀ ĐÂY (Đang true thành false, đang false thành true)
         };
 
+        // 3. Gửi lên API để Update
         var response = await _http.PutAsJsonAsync($"api/booths/{id}", payload);
 
         if (!response.IsSuccessStatusCode)
         {
             var errorText = await response.Content.ReadAsStringAsync();
-            TempData["Error"] = $"Ẩn booth thất bại: {errorText}";
+            TempData["Error"] = $"Cập nhật trạng thái thất bại: {errorText}";
             return RedirectToAction(nameof(Index));
         }
 
-        TempData["Success"] = "Booth đã được ẩn.";
+        // 4. Thông báo thông minh tùy theo trạng thái mới
+        TempData["Success"] = booth.IsActive ? "Booth đã được ẨN khỏi ứng dụng." : "Booth đã được MỞ LẠI thành công.";
         return RedirectToAction(nameof(Index));
     }
 

@@ -114,12 +114,13 @@ public class AppDatabase
         return await _database!.InsertAllAsync(items);
     }
 
-  
+
 
     public async Task<List<Booth>> GetAllBoothsAsync()
     {
         await InitAsync();
-        return await _database!.Table<Booth>().ToListAsync();
+        // Đã kẹp thêm điều kiện lọc: Chỉ lấy những gian hàng có IsActive là true
+        return await _database!.Table<Booth>().Where(x => x.IsActive).ToListAsync();
     }
 
     public async Task<Booth?> GetBoothAsync(string boothId)
@@ -133,7 +134,7 @@ public class AppDatabase
     {
         await InitAsync();
         return await _database!.Table<Booth>()
-            .Where(x => x.ZoneId == zoneId)
+            .Where(x => x.ZoneId == zoneId && x.IsActive) // <-- Thêm && x.IsActive ở đây
             .ToListAsync();
     }
 
@@ -221,7 +222,36 @@ public class AppDatabase
     public async Task SaveBootstrapDataAsync(BootstrapSyncResponse data)
     {
         await InitAsync();
+        // 1. CHẶN ĐƯỜNG VÀ ĐỔI LINK ẢNH TRƯỚC KHI LƯU VÀO SQLITE
+        // Lấy BaseUrl xịn (Tự động biết là 10.0.2.2 hay 192.168...)
+        string baseUrl = PoiNarration.Mobile.Services.ApiConstants.GetBaseUrl();
 
+        // 1. "Rửa" link ảnh cho Booth (NÂNG CẤP)
+        if (data.Booths != null)
+        {
+            foreach (var booth in data.Booths)
+            {
+                // Chỉ cần link chứa chữ "/uploads/" là tự động thay thế IP mới nhất vào
+                if (!string.IsNullOrEmpty(booth.ImageUrl) && booth.ImageUrl.Contains("/uploads/"))
+                {
+                    var uri = new Uri(booth.ImageUrl);
+                    booth.ImageUrl = $"{baseUrl.TrimEnd('/')}{uri.PathAndQuery}";
+                }
+            }
+        }
+
+        // 2. "Rửa" link ảnh cho Menu Items (NÂNG CẤP)
+        if (data.MenuItems != null)
+        {
+            foreach (var item in data.MenuItems)
+            {
+                if (!string.IsNullOrEmpty(item.ImageUrl) && item.ImageUrl.Contains("/uploads/"))
+                {
+                    var uri = new Uri(item.ImageUrl);
+                    item.ImageUrl = $"{baseUrl.TrimEnd('/')}{uri.PathAndQuery}";
+                }
+            }
+        }
         // Sử dụng RunInTransactionAsync để tất cả lệnh SQL chạy trong 1 phiên duy nhất
         await _database!.RunInTransactionAsync(conn =>
         {
