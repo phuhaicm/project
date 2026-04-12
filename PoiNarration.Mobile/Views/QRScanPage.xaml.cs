@@ -77,7 +77,10 @@ public partial class QrScanPage : ContentPage
             else
             {
 
-                await DisplayAlertAsync("Lỗi mã QR", "Mã QR này không thuộc hệ thống PoiNarration!", "Thử lại");
+                await DisplayAlertAsync(
+    LanguageService.T("Ui_Alert_QrError"),
+    LanguageService.T("Ui_Alert_QrInvalid"),
+    LanguageService.T("Ui_Alert_TryAgain"));
 
                 _isProcessing = false;
                 QrCameraView.IsDetecting = true; // Mở lại camera nếu quét sai

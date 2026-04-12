@@ -5,21 +5,24 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:views="clr-namespace:PoiNarration.Mobile.Views"
     Shell.FlyoutBehavior="Disabled"
-    Title="PoiNarration">
+    Title="{DynamicResource Ui_AppTitle}">
 
     <TabBar>
         <ShellContent
-            Title="Booths"
+            x:Name="BoothsTab"
+            Title="{DynamicResource Ui_Tab_Booths}"
             Route="BoothListPage"
             ContentTemplate="{DataTemplate views:BoothListPage}" />
 
         <ShellContent
-            Title="Map"
+            x:Name="MapTab"
+            Title="{DynamicResource Ui_Tab_Map}"
             Route="MapPage"
             ContentTemplate="{DataTemplate views:MapPage}" />
 
         <ShellContent
-            Title="QR"
+            x:Name="QrTab"
+            Title="{DynamicResource Ui_Tab_Qr}"
             Route="QrScanPage"
             ContentTemplate="{DataTemplate views:QrScanPage}" />
     </TabBar>

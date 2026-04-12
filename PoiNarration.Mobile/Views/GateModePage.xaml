@@ -3,19 +3,36 @@
     x:Class="PoiNarration.Mobile.Views.GateModePage"
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-    Title="Gate - Choose Mode">
+    Title="{DynamicResource Ui_Page_GateMode}">
 
-    <VerticalStackLayout Padding="16" Spacing="12">
-        <Label Text="Bạn vừa quét QR ở cổng" FontSize="20" />
-        <Label Text="Chọn chế độ:"/>
+    <VerticalStackLayout Padding="16" Spacing="20" VerticalOptions="Center">
+        <Label Text="{DynamicResource Ui_GateScanned}" 
+               FontSize="22" 
+               FontAttributes="Bold" 
+               HorizontalTextAlignment="Center" />
 
-        <Button Text="1) GPS Tracking (Auto)"
-                Clicked="OnGpsModeClicked"/>
+        <Label Text="{DynamicResource Ui_ChooseMode}" 
+               FontSize="16" 
+               TextColor="{StaticResource TextMuted}" 
+               HorizontalTextAlignment="Center" />
 
-        <Button Text="2) Manual (Chọn khu vực)"
-                Clicked="OnManualModeClicked"/>
-        
-        <Button Text="Quét QR Booth"
-        Clicked="OnBoothQrClicked"/>
+        <Button Text="{DynamicResource Ui_ModeGpsAuto}"
+                Clicked="OnGpsModeClicked"
+                HeightRequest="55"
+                CornerRadius="12" />
+
+        <Button Text="{DynamicResource Ui_ModeManual}"
+                Clicked="OnManualModeClicked"
+                BackgroundColor="{StaticResource SurfaceSoft}"
+                HeightRequest="55"
+                CornerRadius="12" />
+
+        <BoxView HeightRequest="1" Color="{StaticResource StrokeSoft}" Margin="0,10" />
+
+        <Button Text="{DynamicResource Ui_ModeBoothQr}"
+                Clicked="OnBoothQrClicked"
+                BackgroundColor="{StaticResource Secondary}"
+                HeightRequest="55"
+                CornerRadius="12" />
     </VerticalStackLayout>
 </ContentPage>

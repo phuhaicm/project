@@ -16,10 +16,8 @@ public class AutoBoothNavigatorService
     private bool _isStarted;
     private bool _isNavigating;
 
-    // TÁCH GPS TRACKING và AUTO NARRATION
     private bool _autoNarrationEnabled = true;
 
-    // Chặn trigger lặp quá nhanh cùng 1 booth
     private string? _lastTriggeredBoothId;
     private DateTime _lastTriggeredUtc = DateTime.MinValue;
     private readonly TimeSpan _triggerGuard = TimeSpan.FromMilliseconds(800);
@@ -53,7 +51,6 @@ public class AutoBoothNavigatorService
     {
         if (_isStarted)
         {
-            // Đã bật rồi thì ép lấy điểm GPS mới nhất ngay
             await _locationTrackingService.StartListeningAsync();
             return true;
         }
@@ -67,9 +64,7 @@ public class AutoBoothNavigatorService
 
         _isStarted = true;
 
-        // ép lấy ngay điểm đầu tiên để UI map / nearest booth update
         await _locationTrackingService.StartListeningAsync();
-
         return true;
     }
 
@@ -106,86 +101,106 @@ public class AutoBoothNavigatorService
     {
         var seq = Interlocked.Increment(ref _gpsSequence);
 
-        await _gpsLock.WaitAsync();
+        Booth? nearestBooth = null;
+        double nearestDistance = double.MaxValue;
+        string? activeBoothId = null;
+
+        Booth? triggeredBooth = null;
+        bool shouldSpeak = false;
+
         try
         {
-            // Chỉ xử lý điểm GPS mới nhất
-            if (seq != _gpsSequence)
-                return;
+            await _gpsLock.WaitAsync();
+            try
+            {
+                if (seq != _gpsSequence)
+                    return;
 
-            CurrentLocation = loc;
+                CurrentLocation = loc;
 
-            var result = await _geofenceService.EvaluateAsync(loc.Latitude, loc.Longitude);
+                var result = await _geofenceService.EvaluateAsync(loc.Latitude, loc.Longitude);
 
-            CurrentNearestBooth = result.NearestBooth;
-            CurrentNearestDistanceMeters = result.NearestDistanceMeters;
+                CurrentNearestBooth = result.NearestBooth;
+                CurrentNearestDistanceMeters = result.NearestDistanceMeters;
 
-            // 1) Luôn update UI nearest booth
+                nearestBooth = result.NearestBooth;
+                nearestDistance = result.NearestDistanceMeters;
+                activeBoothId = result.ActiveBoothId;
+
+                if (!_autoNarrationEnabled)
+                    return;
+
+                if (!result.ShouldTrigger || result.TriggeredBooth == null)
+                    return;
+
+                var booth = result.TriggeredBooth;
+
+                if (_lastTriggeredBoothId == booth.Id &&
+                    DateTime.UtcNow - _lastTriggeredUtc < _triggerGuard)
+                {
+                    return;
+                }
+
+                _lastTriggeredBoothId = booth.Id;
+                _lastTriggeredUtc = DateTime.UtcNow;
+
+                triggeredBooth = booth;
+                shouldSpeak = true;
+            }
+            finally
+            {
+                _gpsLock.Release();
+            }
+
             StateChanged?.Invoke(this, new AutoBoothStateChangedEventArgs
             {
                 CurrentLocation = loc,
-                NearestBooth = result.NearestBooth,
-                NearestDistanceMeters = result.NearestDistanceMeters,
-                ActiveBoothId = result.ActiveBoothId
+                NearestBooth = nearestBooth,
+                NearestDistanceMeters = nearestDistance,
+                ActiveBoothId = activeBoothId
             });
 
-            // 2) Nếu chỉ muốn tracking mà không auto narration thì dừng ở đây
-            if (!_autoNarrationEnabled)
+            if (!shouldSpeak || triggeredBooth == null)
                 return;
 
-            // 3) Chưa đủ điều kiện trigger
-            if (!result.ShouldTrigger || result.TriggeredBooth == null)
-                return;
+            BoothTriggered?.Invoke(this, triggeredBooth);
 
-            var booth = result.TriggeredBooth;
+            var currentPage = Shell.Current?.CurrentPage;
+            var shouldNavigate = currentPage is not Views.BoothDetailPage;
 
-            // 4) Chặn trigger lặp quá nhanh cùng 1 booth
-            if (_lastTriggeredBoothId == booth.Id &&
-                DateTime.UtcNow - _lastTriggeredUtc < _triggerGuard)
+            if (shouldNavigate)
             {
-                return;
+                if (_isNavigating)
+                    return;
+
+                _isNavigating = true;
+                try
+                {
+                    await MainThread.InvokeOnMainThreadAsync(async () =>
+                    {
+                        await Shell.Current.GoToAsync($"{nameof(Views.BoothDetailPage)}?boothId={triggeredBooth.Id}");
+                    });
+
+                    await Task.Delay(150);
+                }
+                finally
+                {
+                    _isNavigating = false;
+                }
             }
 
-            _lastTriggeredBoothId = booth.Id;
-            _lastTriggeredUtc = DateTime.UtcNow;
-
-            // 5) Báo cho BoothDetailPage đổi booth
-            BoothTriggered?.Invoke(this, booth);
-
-            // 6) Nếu đang điều hướng rồi thì không chồng thêm
-            if (_isNavigating)
-                return;
-
-            _isNavigating = true;
-
-            await MainThread.InvokeOnMainThreadAsync(async () =>
-            {
-                var currentPage = Shell.Current?.CurrentPage;
-
-                // Nếu đang ở detail thì không push page mới nữa
-                if (currentPage is not Views.BoothDetailPage)
-                {
-                    await Shell.Current.GoToAsync($"{nameof(Views.BoothDetailPage)}?boothId={booth.Id}");
-                }
-            });
-
-            // chờ page dựng xong
-            await Task.Delay(300);
-
-            await _narrationService.SpeakBoothAsync(booth, "GPS", loc);
+            await _narrationService.SpeakBoothAsync(triggeredBooth, "GPS", loc);
         }
         catch (Exception ex)
         {
             System.Diagnostics.Debug.WriteLine($"AutoBoothNavigatorService.OnLocationChanged lỗi: {ex}");
         }
-        finally
-        {
-            _isNavigating = false;
-            _gpsLock.Release();
-        }
     }
 }
 
+// ===============================
+// ĐỂ NGOÀI CLASS AutoBoothNavigatorService
+// ===============================
 public class AutoBoothStateChangedEventArgs : EventArgs
 {
     public Location? CurrentLocation { get; set; }

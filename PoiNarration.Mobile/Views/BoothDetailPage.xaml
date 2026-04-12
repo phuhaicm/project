@@ -4,128 +4,52 @@
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:view="clr-namespace:PoiNarration.Mobile.Views"
-    Title="Chi tiết Trạm"
-    BackgroundColor="#0B0B10"
+    Title="{DynamicResource Ui_BoothDetailTitle}"
+    BackgroundColor="{StaticResource PageBg}"
     Shell.NavBarIsVisible="False">
 
     <Grid RowDefinitions="Auto,*">
+        <VerticalStackLayout Grid.Row="0" Margin="16,16,16,8" Spacing="14">
+            <Button Text="{DynamicResource Ui_Back}" 
+                    Clicked="OnBackClicked" 
+                    HorizontalOptions="Start" 
+                    BackgroundColor="{StaticResource SurfaceSoft}" 
+                    HeightRequest="40" />
 
-        <VerticalStackLayout Grid.Row="0" Margin="16,16,16,8" Spacing="16">
+            <Border Padding="16" BackgroundColor="{StaticResource SurfaceRaised}" StrokeShape="RoundRectangle 24">
+                <VerticalStackLayout Spacing="10">
+                    <Border BackgroundColor="{StaticResource SurfaceSoft}" StrokeShape="RoundRectangle 20">
+                        <Image x:Name="BoothImage" HeightRequest="200" Aspect="AspectFill" />
+                    </Border>
+                    <Label x:Name="BoothName" FontSize="28" FontAttributes="Bold" />
+                    <Label x:Name="BoothDesc" FontSize="14" TextColor="{StaticResource TextMuted}" />
 
-            <Button Text="{DynamicResource Ui_Back}"
-                    Clicked="OnBackClicked"
-                    HorizontalOptions="Start"
-                    BackgroundColor="#2A2A38"
-                    TextColor="White"
-                    CornerRadius="14"
-                    HeightRequest="40"
-                    Padding="16,0" />
-
-            <Border Padding="16"
-                    StrokeThickness="0"
-                    BackgroundColor="#161622"
-                    StrokeShape="RoundRectangle 20">
-                <VerticalStackLayout Spacing="8">
-
-                    <Image x:Name="BoothImage"
-                           HeightRequest="190"
-                           Aspect="AspectFill"
-                           BackgroundColor="#1E1E2D"
-                           Margin="0,0,0,12" />
-
-                    <Label x:Name="BoothName"
-                           FontSize="26"
-                           FontAttributes="Bold"
-                           TextColor="White" />
-
-                    <Label x:Name="BoothDesc"
-                           FontSize="14"
-                           TextColor="#B8B8C7"
-                           LineBreakMode="WordWrap" />
-
-                    <Grid ColumnDefinitions="*,*" ColumnSpacing="12" Margin="0,8,0,0">
-                        <Button Text="{DynamicResource Ui_PlayAudio}"
-                                Clicked="OnPlayClicked"
-                                BackgroundColor="#6D5DF6"
-                                TextColor="White"
-                                CornerRadius="14"
-                                HeightRequest="46" />
-
-                        <Button Grid.Column="1"
-                                Text="{DynamicResource Ui_StopAudio}"
-                                Clicked="OnStopClicked"
-                                BackgroundColor="#2A2A38"
-                                TextColor="White"
-                                CornerRadius="14"
-                                HeightRequest="46" />
+                    <Grid ColumnDefinitions="*,*" ColumnSpacing="10" Margin="0,6,0,0">
+                        <Button Text="{DynamicResource Ui_PlayAudio}" Clicked="OnPlayClicked" />
+                        <Button Grid.Column="1" Text="■ Stop" Clicked="OnStopClicked" BackgroundColor="{StaticResource SurfaceSoft}" />
                     </Grid>
                 </VerticalStackLayout>
             </Border>
 
-            <Label Text="{DynamicResource Ui_MenuHeader}"
-                   FontSize="18"
-                   FontAttributes="Bold"
-                   TextColor="White"
-                   Margin="0,8,0,0" />
+            <Label Text="{DynamicResource Ui_MenuList}" FontSize="18" FontAttributes="Bold" />
         </VerticalStackLayout>
 
-        <CollectionView Grid.Row="1"
-                        x:Name="MenuView"
-                        Margin="16,0,16,16"
-                        SelectionMode="None">
+        <CollectionView Grid.Row="1" x:Name="MenuView" Margin="16,0,16,16" SelectionMode="None">
             <CollectionView.ItemTemplate>
                 <DataTemplate x:DataType="view:MenuItemDisplayVm">
-                    <Border Margin="0,8,0,0"
-                            Padding="12"
-                            StrokeThickness="0"
-                            BackgroundColor="#141421"
-                            StrokeShape="RoundRectangle 20">
-
+                    <Border Margin="0,0,0,12" Padding="12" BackgroundColor="{StaticResource Surface}" StrokeShape="RoundRectangle 22">
                         <Grid ColumnDefinitions="96,*,Auto" ColumnSpacing="12">
-
-                            <Border Grid.Column="0"
-                                    BackgroundColor="#232334"
-                                    StrokeThickness="0"
-                                    StrokeShape="RoundRectangle 16">
-                                <Image Source="{Binding ImageUrl}"
-                                       Aspect="AspectFill"
-                                       HeightRequest="96"
-                                       WidthRequest="96" />
+                            <Border Grid.Column="0" BackgroundColor="{StaticResource SurfaceSoft}" StrokeShape="RoundRectangle 16">
+                                <Image Source="{Binding ImageUrl}" Aspect="AspectFill" HeightRequest="96" WidthRequest="96" />
                             </Border>
-
                             <VerticalStackLayout Grid.Column="1" Spacing="6" VerticalOptions="Center">
-                                <Label Text="{Binding Name}"
-                                       FontSize="20"
-                                       FontAttributes="Bold"
-                                       TextColor="White" />
-
-                                <Label Text="{Binding Description}"
-                                       FontSize="14"
-                                       TextColor="#B8B8C7"
-                                       LineBreakMode="WordWrap"
-                                       MaxLines="2" />
-
-                                <Border BackgroundColor="#1E1E2D"
-                                        StrokeThickness="0"
-                                        Padding="10,4"
-                                        StrokeShape="RoundRectangle 12"
-                                        HorizontalOptions="Start">
-                                    <Label Text="{Binding PriceText}"
-                                           FontSize="14"
-                                           FontAttributes="Bold"
-                                           TextColor="#31E981" />
+                                <Label Text="{Binding Name}" FontSize="18" FontAttributes="Bold" />
+                                <Label Text="{Binding Description}" FontSize="13" TextColor="{StaticResource TextMuted}" MaxLines="2" />
+                                <Border BackgroundColor="{StaticResource SurfaceSoft}" Padding="10,4" StrokeShape="RoundRectangle 12" HorizontalOptions="Start">
+                                    <Label Text="{Binding PriceText}" FontSize="14" FontAttributes="Bold" TextColor="{StaticResource Accent}" />
                                 </Border>
                             </VerticalStackLayout>
-
-                            <Button Grid.Column="2"
-                                    Text="▶"
-                                    WidthRequest="45"
-                                    HeightRequest="45"
-                                    CornerRadius="25"
-                                    BackgroundColor="#6D5DF6"
-                                    TextColor="White"
-                                    VerticalOptions="Center"
-                                    Clicked="OnPlayMenuItemClicked">
+                            <Button Grid.Column="2" Text="▶" WidthRequest="44" HeightRequest="44" CornerRadius="22" Clicked="OnPlayMenuItemClicked">
                                 <Button.CommandParameter>
                                     <MultiBinding StringFormat="{}{0}. {1}">
                                         <Binding Path="Name" />

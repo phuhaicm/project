@@ -38,7 +38,7 @@ namespace PoiNarration.Mobile.Services
         {
             try
             {
-                var result = await _http.GetFromJsonAsync<List<BoothMenuItem>>($"api/booths/{boothId}/menu");
+                var result = await _http.GetFromJsonAsync<List<BoothMenuItem>>($"api/boothmenu/{boothId}");
                 return result ?? new List<BoothMenuItem>();
             }
             catch (Exception ex)
@@ -48,19 +48,44 @@ namespace PoiNarration.Mobile.Services
             }
         }
 
+
         // 3. Hàm cũ của bạn (Đã bọc try...catch)
         public async Task<BootstrapSyncResponse?> GetBootstrapAsync()
         {
             try
             {
-                return await _http.GetFromJsonAsync<BootstrapSyncResponse>("api/sync/bootstrap");
+                var response = await _http.GetAsync("api/sync/bootstrap");
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    var body = await response.Content.ReadAsStringAsync();
+                    throw new Exception(
+                        $"API bootstrap trả lỗi {(int)response.StatusCode} {response.ReasonPhrase}. Body: {body}");
+                }
+
+                var json = await response.Content.ReadAsStringAsync();
+
+                Debug.WriteLine($"[Bootstrap JSON]: {json}");
+
+                var result = System.Text.Json.JsonSerializer.Deserialize<BootstrapSyncResponse>(
+                    json,
+                    new System.Text.Json.JsonSerializerOptions
+                    {
+                        PropertyNameCaseInsensitive = true
+                    });
+
+                if (result == null)
+                    throw new Exception("Deserialize bootstrap JSON bị null.");
+
+                return result;
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"[Lỗi GetBootstrapAsync]: {ex.Message}");
-                return null;
+                Debug.WriteLine($"[Lỗi GetBootstrapAsync]: {ex}");
+                throw;
             }
         }
+
 
         // 4. Hàm cũ của bạn (Đã bọc try...catch)
         public async Task PostPlaybackLogAsync(PlaybackLogRequest request)

@@ -10,6 +10,9 @@ public partial class App : Application
     {
         InitializeComponent();
         _syncService = syncService;
+
+        // khởi tạo ngôn ngữ UI hiện tại ngay khi app start
+        LanguageService.Initialize();
     }
 
     protected override Window CreateWindow(IActivationState? activationState)

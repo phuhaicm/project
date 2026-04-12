@@ -22,4 +22,5 @@ public class BoothDto
     public string? AudioUrlVi { get; set; }
     public string? AudioUrlEn { get; set; }
     public bool IsActive { get; set; }
+    public string? QrCodeUrl { get; set; }
 }

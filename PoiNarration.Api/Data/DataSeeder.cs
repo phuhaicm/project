@@ -1,5 +1,4 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using PoiNarration.Api.Data;
 using PoiNarration.Api.Models.Entities;
 using PoiNarration.Core.Models;
 
@@ -9,19 +8,15 @@ public static class DataSeeder
 {
     public static async Task SeedAsync(AppDbContext db)
     {
-        // Đảm bảo database được tạo trước khi nạp dữ liệu
         await db.Database.EnsureCreatedAsync();
 
-        // 1. Bảng AppUsers (Người dùng) - Đầy đủ 3 tài khoản
-        // 1. Bảng AppUsers (1 Admin + 10 Owners)
         if (!await db.AppUsers.AnyAsync())
         {
             var users = new List<AppUser>
-    {
-        new AppUser { Id = "admin", Username = "admin", Password = "123456", PasswordHash = "123456", FullName = "Administrator", Role = "Admin" }
-    };
+            {
+                new AppUser { Id = "admin", Username = "admin", Password = "123456", PasswordHash = "123456", FullName = "Administrator", Role = "Admin" }
+            };
 
-            // Vòng lặp tạo nhanh từ owner1 đến owner10
             for (int i = 1; i <= 10; i++)
             {
                 users.Add(new AppUser
@@ -39,1275 +34,3603 @@ public static class DataSeeder
             await db.SaveChangesAsync();
         }
 
-        // 2. Bảng Booths (Gian hàng) - Đầy đủ 10 gian hàng từ file poi.db
-        // 2. Bảng Booths (Mỗi Booth 1 Owner riêng)
         if (!await db.Booths.AnyAsync())
         {
-            db.Booths.AddRange(new List<Booth>
-    {
-        new Booth { Id = "booth-01", ZoneId = "zone-a", NameVi = "Phở Hà Nội", NameEn = "Hanoi Pho", Lat = 10.7768, Lng = 106.7008, RadiusMeters = 25, Priority = 1, IsActive = true, ImageUrl = "http://192.168.1.237:5151/uploads/menu/booth-01-menu-01.png", OwnerUserId = "owner1" },
+            var booths = new List<Booth>
+            {
+                new Booth { Id = "booth-01", ZoneId = "zone-a", NameVi = "Phở Hà Nội", NameEn = "Hanoi Pho", DescVi = "Gian hàng phở Hà Nội với nước dùng đậm đà và hương vị truyền thống.", DescEn = "Traditional Hanoi pho booth with rich broth and authentic flavor.", Lat = 10.7768d, Lng = 106.7008d, RadiusMeters = 25, Priority = 1, IsActive = true, ImageUrl = "http://192.168.1.237:5151/uploads/menu/booth-01-menu-01.png", OwnerUserId = "owner1" },
+                new Booth { Id = "booth-02", ZoneId = "zone-a", NameVi = "Bún Bò Huế", NameEn = "Hue Beef Noodles", DescVi = "Gian hàng bún bò Huế với vị cay thơm đậm chất miền Trung.", DescEn = "Hue beef noodles booth with a spicy and aromatic central Vietnam taste.", Lat = 10.77698d, Lng = 106.7008d, RadiusMeters = 25, Priority = 2, IsActive = true, ImageUrl = "http://192.168.1.237:5151/uploads/menu/booth-02-menu-01.png", OwnerUserId = "owner2" },
+                new Booth { Id = "booth-03", ZoneId = "zone-a", NameVi = "Cơm Tấm Sài Gòn", NameEn = "Saigon Broken Rice", DescVi = "Gian hàng cơm tấm Sài Gòn với sườn nướng và chả truyền thống.", DescEn = "Saigon broken rice booth with grilled pork and traditional sides.", Lat = 10.77716d, Lng = 106.7008d, RadiusMeters = 25, Priority = 3, IsActive = true, ImageUrl = "http://192.168.1.237:5151/uploads/menu/booth-03-menu-01.png", OwnerUserId = "owner3" },
+                new Booth { Id = "booth-04", ZoneId = "zone-a", NameVi = "Bánh Mì Việt", NameEn = "Vietnamese Banh Mi", DescVi = "Gian hàng bánh mì Việt giòn thơm với nhiều loại nhân hấp dẫn.", DescEn = "Vietnamese banh mi booth with crispy bread and delicious fillings.", Lat = 10.77734d, Lng = 106.7008d, RadiusMeters = 25, Priority = 4, IsActive = true, ImageUrl = "http://192.168.1.237:5151/uploads/menu/booth-04-menu-01.png", OwnerUserId = "owner4" },
+                new Booth { Id = "booth-05", ZoneId = "zone-a", NameVi = "Chè Ba Miền", NameEn = "Three-Region Sweet Soup", DescVi = "Gian hàng chè ba miền với nhiều món tráng miệng ngọt mát.", DescEn = "Three-region sweet soup booth with refreshing desserts.", Lat = 10.77752d, Lng = 106.7008d, RadiusMeters = 25, Priority = 5, IsActive = true, ImageUrl = "http://192.168.1.237:5151/uploads/menu/booth-05-menu-01.png", OwnerUserId = "owner5" },
+                new Booth { Id = "booth-06", ZoneId = "zone-b", NameVi = "Nem Nướng Đà Lạt", NameEn = "Dalat Grilled Pork Rolls", DescVi = "Gian hàng nem nướng Đà Lạt với hương vị thơm ngon đặc trưng.", DescEn = "Dalat grilled pork rolls booth with authentic local flavor.", Lat = 10.7768d, Lng = 106.70102d, RadiusMeters = 25, Priority = 6, IsActive = true, ImageUrl = "http://192.168.1.237:5151/uploads/menu/booth-06-menu-01.png", OwnerUserId = "owner6" },
+                new Booth { Id = "booth-07", ZoneId = "zone-b", NameVi = "Bánh Xèo Miền Tây", NameEn = "Mekong Crispy Pancake", DescVi = "Gian hàng bánh xèo miền Tây giòn rụm với nhân tôm thịt.", DescEn = "Mekong crispy pancake booth with shrimp and pork filling.", Lat = 10.77698d, Lng = 106.70102d, RadiusMeters = 25, Priority = 7, IsActive = true, ImageUrl = "http://192.168.1.237:5151/uploads/menu/booth-07-menu-01.png", OwnerUserId = "owner7" },
+                new Booth { Id = "booth-08", ZoneId = "zone-b", NameVi = "Gỏi Cuốn Tươi", NameEn = "Fresh Spring Rolls", DescVi = "Gian hàng gỏi cuốn tươi thanh mát và tốt cho sức khỏe.", DescEn = "Fresh spring rolls booth with light and healthy flavors.", Lat = 10.77716d, Lng = 106.70102d, RadiusMeters = 25, Priority = 8, IsActive = true, ImageUrl = "http://192.168.1.237:5151/uploads/menu/booth-08-menu-01.png", OwnerUserId = "owner8" },
+                new Booth { Id = "booth-09", ZoneId = "zone-b", NameVi = "Hải Sản Nướng", NameEn = "Grilled Seafood", DescVi = "Gian hàng hải sản nướng thơm lừng với nhiều loại tôm mực hấp dẫn.", DescEn = "Grilled seafood booth with fragrant squid and shrimp dishes.", Lat = 10.77734d, Lng = 106.70102d, RadiusMeters = 25, Priority = 9, IsActive = true, ImageUrl = "http://192.168.1.237:5151/uploads/menu/booth-09-menu-01.png", OwnerUserId = "owner9" },
+                new Booth { Id = "booth-10", ZoneId = "zone-b", NameVi = "Cà Phê & Trà Sữa", NameEn = "Coffee & Milk Tea", DescVi = "Gian hàng đồ uống với cà phê phin và trà sữa được yêu thích.", DescEn = "Drink booth with Vietnamese coffee and popular milk tea.", Lat = 10.77752d, Lng = 106.70102d, RadiusMeters = 25, Priority = 10, IsActive = true, ImageUrl = "http://192.168.1.237:5151/uploads/menu/booth-10-menu-01.png", OwnerUserId = "owner10" }
+            };
 
-new Booth { Id = "booth-02", ZoneId = "zone-a", NameVi = "Bún Bò Huế", NameEn = "Hue Beef Noodles", Lat = 10.77698, Lng = 106.7008, RadiusMeters = 25, Priority = 2, IsActive = true, ImageUrl = "http://192.168.1.237:5151/uploads/menu/booth-02-menu-01.png", OwnerUserId = "owner2" },
-
-new Booth { Id = "booth-03", ZoneId = "zone-a", NameVi = "Cơm Tấm Sài Gòn", NameEn = "Saigon Broken Rice", Lat = 10.77716, Lng = 106.7008, RadiusMeters = 25, Priority = 3, IsActive = true, ImageUrl = "http://192.168.1.237:5151/uploads/menu/booth-03-menu-01.png", OwnerUserId = "owner3" },
-
-new Booth { Id = "booth-04", ZoneId = "zone-a", NameVi = "Bánh Mì Việt", NameEn = "Vietnamese Banh Mi", Lat = 10.77734, Lng = 106.7008, RadiusMeters = 25, Priority = 4, IsActive = true, ImageUrl = "http://192.168.1.237:5151/uploads/menu/booth-04-menu-01.png", OwnerUserId = "owner4" },
-
-new Booth { Id = "booth-05", ZoneId = "zone-a", NameVi = "Chè Ba Miền", NameEn = "Three-Region Sweet Soup", Lat = 10.77752, Lng = 106.7008, RadiusMeters = 25, Priority = 5, IsActive = true, ImageUrl = "http://192.168.1.237:5151/uploads/menu/booth-05-menu-01.png", OwnerUserId = "owner5" },
-
-new Booth { Id = "booth-06", ZoneId = "zone-b", NameVi = "Nem Nướng Đà Lạt", NameEn = "Dalat Grilled Pork", Lat = 10.7768, Lng = 106.70102, RadiusMeters = 25, Priority = 6, IsActive = true, ImageUrl = "http://192.168.1.237:5151/uploads/menu/booth-06-menu-01.png", OwnerUserId = "owner6" },
-
-new Booth { Id = "booth-07", ZoneId = "zone-b", NameVi = "Bánh Xèo Miền Tây", NameEn = "Mekong Pancake", Lat = 10.77698, Lng = 106.70102, RadiusMeters = 25, Priority = 7, IsActive = true, ImageUrl = "http://192.168.1.237:5151/uploads/menu/booth-07-menu-01.png", OwnerUserId = "owner7" },
-
-new Booth { Id = "booth-08", ZoneId = "zone-b", NameVi = "Gỏi Cuốn Tươi", NameEn = "Fresh Spring Rolls", Lat = 10.77716, Lng = 106.70102, RadiusMeters = 25, Priority = 8, IsActive = true, ImageUrl = "http://192.168.1.237:5151/uploads/menu/booth-08-menu-01.png", OwnerUserId = "owner8" },
-
-new Booth { Id = "booth-09", ZoneId = "zone-b", NameVi = "Hải Sản Nướng", NameEn = "Grilled Seafood", Lat = 10.77734, Lng = 106.70102, RadiusMeters = 25, Priority = 9, IsActive = true, ImageUrl = "http://192.168.1.237:5151/uploads/menu/booth-09-menu-01.png", OwnerUserId = "owner9" },
-
-new Booth { Id = "booth-10", ZoneId = "zone-b", NameVi = "Cà Phê & Trà Sữa", NameEn = "Coffee & Milk Tea", Lat = 10.77752, Lng = 106.70102, RadiusMeters = 25, Priority = 10, IsActive = true, ImageUrl = "http://192.168.1.237:5151/uploads/menu/booth-10-menu-01.png", OwnerUserId = "owner10" }
-    });
+            db.Booths.AddRange(booths);
             await db.SaveChangesAsync();
         }
 
-        // 3. Bảng BoothTranslations (Bản dịch gian hàng) - 3 ví dụ
-        // 3. Gieo mầm Bản dịch gian hàng (BoothTranslations) - Full 10 Booths x 9 Langs
         if (!await db.BoothTranslations.AnyAsync())
         {
-            var translations = new List<BoothTranslationLocal>();
-
-            // ==========================================
-            // BOOTH 01 - Phở Hà Nội
-            // ==========================================
-            translations.Add(new BoothTranslationLocal
+            var boothTranslations = new List<BoothTranslationLocal>();
+            boothTranslations.Add(new BoothTranslationLocal
             {
                 BoothId = "booth-01",
                 LanguageCode = "vi",
                 Name = "Phở Hà Nội",
-                Description = "Phở Hà Nội - gian hàng nổi bật của hội chợ ẩm thực...",
-                TtsScript = "Xin chào, bạn đang đến với gian hàng Phở Hà Nội.",
-                AudioUrl = "http://192.168.1.237:5151/uploads/audio/booth-01-vi.mp3"
+                Description = "Gian hàng phở Hà Nội với nước dùng đậm đà và hương vị truyền thống.",
+                TtsScript = "Gian hàng phở Hà Nội với nước dùng đậm đà và hương vị truyền thống.",
+                AudioUrl = null
             });
-            translations.Add(new BoothTranslationLocal
+            boothTranslations.Add(new BoothTranslationLocal
             {
                 BoothId = "booth-01",
                 LanguageCode = "en",
                 Name = "Hanoi Pho",
-                Description = "Hanoi Pho booth at the food fair with image menu...",
-                TtsScript = "Welcome to Hanoi Pho.",
-                AudioUrl = "http://192.168.1.237:5151/uploads/audio/booth-01-en.mp3"
+                Description = "Traditional Hanoi pho booth with rich broth and authentic flavor.",
+                TtsScript = "Traditional Hanoi pho booth with rich broth and authentic flavor.",
+                AudioUrl = null
             });
-            translations.Add(new BoothTranslationLocal
+            boothTranslations.Add(new BoothTranslationLocal
             {
                 BoothId = "booth-01",
                 LanguageCode = "zh",
                 Name = "河内牛肉粉",
-                Description = "河内牛肉粉是本美食展的特色摊位之一，欢迎您前来体验地道风味。",
-                TtsScript = "欢迎来到河内牛肉粉展位，这里为您提供正宗的越南河内风味牛肉粉。"
+                Description = "河内牛肉粉展位，提供浓郁汤底与正宗风味。",
+                TtsScript = "河内牛肉粉展位，提供浓郁汤底与正宗风味。",
+                AudioUrl = null
             });
-            translations.Add(new BoothTranslationLocal
+            boothTranslations.Add(new BoothTranslationLocal
             {
                 BoothId = "booth-01",
                 LanguageCode = "ja",
                 Name = "ハノイフォー",
-                Description = "ハノイフォーは本フードフェアの人気ブースの一つです。",
-                TtsScript = "ハノイフォーのブースへようこそ。本場ベトナムの味をお楽しみください。"
+                Description = "濃厚なスープと本場の味を楽しめるハノイフォーのブースです。",
+                TtsScript = "濃厚なスープと本場の味を楽しめるハノイフォーのブースです。",
+                AudioUrl = null
             });
-            translations.Add(new BoothTranslationLocal
+            boothTranslations.Add(new BoothTranslationLocal
             {
                 BoothId = "booth-01",
                 LanguageCode = "ko",
                 Name = "하노이 퍼",
-                Description = "하노이 퍼는 본 음식 축제의 대표적인 부스 중 하나입니다.",
-                TtsScript = "하노이 퍼 부스에 오신 것을 환영합니다. 베트남 정통 하노이 쌀국수를 즐겨보세요."
+                Description = "진한 육수와 정통 풍미를 맛볼 수 있는 하노이 퍼 부스입니다.",
+                TtsScript = "진한 육수와 정통 풍미를 맛볼 수 있는 하노이 퍼 부스입니다.",
+                AudioUrl = null
             });
-            translations.Add(new BoothTranslationLocal
+            boothTranslations.Add(new BoothTranslationLocal
             {
                 BoothId = "booth-01",
                 LanguageCode = "fr",
                 Name = "Pho de Hanoï",
-                Description = "Le stand Pho de Hanoï est l'un des stands phares de ce festival gastronomique.",
-                TtsScript = "Bienvenue au stand Pho de Hanoï. Profitez de saveurs authentiques."
+                Description = "Stand de pho de Hanoï avec un bouillon riche et une saveur authentique.",
+                TtsScript = "Stand de pho de Hanoï avec un bouillon riche et une saveur authentique.",
+                AudioUrl = null
             });
-            translations.Add(new BoothTranslationLocal
+            boothTranslations.Add(new BoothTranslationLocal
             {
                 BoothId = "booth-01",
                 LanguageCode = "es",
                 Name = "Pho de Hanói",
-                Description = "El stand de Pho de Hanói es uno de los más destacados de esta feria gastronómica.",
-                TtsScript = "Bienvenido al stand de Pho de Hanói. Disfrute de sabores auténticos."
+                Description = "Puesto de pho de Hanói con caldo intenso y sabor auténtico.",
+                TtsScript = "Puesto de pho de Hanói con caldo intenso y sabor auténtico.",
+                AudioUrl = null
             });
-            translations.Add(new BoothTranslationLocal
+            boothTranslations.Add(new BoothTranslationLocal
             {
                 BoothId = "booth-01",
                 LanguageCode = "it",
                 Name = "Pho di Hanoi",
-                Description = "Lo stand di Pho di Hanoi è uno dei più importanti di questo festival gastronomico.",
-                TtsScript = "Benvenuto allo stand di Pho di Hanoi. Goditi i sapori autentici."
+                Description = "Stand di pho di Hanoi con brodo ricco e sapore autentico.",
+                TtsScript = "Stand di pho di Hanoi con brodo ricco e sapore autentico.",
+                AudioUrl = null
             });
-            translations.Add(new BoothTranslationLocal
+            boothTranslations.Add(new BoothTranslationLocal
             {
                 BoothId = "booth-01",
                 LanguageCode = "ru",
                 Name = "Ханойский фо",
-                Description = "Стенд Ханойский фо — один из самых популярных на этом гастрономическом фестивале.",
-                TtsScript = "Добро пожаловать на стенд Ханойский фо. Наслаждайтесь аутентичными вкусами."
+                Description = "Стенд ханойского фо с насыщенным бульоном и аутентичным вкусом.",
+                TtsScript = "Стенд ханойского фо с насыщенным бульоном и аутентичным вкусом.",
+                AudioUrl = null
             });
-
-            // ==========================================
-            // BOOTH 02 - Bún Bò Huế
-            // ==========================================
-            translations.Add(new BoothTranslationLocal
+            boothTranslations.Add(new BoothTranslationLocal
             {
                 BoothId = "booth-02",
                 LanguageCode = "vi",
                 Name = "Bún Bò Huế",
-                Description = "Bún Bò Huế - gian hàng nổi bật của hội chợ ẩm thực...",
-                TtsScript = "Xin chào, bạn đang đến với gian hàng Bún Bò Huế.",
-                AudioUrl = "http://192.168.1.237:5151/uploads/audio/booth-02-vi.mp3"
+                Description = "Gian hàng bún bò Huế với vị cay thơm đậm chất miền Trung.",
+                TtsScript = "Gian hàng bún bò Huế với vị cay thơm đậm chất miền Trung.",
+                AudioUrl = null
             });
-            translations.Add(new BoothTranslationLocal
+            boothTranslations.Add(new BoothTranslationLocal
             {
                 BoothId = "booth-02",
                 LanguageCode = "en",
                 Name = "Hue Beef Noodles",
-                Description = "Hue Beef Noodles booth at the food fair...",
-                TtsScript = "Welcome to Hue Beef Noodles.",
-                AudioUrl = "http://192.168.1.237:5151/uploads/audio/booth-02-en.mp3"
+                Description = "Hue beef noodles booth with a spicy and aromatic central Vietnam taste.",
+                TtsScript = "Hue beef noodles booth with a spicy and aromatic central Vietnam taste.",
+                AudioUrl = null
             });
-            translations.Add(new BoothTranslationLocal
+            boothTranslations.Add(new BoothTranslationLocal
             {
                 BoothId = "booth-02",
                 LanguageCode = "zh",
                 Name = "顺化牛肉粉",
-                Description = "顺化牛肉粉是本美食展的特色摊位之一，欢迎您前来体验地道风味。",
-                TtsScript = "欢迎来到顺化牛肉粉展位，这里为您提供正宗的美食。"
+                Description = "顺化牛肉粉展位，呈现香辣浓郁的中部风味。",
+                TtsScript = "顺化牛肉粉展位，呈现香辣浓郁的中部风味。",
+                AudioUrl = null
             });
-            translations.Add(new BoothTranslationLocal
+            boothTranslations.Add(new BoothTranslationLocal
             {
                 BoothId = "booth-02",
                 LanguageCode = "ja",
                 Name = "フエ牛肉麺",
-                Description = "フエ牛肉麺は本フードフェアの人気ブースの一つです。",
-                TtsScript = "フエ牛肉麺のブースへようこそ。本場の味をお楽しみください。"
+                Description = "中部ベトナムらしい香り高く辛味のあるフエ牛肉麺のブースです。",
+                TtsScript = "中部ベトナムらしい香り高く辛味のあるフエ牛肉麺のブースです。",
+                AudioUrl = null
             });
-            translations.Add(new BoothTranslationLocal
+            boothTranslations.Add(new BoothTranslationLocal
             {
                 BoothId = "booth-02",
                 LanguageCode = "ko",
                 Name = "후에 소고기 국수",
-                Description = "후에 소고기 국수은(는) 본 음식 축제의 대표적인 부스 중 하나입니다.",
-                TtsScript = "후에 소고기 국수 부스에 오신 것을 환영합니다. 정통의 맛을 즐겨보세요."
+                Description = "중부 베트남 특유의 얼큰하고 향긋한 후에 소고기 국수 부스입니다.",
+                TtsScript = "중부 베트남 특유의 얼큰하고 향긋한 후에 소고기 국수 부스입니다.",
+                AudioUrl = null
             });
-            translations.Add(new BoothTranslationLocal
+            boothTranslations.Add(new BoothTranslationLocal
             {
                 BoothId = "booth-02",
                 LanguageCode = "fr",
                 Name = "Bún Bò Huế",
-                Description = "Le stand Bún Bò Huế est l'un des stands phares de ce festival gastronomique.",
-                TtsScript = "Bienvenue au stand Bún Bò Huế. Profitez de saveurs authentiques."
+                Description = "Stand de bún bò Huế aux saveurs épicées et parfumées du centre du Vietnam.",
+                TtsScript = "Stand de bún bò Huế aux saveurs épicées et parfumées du centre du Vietnam.",
+                AudioUrl = null
             });
-            translations.Add(new BoothTranslationLocal
+            boothTranslations.Add(new BoothTranslationLocal
             {
                 BoothId = "booth-02",
                 LanguageCode = "es",
                 Name = "Bún Bò Huế",
-                Description = "El stand de Bún Bò Huế es uno de los más destacados de esta feria gastronómica.",
-                TtsScript = "Bienvenido al stand de Bún Bò Huế. Disfrute de sabores auténticos."
+                Description = "Puesto de bún bò Huế con sabor picante y aromático del centro de Vietnam.",
+                TtsScript = "Puesto de bún bò Huế con sabor picante y aromático del centro de Vietnam.",
+                AudioUrl = null
             });
-            translations.Add(new BoothTranslationLocal
+            boothTranslations.Add(new BoothTranslationLocal
             {
                 BoothId = "booth-02",
                 LanguageCode = "it",
                 Name = "Bún Bò Huế",
-                Description = "Lo stand di Bún Bò Huế è uno dei più importanti di questo festival gastronomico.",
-                TtsScript = "Benvenuto allo stand di Bún Bò Huế. Goditi i sapori autentici."
+                Description = "Stand di bún bò Huế con gusto speziato e aromatico del Vietnam centrale.",
+                TtsScript = "Stand di bún bò Huế con gusto speziato e aromatico del Vietnam centrale.",
+                AudioUrl = null
             });
-            translations.Add(new BoothTranslationLocal
+            boothTranslations.Add(new BoothTranslationLocal
             {
                 BoothId = "booth-02",
                 LanguageCode = "ru",
-                Name = "Хюэский суп с говядиной",
-                Description = "Стенд Хюэский суп с говядиной — один из самых популярных на этом гастрономическом фестивале.",
-                TtsScript = "Добро пожаловать на стенд Хюэский суп с говядиной. Наслаждайтесь аутентичными вкусами."
+                Name = "Бун бо Хюэ",
+                Description = "Стенд супа бун бо Хюэ с острым и ароматным вкусом центрального Вьетнама.",
+                TtsScript = "Стенд супа бун бо Хюэ с острым и ароматным вкусом центрального Вьетнама.",
+                AudioUrl = null
             });
-
-            // ==========================================
-            // BOOTH 03 - Cơm Tấm Sài Gòn
-            // ==========================================
-            translations.Add(new BoothTranslationLocal
+            boothTranslations.Add(new BoothTranslationLocal
             {
                 BoothId = "booth-03",
                 LanguageCode = "vi",
                 Name = "Cơm Tấm Sài Gòn",
-                Description = "Cơm Tấm Sài Gòn - gian hàng ẩm thực nổi bật...",
-                TtsScript = "Xin chào, bạn đang đến với gian hàng Cơm Tấm Sài Gòn.",
-                AudioUrl = "http://192.168.1.237:5151/uploads/audio/booth-03-vi.mp3"
+                Description = "Gian hàng cơm tấm Sài Gòn với sườn nướng và chả truyền thống.",
+                TtsScript = "Gian hàng cơm tấm Sài Gòn với sườn nướng và chả truyền thống.",
+                AudioUrl = null
             });
-            translations.Add(new BoothTranslationLocal
+            boothTranslations.Add(new BoothTranslationLocal
             {
                 BoothId = "booth-03",
                 LanguageCode = "en",
                 Name = "Saigon Broken Rice",
-                Description = "Saigon Broken Rice booth at the food fair...",
-                TtsScript = "Welcome to Saigon Broken Rice.",
-                AudioUrl = "http://192.168.1.237:5151/uploads/audio/booth-03-en.mp3"
+                Description = "Saigon broken rice booth with grilled pork and traditional sides.",
+                TtsScript = "Saigon broken rice booth with grilled pork and traditional sides.",
+                AudioUrl = null
             });
-            translations.Add(new BoothTranslationLocal
+            boothTranslations.Add(new BoothTranslationLocal
             {
                 BoothId = "booth-03",
                 LanguageCode = "zh",
                 Name = "西贡碎米饭",
-                Description = "西贡碎米饭是本美食展的特色摊位之一，欢迎您前来体验地道风味。",
-                TtsScript = "欢迎来到西贡碎米饭展位，这里为您提供正宗的美食。"
+                Description = "西贡碎米饭展位，搭配烤排骨与传统配菜。",
+                TtsScript = "西贡碎米饭展位，搭配烤排骨与传统配菜。",
+                AudioUrl = null
             });
-            translations.Add(new BoothTranslationLocal
+            boothTranslations.Add(new BoothTranslationLocal
             {
                 BoothId = "booth-03",
                 LanguageCode = "ja",
-                Name = "サイゴン焼き豚のせご飯",
-                Description = "サイゴン焼き豚のせご飯は本フードフェアの人気ブースの一つです。",
-                TtsScript = "サイゴン焼き豚のせご飯のブースへようこそ。本場の味をお楽しみください。"
+                Name = "サイゴンのコムタム",
+                Description = "焼き豚と伝統的なおかずを添えたサイゴン風コムタムのブースです。",
+                TtsScript = "焼き豚と伝統的なおかずを添えたサイゴン風コムタムのブースです。",
+                AudioUrl = null
             });
-            translations.Add(new BoothTranslationLocal
+            boothTranslations.Add(new BoothTranslationLocal
             {
                 BoothId = "booth-03",
                 LanguageCode = "ko",
                 Name = "사이공 껌땀",
-                Description = "사이공 껌땀은(는) 본 음식 축제의 대표적인 부스 중 하나입니다.",
-                TtsScript = "사이공 껌땀 부스에 오신 것을 환영합니다. 정통의 맛을 즐겨보세요."
+                Description = "구운 돼지고기와 전통 반찬이 함께 제공되는 사이공 껌땀 부스입니다.",
+                TtsScript = "구운 돼지고기와 전통 반찬이 함께 제공되는 사이공 껌땀 부스입니다.",
+                AudioUrl = null
             });
-            translations.Add(new BoothTranslationLocal
+            boothTranslations.Add(new BoothTranslationLocal
             {
                 BoothId = "booth-03",
                 LanguageCode = "fr",
                 Name = "Riz brisé de Saïgon",
-                Description = "Le stand Riz brisé de Saïgon est l'un des stands phares de ce festival gastronomique.",
-                TtsScript = "Bienvenue au stand Riz brisé de Saïgon. Profitez de saveurs authentiques."
+                Description = "Stand de riz brisé de Saïgon avec porc grillé et accompagnements traditionnels.",
+                TtsScript = "Stand de riz brisé de Saïgon avec porc grillé et accompagnements traditionnels.",
+                AudioUrl = null
             });
-            translations.Add(new BoothTranslationLocal
+            boothTranslations.Add(new BoothTranslationLocal
             {
                 BoothId = "booth-03",
                 LanguageCode = "es",
                 Name = "Arroz quebrado de Saigón",
-                Description = "El stand de Arroz quebrado de Saigón es uno de los más destacados de esta feria gastronómica.",
-                TtsScript = "Bienvenido al stand de Arroz quebrado de Saigón. Disfrute de sabores auténticos."
+                Description = "Puesto de arroz quebrado de Saigón con cerdo a la parrilla y guarniciones tradicionales.",
+                TtsScript = "Puesto de arroz quebrado de Saigón con cerdo a la parrilla y guarniciones tradicionales.",
+                AudioUrl = null
             });
-            translations.Add(new BoothTranslationLocal
+            boothTranslations.Add(new BoothTranslationLocal
             {
                 BoothId = "booth-03",
                 LanguageCode = "it",
                 Name = "Riso spezzato di Saigon",
-                Description = "Lo stand di Riso spezzato di Saigon è uno dei più importanti di questo festival gastronomico.",
-                TtsScript = "Benvenuto allo stand di Riso spezzato di Saigon. Goditi i sapori autentici."
+                Description = "Stand di riso spezzato di Saigon con maiale alla griglia e contorni tradizionali.",
+                TtsScript = "Stand di riso spezzato di Saigon con maiale alla griglia e contorni tradizionali.",
+                AudioUrl = null
             });
-            translations.Add(new BoothTranslationLocal
+            boothTranslations.Add(new BoothTranslationLocal
             {
                 BoothId = "booth-03",
                 LanguageCode = "ru",
                 Name = "Сайгонский дроблёный рис",
-                Description = "Стенд Сайгонский дроблёный рис — один из самых популярных на этом гастрономическом фестивале.",
-                TtsScript = "Добро пожаловать на стенд Сайгонский дроблёный рис. Наслаждайтесь аутентичными вкусами."
+                Description = "Стенд сайгонского дроблёного риса с жареной свининой и традиционными гарнирами.",
+                TtsScript = "Стенд сайгонского дроблёного риса с жареной свининой и традиционными гарнирами.",
+                AudioUrl = null
             });
-
-            // ==========================================
-            // BOOTH 04 - Bánh Mì Việt
-            // ==========================================
-            translations.Add(new BoothTranslationLocal
+            boothTranslations.Add(new BoothTranslationLocal
             {
                 BoothId = "booth-04",
                 LanguageCode = "vi",
                 Name = "Bánh Mì Việt",
-                Description = "Bánh Mì Việt - gian hàng ẩm thực nổi bật...",
-                TtsScript = "Xin chào, bạn đang đến với gian hàng Bánh Mì Việt.",
-                AudioUrl = "http://192.168.1.237:5151/uploads/audio/booth-04-vi.mp3"
+                Description = "Gian hàng bánh mì Việt giòn thơm với nhiều loại nhân hấp dẫn.",
+                TtsScript = "Gian hàng bánh mì Việt giòn thơm với nhiều loại nhân hấp dẫn.",
+                AudioUrl = null
             });
-            translations.Add(new BoothTranslationLocal
+            boothTranslations.Add(new BoothTranslationLocal
             {
                 BoothId = "booth-04",
                 LanguageCode = "en",
                 Name = "Vietnamese Banh Mi",
-                Description = "Vietnamese Banh Mi booth at the food fair...",
-                TtsScript = "Welcome to Vietnamese Banh Mi.",
-                AudioUrl = "http://192.168.1.237:5151/uploads/audio/booth-04-en.mp3"
+                Description = "Vietnamese banh mi booth with crispy bread and delicious fillings.",
+                TtsScript = "Vietnamese banh mi booth with crispy bread and delicious fillings.",
+                AudioUrl = null
             });
-            translations.Add(new BoothTranslationLocal
+            boothTranslations.Add(new BoothTranslationLocal
             {
                 BoothId = "booth-04",
                 LanguageCode = "zh",
                 Name = "越式法棍",
-                Description = "越式法棍是本美食展的特色摊位之一，欢迎您前来体验地道风味。",
-                TtsScript = "欢迎来到越式法棍展位，这里为您提供正宗的美食。"
+                Description = "越式法棍展位，外脆内香，搭配多种美味馅料。",
+                TtsScript = "越式法棍展位，外脆内香，搭配多种美味馅料。",
+                AudioUrl = null
             });
-            translations.Add(new BoothTranslationLocal
+            boothTranslations.Add(new BoothTranslationLocal
             {
                 BoothId = "booth-04",
                 LanguageCode = "ja",
                 Name = "ベトナムバインミー",
-                Description = "ベトナムバインミーは本フードフェアの人気ブースの一つです。",
-                TtsScript = "ベトナムバインミーのブースへようこそ。本場の味をお楽しみください。"
+                Description = "香ばしいパンと多彩な具材を楽しめるベトナムバインミーのブースです。",
+                TtsScript = "香ばしいパンと多彩な具材を楽しめるベトナムバインミーのブースです。",
+                AudioUrl = null
             });
-            translations.Add(new BoothTranslationLocal
+            boothTranslations.Add(new BoothTranslationLocal
             {
                 BoothId = "booth-04",
                 LanguageCode = "ko",
                 Name = "베트남 반미",
-                Description = "베트남 반미은(는) 본 음식 축제의 대표적인 부스 중 하나입니다.",
-                TtsScript = "베트남 반미 부스에 오신 것을 환영합니다. 정통의 맛을 즐겨보세요."
+                Description = "바삭한 빵과 다양한 속재료가 어우러진 베트남 반미 부스입니다.",
+                TtsScript = "바삭한 빵과 다양한 속재료가 어우러진 베트남 반미 부스입니다.",
+                AudioUrl = null
             });
-            translations.Add(new BoothTranslationLocal
+            boothTranslations.Add(new BoothTranslationLocal
             {
                 BoothId = "booth-04",
                 LanguageCode = "fr",
                 Name = "Bánh Mì vietnamien",
-                Description = "Le stand Bánh Mì vietnamien est l'un des stands phares de ce festival gastronomique.",
-                TtsScript = "Bienvenue au stand Bánh Mì vietnamien. Profitez de saveurs authentiques."
+                Description = "Stand de bánh mì vietnamien avec pain croustillant et garnitures savoureuses.",
+                TtsScript = "Stand de bánh mì vietnamien avec pain croustillant et garnitures savoureuses.",
+                AudioUrl = null
             });
-            translations.Add(new BoothTranslationLocal
+            boothTranslations.Add(new BoothTranslationLocal
             {
                 BoothId = "booth-04",
                 LanguageCode = "es",
                 Name = "Bánh Mì vietnamita",
-                Description = "El stand de Bánh Mì vietnamita es uno de los más destacados de esta feria gastronómica.",
-                TtsScript = "Bienvenido al stand de Bánh Mì vietnamita. Disfrute de sabores auténticos."
+                Description = "Puesto de bánh mì vietnamita con pan crujiente y rellenos sabrosos.",
+                TtsScript = "Puesto de bánh mì vietnamita con pan crujiente y rellenos sabrosos.",
+                AudioUrl = null
             });
-            translations.Add(new BoothTranslationLocal
+            boothTranslations.Add(new BoothTranslationLocal
             {
                 BoothId = "booth-04",
                 LanguageCode = "it",
                 Name = "Bánh Mì vietnamita",
-                Description = "Lo stand di Bánh Mì vietnamita è uno dei più importanti di questo festival gastronomico.",
-                TtsScript = "Benvenuto allo stand di Bánh Mì vietnamita. Goditi i sapori autentici."
+                Description = "Stand di bánh mì vietnamita con pane croccante e gustosi ripieni.",
+                TtsScript = "Stand di bánh mì vietnamita con pane croccante e gustosi ripieni.",
+                AudioUrl = null
             });
-            translations.Add(new BoothTranslationLocal
+            boothTranslations.Add(new BoothTranslationLocal
             {
                 BoothId = "booth-04",
                 LanguageCode = "ru",
                 Name = "Вьетнамский баньми",
-                Description = "Стенд Вьетнамский баньми — один из самых популярных на этом гастрономическом фестивале.",
-                TtsScript = "Добро пожаловать на стенд Вьетнамский баньми. Наслаждайтесь аутентичными вкусами."
+                Description = "Стенд вьетнамского баньми с хрустящим хлебом и вкусными начинками.",
+                TtsScript = "Стенд вьетнамского баньми с хрустящим хлебом и вкусными начинками.",
+                AudioUrl = null
             });
-
-            // ==========================================
-            // BOOTH 05 - Chè Ba Miền
-            // ==========================================
-            translations.Add(new BoothTranslationLocal
+            boothTranslations.Add(new BoothTranslationLocal
             {
                 BoothId = "booth-05",
                 LanguageCode = "vi",
                 Name = "Chè Ba Miền",
-                Description = "Chè Ba Miền - gian hàng ẩm thực nổi bật...",
-                TtsScript = "Xin chào, bạn đang đến với gian hàng Chè Ba Miền.",
-                AudioUrl = "http://192.168.1.237:5151/uploads/audio/booth-05-vi.mp3"
+                Description = "Gian hàng chè ba miền với nhiều món tráng miệng ngọt mát.",
+                TtsScript = "Gian hàng chè ba miền với nhiều món tráng miệng ngọt mát.",
+                AudioUrl = null
             });
-            translations.Add(new BoothTranslationLocal
+            boothTranslations.Add(new BoothTranslationLocal
             {
                 BoothId = "booth-05",
                 LanguageCode = "en",
                 Name = "Three-Region Sweet Soup",
-                Description = "Three-Region Sweet Soup booth...",
-                TtsScript = "Welcome to Three-Region Sweet Soup.",
-                AudioUrl = "http://192.168.1.237:5151/uploads/audio/booth-05-en.mp3"
+                Description = "Three-region sweet soup booth with refreshing desserts.",
+                TtsScript = "Three-region sweet soup booth with refreshing desserts.",
+                AudioUrl = null
             });
-            translations.Add(new BoothTranslationLocal
+            boothTranslations.Add(new BoothTranslationLocal
             {
                 BoothId = "booth-05",
                 LanguageCode = "zh",
-                Name = "三地甜汤",
-                Description = "三地甜汤是本美食展的特色摊位之一，欢迎您前来体验地道风味。",
-                TtsScript = "欢迎来到三地甜汤展位，这里为您提供正宗的美食。"
+                Name = "三地甜品",
+                Description = "三地甜品展位，提供清凉香甜的越南传统甜点。",
+                TtsScript = "三地甜品展位，提供清凉香甜的越南传统甜点。",
+                AudioUrl = null
             });
-            translations.Add(new BoothTranslationLocal
+            boothTranslations.Add(new BoothTranslationLocal
             {
                 BoothId = "booth-05",
                 LanguageCode = "ja",
-                Name = "三地域のチェー",
-                Description = "三地域のチェーは本フードフェアの人気ブースの一つです。",
-                TtsScript = "三地域のチェーのブースへようこそ。本場の味をお楽しみください。"
+                Name = "三地域チェー",
+                Description = "さっぱり甘いベトナムデザートを楽しめる三地域チェーのブースです。",
+                TtsScript = "さっぱり甘いベトナムデザートを楽しめる三地域チェーのブースです。",
+                AudioUrl = null
             });
-            translations.Add(new BoothTranslationLocal
+            boothTranslations.Add(new BoothTranslationLocal
             {
                 BoothId = "booth-05",
                 LanguageCode = "ko",
                 Name = "삼지역 체",
-                Description = "삼지역 체은(는) 본 음식 축제의 대표적인 부스 중 하나입니다.",
-                TtsScript = "삼지역 체 부스에 오신 것을 환영합니다. 정통의 맛을 즐겨보세요."
+                Description = "시원하고 달콤한 베트남 전통 디저트를 즐길 수 있는 체 부스입니다.",
+                TtsScript = "시원하고 달콤한 베트남 전통 디저트를 즐길 수 있는 체 부스입니다.",
+                AudioUrl = null
             });
-            translations.Add(new BoothTranslationLocal
+            boothTranslations.Add(new BoothTranslationLocal
             {
                 BoothId = "booth-05",
                 LanguageCode = "fr",
-                Name = "Soupe sucrée des trois régions",
-                Description = "Le stand Soupe sucrée des trois régions est l'un des stands phares de ce festival gastronomique.",
-                TtsScript = "Bienvenue au stand Soupe sucrée des trois régions. Profitez de saveurs authentiques."
+                Name = "Soupes sucrées des trois régions",
+                Description = "Stand de desserts vietnamiens rafraîchissants des trois régions.",
+                TtsScript = "Stand de desserts vietnamiens rafraîchissants des trois régions.",
+                AudioUrl = null
             });
-            translations.Add(new BoothTranslationLocal
+            boothTranslations.Add(new BoothTranslationLocal
             {
                 BoothId = "booth-05",
                 LanguageCode = "es",
-                Name = "Postre de las tres regiones",
-                Description = "El stand de Postre de las tres regiones es uno de los más destacados de esta feria gastronómica.",
-                TtsScript = "Bienvenido al stand de Postre de las tres regiones. Disfrute de sabores auténticos."
+                Name = "Postres dulces de las tres regiones",
+                Description = "Puesto de postres vietnamitas refrescantes de las tres regiones.",
+                TtsScript = "Puesto de postres vietnamitas refrescantes de las tres regiones.",
+                AudioUrl = null
             });
-            translations.Add(new BoothTranslationLocal
+            boothTranslations.Add(new BoothTranslationLocal
             {
                 BoothId = "booth-05",
                 LanguageCode = "it",
-                Name = "Dolce delle tre regioni",
-                Description = "Lo stand di Dolce delle tre regioni è uno dei più importanti di questo festival gastronomico.",
-                TtsScript = "Benvenuto allo stand di Dolce delle tre regioni. Goditi i sapori autentici."
+                Name = "Dolci delle tre regioni",
+                Description = "Stand di dessert vietnamiti freschi provenienti dalle tre regioni.",
+                TtsScript = "Stand di dessert vietnamiti freschi provenienti dalle tre regioni.",
+                AudioUrl = null
             });
-            translations.Add(new BoothTranslationLocal
+            boothTranslations.Add(new BoothTranslationLocal
             {
                 BoothId = "booth-05",
                 LanguageCode = "ru",
-                Name = "Сладкий суп трёх регионов",
-                Description = "Стенд Сладкий суп трёх регионов — один из самых популярных на этом гастрономическом фестивале.",
-                TtsScript = "Добро пожаловать на стенд Сладкий суп трёх регионов. Наслаждайтесь аутентичными вкусами."
+                Name = "Сладкие десерты трёх регионов",
+                Description = "Стенд освежающих вьетнамских десертов из трёх регионов.",
+                TtsScript = "Стенд освежающих вьетнамских десертов из трёх регионов.",
+                AudioUrl = null
             });
-
-            // ==========================================
-            // BOOTH 06 - Nem Nướng Đà Lạt
-            // ==========================================
-            translations.Add(new BoothTranslationLocal
+            boothTranslations.Add(new BoothTranslationLocal
             {
                 BoothId = "booth-06",
                 LanguageCode = "vi",
                 Name = "Nem Nướng Đà Lạt",
-                Description = "Nem Nướng Đà Lạt - gian hàng nổi bật của hội chợ ẩm thực...",
-                TtsScript = "Xin chào, bạn đang đến với gian hàng Nem Nướng Đà Lạt.",
-                AudioUrl = "http://192.168.1.237:5151/uploads/audio/booth-06-vi.mp3"
+                Description = "Gian hàng nem nướng Đà Lạt với hương vị thơm ngon đặc trưng.",
+                TtsScript = "Gian hàng nem nướng Đà Lạt với hương vị thơm ngon đặc trưng.",
+                AudioUrl = null
             });
-            translations.Add(new BoothTranslationLocal
+            boothTranslations.Add(new BoothTranslationLocal
             {
                 BoothId = "booth-06",
                 LanguageCode = "en",
                 Name = "Dalat Grilled Pork Rolls",
-                Description = "Dalat Grilled Pork Rolls booth at the food fair...",
-                TtsScript = "Welcome to Dalat Grilled Pork Rolls.",
-                AudioUrl = "http://192.168.1.237:5151/uploads/audio/booth-06-en.mp3"
+                Description = "Dalat grilled pork rolls booth with authentic local flavor.",
+                TtsScript = "Dalat grilled pork rolls booth with authentic local flavor.",
+                AudioUrl = null
             });
-            translations.Add(new BoothTranslationLocal
+            boothTranslations.Add(new BoothTranslationLocal
             {
                 BoothId = "booth-06",
                 LanguageCode = "zh",
                 Name = "大叻烤肉卷",
-                Description = "大叻烤肉卷是本美食展的特色摊位之一，欢迎您前来体验地道风味。",
-                TtsScript = "欢迎来到大叻烤肉卷展位，这里为您提供正宗的美食。"
+                Description = "大叻烤肉卷展位，带来当地特色风味。",
+                TtsScript = "大叻烤肉卷展位，带来当地特色风味。",
+                AudioUrl = null
             });
-            translations.Add(new BoothTranslationLocal
+            boothTranslations.Add(new BoothTranslationLocal
             {
                 BoothId = "booth-06",
                 LanguageCode = "ja",
                 Name = "ダラット焼き豚ロール",
-                Description = "ダラット焼き豚ロールは本フードフェアの人気ブースの一つです。",
-                TtsScript = "ダラット焼き豚ロールのブースへようこそ。本場の味をお楽しみください。"
+                Description = "ダラット名物の焼き豚ロールを楽しめるご当地ブースです。",
+                TtsScript = "ダラット名物の焼き豚ロールを楽しめるご当地ブースです。",
+                AudioUrl = null
             });
-            translations.Add(new BoothTranslationLocal
+            boothTranslations.Add(new BoothTranslationLocal
             {
                 BoothId = "booth-06",
                 LanguageCode = "ko",
                 Name = "달랏 넴느엉",
-                Description = "달랏 넴느엉은(는) 본 음식 축제의 대표적인 부스 중 하나입니다.",
-                TtsScript = "달랏 넴느엉 부스에 오신 것을 환영합니다. 정통의 맛을 즐겨보세요."
+                Description = "달랏의 대표적인 맛을 느낄 수 있는 넴느엉 부스입니다.",
+                TtsScript = "달랏의 대표적인 맛을 느낄 수 있는 넴느엉 부스입니다.",
+                AudioUrl = null
             });
-            translations.Add(new BoothTranslationLocal
+            boothTranslations.Add(new BoothTranslationLocal
             {
                 BoothId = "booth-06",
                 LanguageCode = "fr",
                 Name = "Rouleaux de porc grillé de Dalat",
-                Description = "Le stand Rouleaux de porc grillé de Dalat est l'un des stands phares de ce festival gastronomique.",
-                TtsScript = "Bienvenue au stand Rouleaux de porc grillé de Dalat. Profitez de saveurs authentiques."
+                Description = "Stand de rouleaux de porc grillé de Dalat aux saveurs locales authentiques.",
+                TtsScript = "Stand de rouleaux de porc grillé de Dalat aux saveurs locales authentiques.",
+                AudioUrl = null
             });
-            translations.Add(new BoothTranslationLocal
+            boothTranslations.Add(new BoothTranslationLocal
             {
                 BoothId = "booth-06",
                 LanguageCode = "es",
                 Name = "Rollos de cerdo a la parrilla de Dalat",
-                Description = "El stand de Rollos de cerdo a la parrilla de Dalat es uno de los más destacados de esta feria gastronómica.",
-                TtsScript = "Bienvenido al stand de Rollos de cerdo a la parrilla de Dalat. Disfrute de sabores auténticos."
+                Description = "Puesto de rollos de cerdo a la parrilla de Dalat con sabor local auténtico.",
+                TtsScript = "Puesto de rollos de cerdo a la parrilla de Dalat con sabor local auténtico.",
+                AudioUrl = null
             });
-            translations.Add(new BoothTranslationLocal
+            boothTranslations.Add(new BoothTranslationLocal
             {
                 BoothId = "booth-06",
                 LanguageCode = "it",
                 Name = "Involtini di maiale grigliato di Dalat",
-                Description = "Lo stand di Involtini di maiale grigliato di Dalat è uno dei più importanti di questo festival gastronomico.",
-                TtsScript = "Benvenuto allo stand di Involtini di maiale grigliato di Dalat. Goditi i sapori autentici."
+                Description = "Stand di involtini di maiale grigliato di Dalat dal gusto locale autentico.",
+                TtsScript = "Stand di involtini di maiale grigliato di Dalat dal gusto locale autentico.",
+                AudioUrl = null
             });
-            translations.Add(new BoothTranslationLocal
+            boothTranslations.Add(new BoothTranslationLocal
             {
                 BoothId = "booth-06",
                 LanguageCode = "ru",
                 Name = "Далатские роллы из жареной свинины",
-                Description = "Стенд Далатские роллы из жареной свинины — один из самых популярных на этом гастрономическом фестивале.",
-                TtsScript = "Добро пожаловать на стенд Далатские роллы из жареной свинины. Наслаждайтесь аутентичными вкусами."
+                Description = "Стенд далатских роллов из жареной свинины с аутентичным местным вкусом.",
+                TtsScript = "Стенд далатских роллов из жареной свинины с аутентичным местным вкусом.",
+                AudioUrl = null
             });
-
-            // ==========================================
-            // BOOTH 07 - Bánh Xèo Miền Tây
-            // ==========================================
-            translations.Add(new BoothTranslationLocal
+            boothTranslations.Add(new BoothTranslationLocal
             {
                 BoothId = "booth-07",
                 LanguageCode = "vi",
                 Name = "Bánh Xèo Miền Tây",
-                Description = "Bánh Xèo Miền Tây - gian hàng nổi bật của hội chợ ẩm thực...",
-                TtsScript = "Xin chào, bạn đang đến với gian hàng Bánh Xèo Miền Tây.",
-                AudioUrl = "http://192.168.1.237:5151/uploads/audio/booth-07-vi.mp3"
+                Description = "Gian hàng bánh xèo miền Tây giòn rụm với nhân tôm thịt.",
+                TtsScript = "Gian hàng bánh xèo miền Tây giòn rụm với nhân tôm thịt.",
+                AudioUrl = null
             });
-            translations.Add(new BoothTranslationLocal
+            boothTranslations.Add(new BoothTranslationLocal
             {
                 BoothId = "booth-07",
                 LanguageCode = "en",
                 Name = "Mekong Crispy Pancake",
-                Description = "Mekong Crispy Pancake booth at the food fair...",
-                TtsScript = "Welcome to Mekong Crispy Pancake.",
-                AudioUrl = "http://192.168.1.237:5151/uploads/audio/booth-07-en.mp3"
+                Description = "Mekong crispy pancake booth with shrimp and pork filling.",
+                TtsScript = "Mekong crispy pancake booth with shrimp and pork filling.",
+                AudioUrl = null
             });
-            translations.Add(new BoothTranslationLocal
+            boothTranslations.Add(new BoothTranslationLocal
             {
                 BoothId = "booth-07",
                 LanguageCode = "zh",
                 Name = "湄公河煎饼",
-                Description = "湄公河煎饼是本美食展的特色摊位之一，欢迎您前来体验地道风味。",
-                TtsScript = "欢迎来到湄公河煎饼展位，这里为您提供正宗的美食。"
+                Description = "湄公河煎饼展位，酥脆可口，内馅为虾和猪肉。",
+                TtsScript = "湄公河煎饼展位，酥脆可口，内馅为虾和猪肉。",
+                AudioUrl = null
             });
-            translations.Add(new BoothTranslationLocal
+            boothTranslations.Add(new BoothTranslationLocal
             {
                 BoothId = "booth-07",
                 LanguageCode = "ja",
                 Name = "メコン風バインセオ",
-                Description = "メコン風バインセオは本フードフェアの人気ブースの一つです。",
-                TtsScript = "メコン風バインセオのブースへようこそ。本場の味をお楽しみください。"
+                Description = "海老と豚肉を包んだカリカリのメコン風バインセオのブースです。",
+                TtsScript = "海老と豚肉を包んだカリカリのメコン風バインセオのブースです。",
+                AudioUrl = null
             });
-            translations.Add(new BoothTranslationLocal
+            boothTranslations.Add(new BoothTranslationLocal
             {
                 BoothId = "booth-07",
                 LanguageCode = "ko",
                 Name = "메콩식 반쎄오",
-                Description = "메콩식 반쎄오은(는) 본 음식 축제의 대표적인 부스 중 하나입니다.",
-                TtsScript = "메콩식 반쎄오 부스에 오신 것을 환영합니다. 정통의 맛을 즐겨보세요."
+                Description = "새우와 돼지고기가 들어간 바삭한 메콩식 반쎄오 부스입니다.",
+                TtsScript = "새우와 돼지고기가 들어간 바삭한 메콩식 반쎄오 부스입니다.",
+                AudioUrl = null
             });
-            translations.Add(new BoothTranslationLocal
+            boothTranslations.Add(new BoothTranslationLocal
             {
                 BoothId = "booth-07",
                 LanguageCode = "fr",
                 Name = "Crêpe croustillante du Mékong",
-                Description = "Le stand Crêpe croustillante du Mékong est l'un des stands phares de ce festival gastronomique.",
-                TtsScript = "Bienvenue au stand Crêpe croustillante du Mékong. Profitez de saveurs authentiques."
+                Description = "Stand de crêpe croustillante du Mékong garnie de crevettes et de porc.",
+                TtsScript = "Stand de crêpe croustillante du Mékong garnie de crevettes et de porc.",
+                AudioUrl = null
             });
-            translations.Add(new BoothTranslationLocal
+            boothTranslations.Add(new BoothTranslationLocal
             {
                 BoothId = "booth-07",
                 LanguageCode = "es",
                 Name = "Panqueque crujiente del Mekong",
-                Description = "El stand de Panqueque crujiente del Mekong es uno de los más destacados de esta feria gastronómica.",
-                TtsScript = "Bienvenido al stand de Panqueque crujiente del Mekong. Disfrute de sabores auténticos."
+                Description = "Puesto de panqueque crujiente del Mekong relleno de camarón y cerdo.",
+                TtsScript = "Puesto de panqueque crujiente del Mekong relleno de camarón y cerdo.",
+                AudioUrl = null
             });
-            translations.Add(new BoothTranslationLocal
+            boothTranslations.Add(new BoothTranslationLocal
             {
                 BoothId = "booth-07",
                 LanguageCode = "it",
                 Name = "Pancake croccante del Mekong",
-                Description = "Lo stand di Pancake croccante del Mekong è uno dei più importanti di questo festival gastronomico.",
-                TtsScript = "Benvenuto allo stand di Pancake croccante del Mekong. Goditi i sapori autentici."
+                Description = "Stand di pancake croccante del Mekong con ripieno di gamberi e maiale.",
+                TtsScript = "Stand di pancake croccante del Mekong con ripieno di gamberi e maiale.",
+                AudioUrl = null
             });
-            translations.Add(new BoothTranslationLocal
+            boothTranslations.Add(new BoothTranslationLocal
             {
                 BoothId = "booth-07",
                 LanguageCode = "ru",
                 Name = "Хрустящий блин Меконга",
-                Description = "Стенд Хрустящий блин Меконга — один из самых популярных на этом гастрономическом фестивале.",
-                TtsScript = "Добро пожаловать на стенд Хрустящий блин Меконга. Наслаждайтесь аутентичными вкусами."
+                Description = "Стенд хрустящих блинов Меконга с начинкой из креветок и свинины.",
+                TtsScript = "Стенд хрустящих блинов Меконга с начинкой из креветок и свинины.",
+                AudioUrl = null
             });
-
-            // ==========================================
-            // BOOTH 08 - Gỏi Cuốn Tươi
-            // ==========================================
-            translations.Add(new BoothTranslationLocal
+            boothTranslations.Add(new BoothTranslationLocal
             {
                 BoothId = "booth-08",
                 LanguageCode = "vi",
                 Name = "Gỏi Cuốn Tươi",
-                Description = "Gỏi Cuốn Tươi - gian hàng nổi bật của hội chợ ẩm thực...",
-                TtsScript = "Xin chào, bạn đang đến với gian hàng Gỏi Cuốn Tươi.",
-                AudioUrl = "http://192.168.1.237:5151/uploads/audio/booth-08-vi.mp3"
+                Description = "Gian hàng gỏi cuốn tươi thanh mát và tốt cho sức khỏe.",
+                TtsScript = "Gian hàng gỏi cuốn tươi thanh mát và tốt cho sức khỏe.",
+                AudioUrl = null
             });
-            translations.Add(new BoothTranslationLocal
+            boothTranslations.Add(new BoothTranslationLocal
             {
                 BoothId = "booth-08",
                 LanguageCode = "en",
                 Name = "Fresh Spring Rolls",
-                Description = "Fresh Spring Rolls booth at the food fair...",
-                TtsScript = "Welcome to Fresh Spring Rolls.",
-                AudioUrl = "http://192.168.1.237:5151/uploads/audio/booth-08-en.mp3"
+                Description = "Fresh spring rolls booth with light and healthy flavors.",
+                TtsScript = "Fresh spring rolls booth with light and healthy flavors.",
+                AudioUrl = null
             });
-            translations.Add(new BoothTranslationLocal
+            boothTranslations.Add(new BoothTranslationLocal
             {
                 BoothId = "booth-08",
                 LanguageCode = "zh",
                 Name = "鲜春卷",
-                Description = "鲜春卷是本美食展的特色摊位之一，欢迎您前来体验地道风味。",
-                TtsScript = "欢迎来到鲜春卷展位，这里为您提供正宗的美食。"
+                Description = "鲜春卷展位，口感清爽健康。",
+                TtsScript = "鲜春卷展位，口感清爽健康。",
+                AudioUrl = null
             });
-            translations.Add(new BoothTranslationLocal
+            boothTranslations.Add(new BoothTranslationLocal
             {
                 BoothId = "booth-08",
                 LanguageCode = "ja",
                 Name = "生春巻き",
-                Description = "生春巻きは本フードフェアの人気ブースの一つです。",
-                TtsScript = "生春巻きのブースへようこそ。本場の味をお楽しみください。"
+                Description = "さっぱりとしてヘルシーな生春巻きのブースです。",
+                TtsScript = "さっぱりとしてヘルシーな生春巻きのブースです。",
+                AudioUrl = null
             });
-            translations.Add(new BoothTranslationLocal
+            boothTranslations.Add(new BoothTranslationLocal
             {
                 BoothId = "booth-08",
                 LanguageCode = "ko",
                 Name = "생춘권",
-                Description = "생춘권은(는) 본 음식 축제의 대표적인 부스 중 하나입니다.",
-                TtsScript = "생춘권 부스에 오신 것을 환영합니다. 정통의 맛을 즐겨보세요."
+                Description = "가볍고 건강한 맛을 즐길 수 있는 생춘권 부스입니다.",
+                TtsScript = "가볍고 건강한 맛을 즐길 수 있는 생춘권 부스입니다.",
+                AudioUrl = null
             });
-            translations.Add(new BoothTranslationLocal
+            boothTranslations.Add(new BoothTranslationLocal
             {
                 BoothId = "booth-08",
                 LanguageCode = "fr",
                 Name = "Rouleaux de printemps frais",
-                Description = "Le stand Rouleaux de printemps frais est l'un des stands phares de ce festival gastronomique.",
-                TtsScript = "Bienvenue au stand Rouleaux de printemps frais. Profitez de saveurs authentiques."
+                Description = "Stand de rouleaux de printemps frais aux saveurs légères et saines.",
+                TtsScript = "Stand de rouleaux de printemps frais aux saveurs légères et saines.",
+                AudioUrl = null
             });
-            translations.Add(new BoothTranslationLocal
+            boothTranslations.Add(new BoothTranslationLocal
             {
                 BoothId = "booth-08",
                 LanguageCode = "es",
                 Name = "Rollitos frescos",
-                Description = "El stand de Rollitos frescos es uno de los más destacados de esta feria gastronómica.",
-                TtsScript = "Bienvenido al stand de Rollitos frescos. Disfrute de sabores auténticos."
+                Description = "Puesto de rollitos frescos con sabores ligeros y saludables.",
+                TtsScript = "Puesto de rollitos frescos con sabores ligeros y saludables.",
+                AudioUrl = null
             });
-            translations.Add(new BoothTranslationLocal
+            boothTranslations.Add(new BoothTranslationLocal
             {
                 BoothId = "booth-08",
                 LanguageCode = "it",
                 Name = "Involtini freschi",
-                Description = "Lo stand di Involtini freschi è uno dei più importanti di questo festival gastronomico.",
-                TtsScript = "Benvenuto allo stand di Involtini freschi. Goditi i sapori autentici."
+                Description = "Stand di involtini freschi dal gusto leggero e salutare.",
+                TtsScript = "Stand di involtini freschi dal gusto leggero e salutare.",
+                AudioUrl = null
             });
-            translations.Add(new BoothTranslationLocal
+            boothTranslations.Add(new BoothTranslationLocal
             {
                 BoothId = "booth-08",
                 LanguageCode = "ru",
                 Name = "Свежие спринг-роллы",
-                Description = "Стенд Свежие спринг-роллы — один из самых популярных на этом гастрономическом фестивале.",
-                TtsScript = "Добро пожаловать на стенд Свежие спринг-роллы. Наслаждайтесь аутентичными вкусами."
+                Description = "Стенд свежих спринг-роллов с лёгким и полезным вкусом.",
+                TtsScript = "Стенд свежих спринг-роллов с лёгким и полезным вкусом.",
+                AudioUrl = null
             });
-
-            // ==========================================
-            // BOOTH 09 - Hải Sản Nướng
-            // ==========================================
-            translations.Add(new BoothTranslationLocal
+            boothTranslations.Add(new BoothTranslationLocal
             {
                 BoothId = "booth-09",
                 LanguageCode = "vi",
                 Name = "Hải Sản Nướng",
-                Description = "Hải Sản Nướng - gian hàng nổi bật của hội chợ ẩm thực...",
-                TtsScript = "Xin chào, bạn đang đến với gian hàng Hải Sản Nướng.",
-                AudioUrl = "http://192.168.1.237:5151/uploads/audio/booth-09-vi.mp3"
+                Description = "Gian hàng hải sản nướng thơm lừng với nhiều loại tôm mực hấp dẫn.",
+                TtsScript = "Gian hàng hải sản nướng thơm lừng với nhiều loại tôm mực hấp dẫn.",
+                AudioUrl = null
             });
-            translations.Add(new BoothTranslationLocal
+            boothTranslations.Add(new BoothTranslationLocal
             {
                 BoothId = "booth-09",
                 LanguageCode = "en",
                 Name = "Grilled Seafood",
-                Description = "Grilled Seafood booth at the food fair...",
-                TtsScript = "Welcome to Grilled Seafood.",
-                AudioUrl = "http://192.168.1.237:5151/uploads/audio/booth-09-en.mp3"
+                Description = "Grilled seafood booth with fragrant squid and shrimp dishes.",
+                TtsScript = "Grilled seafood booth with fragrant squid and shrimp dishes.",
+                AudioUrl = null
             });
-            translations.Add(new BoothTranslationLocal
+            boothTranslations.Add(new BoothTranslationLocal
             {
                 BoothId = "booth-09",
                 LanguageCode = "zh",
                 Name = "烤海鲜",
-                Description = "烤海鲜是本美食展的特色摊位之一，欢迎您前来体验地道风味。",
-                TtsScript = "欢迎来到烤海鲜展位，这里为您提供正宗的美食。"
+                Description = "烤海鲜展位，提供香气十足的鱿鱼和虾料理。",
+                TtsScript = "烤海鲜展位，提供香气十足的鱿鱼和虾料理。",
+                AudioUrl = null
             });
-            translations.Add(new BoothTranslationLocal
+            boothTranslations.Add(new BoothTranslationLocal
             {
                 BoothId = "booth-09",
                 LanguageCode = "ja",
                 Name = "焼きシーフード",
-                Description = "焼きシーフードは本フードフェアの人気ブースの一つです。",
-                TtsScript = "焼きシーフードのブースへようこそ。本場の味をお楽しみください。"
+                Description = "香ばしいイカや海老料理を楽しめる焼きシーフードのブースです。",
+                TtsScript = "香ばしいイカや海老料理を楽しめる焼きシーフードのブースです。",
+                AudioUrl = null
             });
-            translations.Add(new BoothTranslationLocal
+            boothTranslations.Add(new BoothTranslationLocal
             {
                 BoothId = "booth-09",
                 LanguageCode = "ko",
                 Name = "구운 해산물",
-                Description = "구운 해산물은(는) 본 음식 축제의 대표적인 부스 중 하나입니다.",
-                TtsScript = "구운 해산물 부스에 오신 것을 환영합니다. 정통의 맛을 즐겨보세요."
+                Description = "오징어와 새우를 맛있게 구워낸 해산물 부스입니다.",
+                TtsScript = "오징어와 새우를 맛있게 구워낸 해산물 부스입니다.",
+                AudioUrl = null
             });
-            translations.Add(new BoothTranslationLocal
+            boothTranslations.Add(new BoothTranslationLocal
             {
                 BoothId = "booth-09",
                 LanguageCode = "fr",
                 Name = "Fruits de mer grillés",
-                Description = "Le stand Fruits de mer grillés est l'un des stands phares de ce festival gastronomique.",
-                TtsScript = "Bienvenue au stand Fruits de mer grillés. Profitez de saveurs authentiques."
+                Description = "Stand de fruits de mer grillés avec calamars et crevettes parfumés.",
+                TtsScript = "Stand de fruits de mer grillés avec calamars et crevettes parfumés.",
+                AudioUrl = null
             });
-            translations.Add(new BoothTranslationLocal
+            boothTranslations.Add(new BoothTranslationLocal
             {
                 BoothId = "booth-09",
                 LanguageCode = "es",
                 Name = "Mariscos a la parrilla",
-                Description = "El stand de Mariscos a la parrilla es uno de los más destacados de esta feria gastronómica.",
-                TtsScript = "Bienvenido al stand de Mariscos a la parrilla. Disfrute de sabores auténticos."
+                Description = "Puesto de mariscos a la parrilla con calamar y camarón aromáticos.",
+                TtsScript = "Puesto de mariscos a la parrilla con calamar y camarón aromáticos.",
+                AudioUrl = null
             });
-            translations.Add(new BoothTranslationLocal
+            boothTranslations.Add(new BoothTranslationLocal
             {
                 BoothId = "booth-09",
                 LanguageCode = "it",
                 Name = "Frutti di mare alla griglia",
-                Description = "Lo stand di Frutti di mare alla griglia è uno dei più importanti di questo festival gastronomico.",
-                TtsScript = "Benvenuto allo stand di Frutti di mare alla griglia. Goditi i sapori autentici."
+                Description = "Stand di frutti di mare alla griglia con calamari e gamberi profumati.",
+                TtsScript = "Stand di frutti di mare alla griglia con calamari e gamberi profumati.",
+                AudioUrl = null
             });
-            translations.Add(new BoothTranslationLocal
+            boothTranslations.Add(new BoothTranslationLocal
             {
                 BoothId = "booth-09",
                 LanguageCode = "ru",
                 Name = "Жареные морепродукты",
-                Description = "Стенд Жареные морепродукты — один из самых популярных на этом гастрономическом фестивале.",
-                TtsScript = "Добро пожаловать на стенд Жареные морепродукты. Наслаждайтесь аутентичными вкусами."
+                Description = "Стенд жареных морепродуктов с ароматными кальмарами и креветками.",
+                TtsScript = "Стенд жареных морепродуктов с ароматными кальмарами и креветками.",
+                AudioUrl = null
             });
-
-            // ==========================================
-            // BOOTH 10 - Cà Phê & Trà Sữa
-            // ==========================================
-            translations.Add(new BoothTranslationLocal
+            boothTranslations.Add(new BoothTranslationLocal
             {
                 BoothId = "booth-10",
                 LanguageCode = "vi",
                 Name = "Cà Phê & Trà Sữa",
-                Description = "Cà Phê & Trà Sữa - gian hàng nổi bật của hội chợ ẩm thực...",
-                TtsScript = "Xin chào, bạn đang đến với gian hàng Cà Phê & Trà Sữa.",
-                AudioUrl = "http://192.168.1.237:5151/uploads/audio/booth-10-vi.mp3"
+                Description = "Gian hàng đồ uống với cà phê phin và trà sữa được yêu thích.",
+                TtsScript = "Gian hàng đồ uống với cà phê phin và trà sữa được yêu thích.",
+                AudioUrl = null
             });
-            translations.Add(new BoothTranslationLocal
+            boothTranslations.Add(new BoothTranslationLocal
             {
                 BoothId = "booth-10",
                 LanguageCode = "en",
                 Name = "Coffee & Milk Tea",
-                Description = "Coffee & Milk Tea booth at the food fair...",
-                TtsScript = "Welcome to Coffee & Milk Tea.",
-                AudioUrl = "http://192.168.1.237:5151/uploads/audio/booth-10-en.mp3"
+                Description = "Drink booth with Vietnamese coffee and popular milk tea.",
+                TtsScript = "Drink booth with Vietnamese coffee and popular milk tea.",
+                AudioUrl = null
             });
-            translations.Add(new BoothTranslationLocal
+            boothTranslations.Add(new BoothTranslationLocal
             {
                 BoothId = "booth-10",
                 LanguageCode = "zh",
                 Name = "咖啡与奶茶",
-                Description = "咖啡与奶茶是本美食展的特色摊位之一，欢迎您前来体验地道风味。",
-                TtsScript = "欢迎来到咖啡与奶茶展位，这里为您提供正宗的美食。"
+                Description = "饮品展位，提供越南咖啡与人气奶茶。",
+                TtsScript = "饮品展位，提供越南咖啡与人气奶茶。",
+                AudioUrl = null
             });
-            translations.Add(new BoothTranslationLocal
+            boothTranslations.Add(new BoothTranslationLocal
             {
                 BoothId = "booth-10",
                 LanguageCode = "ja",
                 Name = "コーヒー＆ミルクティー",
-                Description = "コーヒー＆ミルクティーは本フードフェアの人気ブースの一つです。",
-                TtsScript = "コーヒー＆ミルクティーのブースへようこそ。本場の味をお楽しみください。"
+                Description = "ベトナムコーヒーと人気のミルクティーを楽しめるドリンクブースです。",
+                TtsScript = "ベトナムコーヒーと人気のミルクティーを楽しめるドリンクブースです。",
+                AudioUrl = null
             });
-            translations.Add(new BoothTranslationLocal
+            boothTranslations.Add(new BoothTranslationLocal
             {
                 BoothId = "booth-10",
                 LanguageCode = "ko",
                 Name = "커피 & 밀크티",
-                Description = "커피 & 밀크티은(는) 본 음식 축제의 대표적인 부스 중 하나입니다.",
-                TtsScript = "커피 & 밀크티 부스에 오신 것을 환영합니다. 정통의 맛을 즐겨보세요."
+                Description = "베트남 커피와 인기 밀크티를 즐길 수 있는 음료 부스입니다.",
+                TtsScript = "베트남 커피와 인기 밀크티를 즐길 수 있는 음료 부스입니다.",
+                AudioUrl = null
             });
-            translations.Add(new BoothTranslationLocal
+            boothTranslations.Add(new BoothTranslationLocal
             {
                 BoothId = "booth-10",
                 LanguageCode = "fr",
-                Name = "Café & thé au lait",
-                Description = "Le stand Café & thé au lait est l'un des stands phares de ce festival gastronomique.",
-                TtsScript = "Bienvenue au stand Café & thé au lait. Profitez de saveurs authentiques."
+                Name = "Café et thé au lait",
+                Description = "Stand de boissons avec café vietnamien et thé au lait populaire.",
+                TtsScript = "Stand de boissons avec café vietnamien et thé au lait populaire.",
+                AudioUrl = null
             });
-            translations.Add(new BoothTranslationLocal
+            boothTranslations.Add(new BoothTranslationLocal
             {
                 BoothId = "booth-10",
                 LanguageCode = "es",
                 Name = "Café y té con leche",
-                Description = "El stand de Café y té con leche es uno de los más destacados de esta feria gastronómica.",
-                TtsScript = "Bienvenido al stand de Café y té con leche. Disfrute de sabores auténticos."
+                Description = "Puesto de bebidas con café vietnamita y popular té con leche.",
+                TtsScript = "Puesto de bebidas con café vietnamita y popular té con leche.",
+                AudioUrl = null
             });
-            translations.Add(new BoothTranslationLocal
+            boothTranslations.Add(new BoothTranslationLocal
             {
                 BoothId = "booth-10",
                 LanguageCode = "it",
                 Name = "Caffè e tè al latte",
-                Description = "Lo stand di Caffè e tè al latte è uno dei più importanti di questo festival gastronomico.",
-                TtsScript = "Benvenuto allo stand di Caffè e tè al latte. Goditi i sapori autentici."
+                Description = "Stand di bevande con caffè vietnamita e popolare tè al latte.",
+                TtsScript = "Stand di bevande con caffè vietnamita e popolare tè al latte.",
+                AudioUrl = null
             });
-            translations.Add(new BoothTranslationLocal
+            boothTranslations.Add(new BoothTranslationLocal
             {
                 BoothId = "booth-10",
                 LanguageCode = "ru",
                 Name = "Кофе и молочный чай",
-                Description = "Стенд Кофе и молочный чай — один из самых популярных на этом гастрономическом фестивале.",
-                TtsScript = "Добро пожаловать на стенд Кофе и молочный чай. Наслаждайтесь аутентичными вкусами."
-            }); 
-            db.BoothTranslations.AddRange(translations);
+                Description = "Стенд напитков с вьетнамским кофе и популярным молочным чаем.",
+                TtsScript = "Стенд напитков с вьетнамским кофе и популярным молочным чаем.",
+                AudioUrl = null
+            });
+
+            db.BoothTranslations.AddRange(boothTranslations);
             await db.SaveChangesAsync();
         }
 
-        // 4. Bảng BoothMenuItems (Món ăn) - 3 ví dụ
-        // 4. Bảng BoothMenuItems (Món ăn) - Đầy đủ 30 món từ poi.db
         if (!await db.BoothMenuItems.AnyAsync())
         {
-            var menuItems = new List<BoothMenuItem>();
-
-            // --- Booth 01: Phở Hà Nội ---
-            menuItems.Add(new BoothMenuItem { Id = "booth-01-menu-01", BoothId = "booth-01", Name = "Phở Đặc Biệt", NameEn = "Pho Special", Description = "Phở đặc biệt đầy đủ topping.", DescriptionEn = "Pho Special item for demo.", Price = 65000m, PriceUsd = 2.60m, ImageUrl = "http://192.168.1.237:5151/uploads/menu/booth-01-menu-01.png", UpdatedAtUtc = DateTime.UtcNow, IsDeleted = false });
-            menuItems.Add(new BoothMenuItem { Id = "booth-01-menu-02", BoothId = "booth-01", Name = "Phở Tái Nạm", NameEn = "Rare & Brisket Pho", Description = "Phở tái nạm tươi ngon.", DescriptionEn = "Rare & Brisket Pho item.", Price = 72000m, PriceUsd = 2.88m, ImageUrl = "http://192.168.1.237:5151/uploads/menu/booth-01-menu-02.png", UpdatedAtUtc = DateTime.UtcNow, IsDeleted = false });
-            menuItems.Add(new BoothMenuItem { Id = "booth-01-menu-03", BoothId = "booth-01", Name = "Phở Bò Viên", NameEn = "Meatball Pho", Description = "Phở bò viên dai giòn.", DescriptionEn = "Meatball Pho item.", Price = 59000m, PriceUsd = 2.36m, ImageUrl = "http://192.168.1.237:5151/uploads/menu/booth-01-menu-03.png", UpdatedAtUtc = DateTime.UtcNow, IsDeleted = false });
-
-            // --- Booth 02: Bún Bò Huế ---
-            menuItems.Add(new BoothMenuItem { Id = "booth-02-menu-01", BoothId = "booth-02", Name = "Bún Bò Đặc Biệt", NameEn = "Special Hue Noodles", Description = "Bún bò Huế đặc biệt.", DescriptionEn = "Special Hue Noodles item.", Price = 68000m, PriceUsd = 2.72m, ImageUrl = "http://192.168.1.237:5151/uploads/menu/booth-02-menu-01.png", UpdatedAtUtc = DateTime.UtcNow, IsDeleted = false });
-            menuItems.Add(new BoothMenuItem { Id = "booth-02-menu-02", BoothId = "booth-02", Name = "Bún Bò Giò Heo", NameEn = "Hue Noodles with Pork Hock", Description = "Bún bò giò heo đặc trưng.", DescriptionEn = "Hue Noodles with Pork Hock item.", Price = 75000m, PriceUsd = 3.00m, ImageUrl = "http://192.168.1.237:5151/uploads/menu/booth-02-menu-02.png", UpdatedAtUtc = DateTime.UtcNow, IsDeleted = false });
-            menuItems.Add(new BoothMenuItem { Id = "booth-02-menu-03", BoothId = "booth-02", Name = "Bún Bò Thập Cẩm", NameEn = "Mixed Hue Noodles", Description = "Bún bò thập cẩm đầy đủ.", DescriptionEn = "Mixed Hue Noodles item.", Price = 79000m, PriceUsd = 3.16m, ImageUrl = "http://192.168.1.237:5151/uploads/menu/booth-02-menu-03.png", UpdatedAtUtc = DateTime.UtcNow, IsDeleted = false });
-
-            // --- Booth 03: Cơm Tấm Sài Gòn ---
-            menuItems.Add(new BoothMenuItem { Id = "booth-03-menu-01", BoothId = "booth-03", Name = "Cơm Tấm Sườn Bì Chả", NameEn = "Broken Rice Combo", Description = "Cơm tấm sườn bì chả truyền thống.", DescriptionEn = "Broken Rice Combo item.", Price = 62000m, PriceUsd = 2.48m, ImageUrl = "http://192.168.1.237:5151/uploads/menu/booth-03-menu-01.png", UpdatedAtUtc = DateTime.UtcNow, IsDeleted = false });
-            menuItems.Add(new BoothMenuItem { Id = "booth-03-menu-02", BoothId = "booth-03", Name = "Cơm Tấm Sườn Nướng", NameEn = "Broken Rice Grilled Pork", Description = "Sườn nướng thơm ngon.", DescriptionEn = "Broken Rice Grilled Pork item.", Price = 69000m, PriceUsd = 2.76m, ImageUrl = "http://192.168.1.237:5151/uploads/menu/booth-03-menu-02.png", UpdatedAtUtc = DateTime.UtcNow, IsDeleted = false });
-            menuItems.Add(new BoothMenuItem { Id = "booth-03-menu-03", BoothId = "booth-03", Name = "Cơm Tấm Đặc Biệt", NameEn = "Special Broken Rice", Description = "Cơm tấm đặc biệt.", DescriptionEn = "Special Broken Rice item.", Price = 79000m, PriceUsd = 3.16m, ImageUrl = "http://192.168.1.237:5151/uploads/menu/booth-03-menu-03.png", UpdatedAtUtc = DateTime.UtcNow, IsDeleted = false });
-
-            // --- Booth 04: Bánh Mì Việt ---
-            menuItems.Add(new BoothMenuItem { Id = "booth-04-menu-01", BoothId = "booth-04", Name = "Bánh Mì Thịt Nướng", NameEn = "Grilled Pork Banh Mi", Description = "Bánh mì kẹp thịt nướng.", DescriptionEn = "Grilled Pork Banh Mi item.", Price = 35000m, PriceUsd = 1.40m, ImageUrl = "http://192.168.1.237:5151/uploads/menu/booth-04-menu-01.png", UpdatedAtUtc = DateTime.UtcNow, IsDeleted = false });
-            menuItems.Add(new BoothMenuItem { Id = "booth-04-menu-02", BoothId = "booth-04", Name = "Bánh Mì Gà", NameEn = "Chicken Banh Mi", Description = "Bánh mì gà xé.", DescriptionEn = "Chicken Banh Mi item.", Price = 38000m, PriceUsd = 1.52m, ImageUrl = "http://192.168.1.237:5151/uploads/menu/booth-04-menu-02.png", UpdatedAtUtc = DateTime.UtcNow, IsDeleted = false });
-            menuItems.Add(new BoothMenuItem { Id = "booth-04-menu-03", BoothId = "booth-04", Name = "Bánh Mì Đặc Biệt", NameEn = "Special Banh Mi", Description = "Bánh mì đặc biệt đầy đủ.", DescriptionEn = "Special Banh Mi item.", Price = 45000m, PriceUsd = 1.80m, ImageUrl = "http://192.168.1.237:5151/uploads/menu/booth-04-menu-03.png", UpdatedAtUtc = DateTime.UtcNow, IsDeleted = false });
-
-            // --- Booth 05: Chè Ba Miền ---
-            menuItems.Add(new BoothMenuItem { Id = "booth-05-menu-01", BoothId = "booth-05", Name = "Chè Đậu Xanh", NameEn = "Mung Bean Sweet Soup", Description = "Chè đậu xanh thanh mát.", DescriptionEn = "Mung Bean Sweet Soup item.", Price = 28000m, PriceUsd = 1.12m, ImageUrl = "http://192.168.1.237:5151/uploads/menu/booth-05-menu-01.png", UpdatedAtUtc = DateTime.UtcNow, IsDeleted = false });
-            menuItems.Add(new BoothMenuItem { Id = "booth-05-menu-02", BoothId = "booth-05", Name = "Chè Thập Cẩm", NameEn = "Mixed Sweet Soup", Description = "Chè thập cẩm đủ loại.", DescriptionEn = "Mixed Sweet Soup item.", Price = 32000m, PriceUsd = 1.28m, ImageUrl = "http://192.168.1.237:5151/uploads/menu/booth-05-menu-02.png", UpdatedAtUtc = DateTime.UtcNow, IsDeleted = false });
-            menuItems.Add(new BoothMenuItem { Id = "booth-05-menu-03", BoothId = "booth-05", Name = "Chè Dừa Non", NameEn = "Young Coconut Sweet Soup", Description = "Chè dừa non béo ngậy.", DescriptionEn = "Young Coconut Sweet Soup item.", Price = 36000m, PriceUsd = 1.44m, ImageUrl = "http://192.168.1.237:5151/uploads/menu/booth-05-menu-03.png", UpdatedAtUtc = DateTime.UtcNow, IsDeleted = false });
-
-            // --- Booth 06: Nem Nướng Đà Lạt ---
-            menuItems.Add(new BoothMenuItem { Id = "booth-06-menu-01", BoothId = "booth-06", Name = "Nem Nướng Phần", NameEn = "Grilled Pork Rolls Set", Description = "Nem nướng đặc sản Đà Lạt.", DescriptionEn = "Grilled Pork Rolls Set item.", Price = 68000m, PriceUsd = 2.72m, ImageUrl = "http://192.168.1.237:5151/uploads/menu/booth-06-menu-01.png", UpdatedAtUtc = DateTime.UtcNow, IsDeleted = false });
-            menuItems.Add(new BoothMenuItem { Id = "booth-06-menu-02", BoothId = "booth-06", Name = "Nem Nướng Combo", NameEn = "Grilled Pork Combo", Description = "Combo nem nướng hấp dẫn.", DescriptionEn = "Grilled Pork Combo item.", Price = 79000m, PriceUsd = 3.16m, ImageUrl = "http://192.168.1.237:5151/uploads/menu/booth-06-menu-02.png", UpdatedAtUtc = DateTime.UtcNow, IsDeleted = false });
-            menuItems.Add(new BoothMenuItem { Id = "booth-06-menu-03", BoothId = "booth-06", Name = "Nem Nướng Đặc Biệt", NameEn = "Special Grilled Pork Rolls", Description = "Nem nướng đặc biệt.", DescriptionEn = "Special Grilled Pork Rolls item.", Price = 89000m, PriceUsd = 3.56m, ImageUrl = "http://192.168.1.237:5151/uploads/menu/booth-06-menu-03.png", UpdatedAtUtc = DateTime.UtcNow, IsDeleted = false });
-
-            // --- Booth 07: Bánh Xèo Miền Tây ---
-            menuItems.Add(new BoothMenuItem { Id = "booth-07-menu-01", BoothId = "booth-07", Name = "Bánh Xèo Tôm Thịt", NameEn = "Shrimp Pork Pancake", Description = "Bánh xèo nhân tôm thịt.", DescriptionEn = "Shrimp Pork Pancake item.", Price = 65000m, PriceUsd = 2.60m, ImageUrl = "http://192.168.1.237:5151/uploads/menu/booth-07-menu-01.png", UpdatedAtUtc = DateTime.UtcNow, IsDeleted = false });
-            menuItems.Add(new BoothMenuItem { Id = "booth-07-menu-02", BoothId = "booth-07", Name = "Bánh Xèo Chay", NameEn = "Vegetarian Pancake", Description = "Bánh xèo nhân đậu xanh.", DescriptionEn = "Vegetarian Pancake item.", Price = 58000m, PriceUsd = 2.32m, ImageUrl = "http://192.168.1.237:5151/uploads/menu/booth-07-menu-02.png", UpdatedAtUtc = DateTime.UtcNow, IsDeleted = false });
-            menuItems.Add(new BoothMenuItem { Id = "booth-07-menu-03", BoothId = "booth-07", Name = "Bánh Xèo Đặc Biệt", NameEn = "Special Pancake", Description = "Bánh xèo đặc biệt siêu to.", DescriptionEn = "Special Pancake item.", Price = 76000m, PriceUsd = 3.04m, ImageUrl = "http://192.168.1.237:5151/uploads/menu/booth-07-menu-03.png", UpdatedAtUtc = DateTime.UtcNow, IsDeleted = false });
-
-            // --- Booth 08: Gỏi Cuốn Tươi ---
-            menuItems.Add(new BoothMenuItem { Id = "booth-08-menu-01", BoothId = "booth-08", Name = "Gỏi Cuốn Tôm Thịt", NameEn = "Shrimp Pork Spring Rolls", Description = "Gỏi cuốn tôm thịt tươi ngon.", DescriptionEn = "Shrimp Pork Spring Rolls item.", Price = 42000m, PriceUsd = 1.68m, ImageUrl = "http://192.168.1.237:5151/uploads/menu/booth-08-menu-01.png", UpdatedAtUtc = DateTime.UtcNow, IsDeleted = false });
-            menuItems.Add(new BoothMenuItem { Id = "booth-08-menu-02", BoothId = "booth-08", Name = "Gỏi Cuốn Bò Nướng", NameEn = "Beef Spring Rolls", Description = "Gỏi cuốn nhân bò nướng.", DescriptionEn = "Beef Spring Rolls item.", Price = 48000m, PriceUsd = 1.92m, ImageUrl = "http://192.168.1.237:5151/uploads/menu/booth-08-menu-02.png", UpdatedAtUtc = DateTime.UtcNow, IsDeleted = false });
-            menuItems.Add(new BoothMenuItem { Id = "booth-08-menu-03", BoothId = "booth-08", Name = "Combo 6 Cuốn", NameEn = "6-roll Combo", Description = "Combo 6 cuốn đầy đủ.", DescriptionEn = "6-roll Combo item.", Price = 75000m, PriceUsd = 3.00m, ImageUrl = "http://192.168.1.237:5151/uploads/menu/booth-08-menu-03.png", UpdatedAtUtc = DateTime.UtcNow, IsDeleted = false });
-
-            // --- Booth 09: Hải Sản Nướng ---
-            menuItems.Add(new BoothMenuItem { Id = "booth-09-menu-01", BoothId = "booth-09", Name = "Mực Nướng Sa Tế", NameEn = "Grilled Squid", Description = "Mực nướng sa tế cay nồng.", DescriptionEn = "Grilled Squid item.", Price = 98000m, PriceUsd = 3.92m, ImageUrl = "http://192.168.1.237:5151/uploads/menu/booth-09-menu-01.png", UpdatedAtUtc = DateTime.UtcNow, IsDeleted = false });
-            menuItems.Add(new BoothMenuItem { Id = "booth-09-menu-02", BoothId = "booth-09", Name = "Tôm Nướng Muối Ớt", NameEn = "Grilled Shrimp", Description = "Tôm nướng muối ớt đậm đà.", DescriptionEn = "Grilled Shrimp item.", Price = 115000m, PriceUsd = 4.60m, ImageUrl = "http://192.168.1.237:5151/uploads/menu/booth-09-menu-02.png", UpdatedAtUtc = DateTime.UtcNow, IsDeleted = false });
-            menuItems.Add(new BoothMenuItem { Id = "booth-09-menu-03", BoothId = "booth-09", Name = "Combo Hải Sản", NameEn = "Seafood Combo", Description = "Combo hải sản nướng thập cẩm.", DescriptionEn = "Seafood Combo item.", Price = 149000m, PriceUsd = 5.96m, ImageUrl = "http://192.168.1.237:5151/uploads/menu/booth-09-menu-03.png", UpdatedAtUtc = DateTime.UtcNow, IsDeleted = false });
-
-            // --- Booth 10: Cà Phê & Trà Sữa ---
-            menuItems.Add(new BoothMenuItem { Id = "booth-10-menu-01", BoothId = "booth-10", Name = "Cà Phê Sữa Đá", NameEn = "Iced Milk Coffee", Description = "Cà phê sữa đá truyền thống.", DescriptionEn = "Iced Milk Coffee item.", Price = 30000m, PriceUsd = 1.20m, ImageUrl = "http://192.168.1.237:5151/uploads/menu/booth-10-menu-01.png", UpdatedAtUtc = DateTime.UtcNow, IsDeleted = false });
-            menuItems.Add(new BoothMenuItem { Id = "booth-10-menu-02", BoothId = "booth-10", Name = "Trà Sữa Trân Châu", NameEn = "Bubble Milk Tea", Description = "Trà sữa trân châu đường đen.", DescriptionEn = "Bubble Milk Tea item.", Price = 42000m, PriceUsd = 1.68m, ImageUrl = "http://192.168.1.237:5151/uploads/menu/booth-10-menu-02.png", UpdatedAtUtc = DateTime.UtcNow, IsDeleted = false });
-            menuItems.Add(new BoothMenuItem { Id = "booth-10-menu-03", BoothId = "booth-10", Name = "Combo Đồ Uống", NameEn = "Drink Combo", Description = "Combo cà phê và trà sữa.", DescriptionEn = "Drink Combo item.", Price = 70000m, PriceUsd = 2.80m, ImageUrl = "http://192.168.1.237:5151/uploads/menu/booth-10-menu-03.png", UpdatedAtUtc = DateTime.UtcNow, IsDeleted = false });
+            var menuItems = new List<BoothMenuItem>
+            {
+                new BoothMenuItem { Id = "booth-01-menu-01", BoothId = "booth-01", Name = "Phở Đặc Biệt", NameEn = "Special Pho", Description = "Phở bò truyền thống với đầy đủ topping.", DescriptionEn = "Traditional beef pho with full toppings.", Price = 65000m, PriceUsd = 0m, ImageUrl = "http://192.168.1.237:5151/uploads/menu/booth-01-menu-01.png", UpdatedAtUtc = DateTime.UtcNow, IsDeleted = false },
+                new BoothMenuItem { Id = "booth-01-menu-02", BoothId = "booth-01", Name = "Phở Tái Nạm", NameEn = "Rare & Brisket Pho", Description = "Phở tái nạm tươi ngon.", DescriptionEn = "Pho with rare beef and brisket.", Price = 72000m, PriceUsd = 0m, ImageUrl = "http://192.168.1.237:5151/uploads/menu/booth-01-menu-02.png", UpdatedAtUtc = DateTime.UtcNow, IsDeleted = false },
+                new BoothMenuItem { Id = "booth-01-menu-03", BoothId = "booth-01", Name = "Phở Bò Viên", NameEn = "Meatball Pho", Description = "Phở bò viên dai giòn.", DescriptionEn = "Pho with chewy beef meatballs.", Price = 59000m, PriceUsd = 0m, ImageUrl = "http://192.168.1.237:5151/uploads/menu/booth-01-menu-03.png", UpdatedAtUtc = DateTime.UtcNow, IsDeleted = false },
+                new BoothMenuItem { Id = "booth-02-menu-01", BoothId = "booth-02", Name = "Bún Bò Đặc Biệt", NameEn = "Special Hue Noodles", Description = "Bún bò Huế đặc biệt.", DescriptionEn = "Special Hue-style beef noodle soup.", Price = 68000m, PriceUsd = 0m, ImageUrl = "http://192.168.1.237:5151/uploads/menu/booth-02-menu-01.png", UpdatedAtUtc = DateTime.UtcNow, IsDeleted = false },
+                new BoothMenuItem { Id = "booth-02-menu-02", BoothId = "booth-02", Name = "Bún Bò Giò Heo", NameEn = "Hue Noodles with Pork Hock", Description = "Bún bò giò heo đặc trưng.", DescriptionEn = "Hue noodles with tender pork hock.", Price = 75000m, PriceUsd = 0m, ImageUrl = "http://192.168.1.237:5151/uploads/menu/booth-02-menu-02.png", UpdatedAtUtc = DateTime.UtcNow, IsDeleted = false },
+                new BoothMenuItem { Id = "booth-02-menu-03", BoothId = "booth-02", Name = "Bún Bò Thập Cẩm", NameEn = "Mixed Hue Noodles", Description = "Bún bò thập cẩm đầy đủ.", DescriptionEn = "Mixed Hue noodles with assorted toppings.", Price = 79000m, PriceUsd = 0m, ImageUrl = "http://192.168.1.237:5151/uploads/menu/booth-02-menu-03.png", UpdatedAtUtc = DateTime.UtcNow, IsDeleted = false },
+                new BoothMenuItem { Id = "booth-03-menu-01", BoothId = "booth-03", Name = "Cơm Tấm Sườn Bì Chả", NameEn = "Broken Rice Combo", Description = "Cơm tấm sườn bì chả truyền thống.", DescriptionEn = "Broken rice with grilled pork, shredded pork skin, and steamed egg meatloaf.", Price = 62000m, PriceUsd = 0m, ImageUrl = "http://192.168.1.237:5151/uploads/menu/booth-03-menu-01.png", UpdatedAtUtc = DateTime.UtcNow, IsDeleted = false },
+                new BoothMenuItem { Id = "booth-03-menu-02", BoothId = "booth-03", Name = "Cơm Tấm Sườn Nướng", NameEn = "Broken Rice Grilled Pork", Description = "Sườn nướng thơm ngon.", DescriptionEn = "Broken rice with fragrant grilled pork chops.", Price = 69000m, PriceUsd = 0m, ImageUrl = "http://192.168.1.237:5151/uploads/menu/booth-03-menu-02.png", UpdatedAtUtc = DateTime.UtcNow, IsDeleted = false },
+                new BoothMenuItem { Id = "booth-03-menu-03", BoothId = "booth-03", Name = "Cơm Tấm Đặc Biệt", NameEn = "Special Broken Rice", Description = "Cơm tấm đặc biệt.", DescriptionEn = "Special broken rice with premium toppings.", Price = 79000m, PriceUsd = 0m, ImageUrl = "http://192.168.1.237:5151/uploads/menu/booth-03-menu-03.png", UpdatedAtUtc = DateTime.UtcNow, IsDeleted = false },
+                new BoothMenuItem { Id = "booth-04-menu-01", BoothId = "booth-04", Name = "Bánh Mì Thịt Nướng", NameEn = "Grilled Pork Banh Mi", Description = "Bánh mì kẹp thịt nướng.", DescriptionEn = "Crispy baguette with grilled pork.", Price = 35000m, PriceUsd = 0m, ImageUrl = "http://192.168.1.237:5151/uploads/menu/booth-04-menu-01.png", UpdatedAtUtc = DateTime.UtcNow, IsDeleted = false },
+                new BoothMenuItem { Id = "booth-04-menu-02", BoothId = "booth-04", Name = "Bánh Mì Gà", NameEn = "Chicken Banh Mi", Description = "Bánh mì gà xé.", DescriptionEn = "Banh mi with shredded chicken.", Price = 38000m, PriceUsd = 0m, ImageUrl = "http://192.168.1.237:5151/uploads/menu/booth-04-menu-02.png", UpdatedAtUtc = DateTime.UtcNow, IsDeleted = false },
+                new BoothMenuItem { Id = "booth-04-menu-03", BoothId = "booth-04", Name = "Bánh Mì Đặc Biệt", NameEn = "Special Banh Mi", Description = "Bánh mì đặc biệt đầy đủ.", DescriptionEn = "Special banh mi with assorted fillings.", Price = 45000m, PriceUsd = 0m, ImageUrl = "http://192.168.1.237:5151/uploads/menu/booth-04-menu-03.png", UpdatedAtUtc = DateTime.UtcNow, IsDeleted = false },
+                new BoothMenuItem { Id = "booth-05-menu-01", BoothId = "booth-05", Name = "Chè Đậu Xanh", NameEn = "Mung Bean Sweet Soup", Description = "Chè đậu xanh thanh mát.", DescriptionEn = "Refreshing mung bean sweet soup.", Price = 28000m, PriceUsd = 0m, ImageUrl = "http://192.168.1.237:5151/uploads/menu/booth-05-menu-01.png", UpdatedAtUtc = DateTime.UtcNow, IsDeleted = false },
+                new BoothMenuItem { Id = "booth-05-menu-02", BoothId = "booth-05", Name = "Chè Thập Cẩm", NameEn = "Mixed Sweet Soup", Description = "Chè thập cẩm đủ loại.", DescriptionEn = "Sweet soup with assorted ingredients.", Price = 32000m, PriceUsd = 0m, ImageUrl = "http://192.168.1.237:5151/uploads/menu/booth-05-menu-02.png", UpdatedAtUtc = DateTime.UtcNow, IsDeleted = false },
+                new BoothMenuItem { Id = "booth-05-menu-03", BoothId = "booth-05", Name = "Chè Dừa Non", NameEn = "Young Coconut Sweet Soup", Description = "Chè dừa non béo ngậy.", DescriptionEn = "Creamy young coconut sweet soup.", Price = 36000m, PriceUsd = 0m, ImageUrl = "http://192.168.1.237:5151/uploads/menu/booth-05-menu-03.png", UpdatedAtUtc = DateTime.UtcNow, IsDeleted = false },
+                new BoothMenuItem { Id = "booth-06-menu-01", BoothId = "booth-06", Name = "Nem Nướng Phần", NameEn = "Grilled Pork Rolls Set", Description = "Nem nướng đặc sản Đà Lạt.", DescriptionEn = "Dalat grilled pork rolls set.", Price = 68000m, PriceUsd = 0m, ImageUrl = "http://192.168.1.237:5151/uploads/menu/booth-06-menu-01.png", UpdatedAtUtc = DateTime.UtcNow, IsDeleted = false },
+                new BoothMenuItem { Id = "booth-06-menu-02", BoothId = "booth-06", Name = "Nem Nướng Combo", NameEn = "Grilled Pork Combo", Description = "Combo nem nướng hấp dẫn.", DescriptionEn = "Combo with grilled pork rolls and sides.", Price = 79000m, PriceUsd = 0m, ImageUrl = "http://192.168.1.237:5151/uploads/menu/booth-06-menu-02.png", UpdatedAtUtc = DateTime.UtcNow, IsDeleted = false },
+                new BoothMenuItem { Id = "booth-06-menu-03", BoothId = "booth-06", Name = "Nem Nướng Đặc Biệt", NameEn = "Special Grilled Pork Rolls", Description = "Nem nướng đặc biệt.", DescriptionEn = "Special Dalat grilled pork rolls.", Price = 89000m, PriceUsd = 0m, ImageUrl = "http://192.168.1.237:5151/uploads/menu/booth-06-menu-03.png", UpdatedAtUtc = DateTime.UtcNow, IsDeleted = false },
+                new BoothMenuItem { Id = "booth-07-menu-01", BoothId = "booth-07", Name = "Bánh Xèo Tôm Thịt", NameEn = "Shrimp Pork Pancake", Description = "Bánh xèo nhân tôm thịt.", DescriptionEn = "Crispy pancake with shrimp and pork.", Price = 65000m, PriceUsd = 0m, ImageUrl = "http://192.168.1.237:5151/uploads/menu/booth-07-menu-01.png", UpdatedAtUtc = DateTime.UtcNow, IsDeleted = false },
+                new BoothMenuItem { Id = "booth-07-menu-02", BoothId = "booth-07", Name = "Bánh Xèo Chay", NameEn = "Vegetarian Pancake", Description = "Bánh xèo nhân đậu xanh.", DescriptionEn = "Vegetarian crispy pancake with mung bean filling.", Price = 58000m, PriceUsd = 0m, ImageUrl = "http://192.168.1.237:5151/uploads/menu/booth-07-menu-02.png", UpdatedAtUtc = DateTime.UtcNow, IsDeleted = false },
+                new BoothMenuItem { Id = "booth-07-menu-03", BoothId = "booth-07", Name = "Bánh Xèo Đặc Biệt", NameEn = "Special Pancake", Description = "Bánh xèo đặc biệt siêu to.", DescriptionEn = "Extra-large special crispy pancake.", Price = 76000m, PriceUsd = 0m, ImageUrl = "http://192.168.1.237:5151/uploads/menu/booth-07-menu-03.png", UpdatedAtUtc = DateTime.UtcNow, IsDeleted = false },
+                new BoothMenuItem { Id = "booth-08-menu-01", BoothId = "booth-08", Name = "Gỏi Cuốn Tôm Thịt", NameEn = "Shrimp Pork Spring Rolls", Description = "Gỏi cuốn tôm thịt tươi ngon.", DescriptionEn = "Fresh spring rolls with shrimp and pork.", Price = 42000m, PriceUsd = 0m, ImageUrl = "http://192.168.1.237:5151/uploads/menu/booth-08-menu-01.png", UpdatedAtUtc = DateTime.UtcNow, IsDeleted = false },
+                new BoothMenuItem { Id = "booth-08-menu-02", BoothId = "booth-08", Name = "Gỏi Cuốn Bò Nướng", NameEn = "Beef Spring Rolls", Description = "Gỏi cuốn nhân bò nướng.", DescriptionEn = "Fresh spring rolls with grilled beef.", Price = 48000m, PriceUsd = 0m, ImageUrl = "http://192.168.1.237:5151/uploads/menu/booth-08-menu-02.png", UpdatedAtUtc = DateTime.UtcNow, IsDeleted = false },
+                new BoothMenuItem { Id = "booth-08-menu-03", BoothId = "booth-08", Name = "Combo 6 Cuốn", NameEn = "6-roll Combo", Description = "Combo 6 cuốn đầy đủ.", DescriptionEn = "Combo of six assorted spring rolls.", Price = 75000m, PriceUsd = 0m, ImageUrl = "http://192.168.1.237:5151/uploads/menu/booth-08-menu-03.png", UpdatedAtUtc = DateTime.UtcNow, IsDeleted = false },
+                new BoothMenuItem { Id = "booth-09-menu-01", BoothId = "booth-09", Name = "Mực Nướng Sa Tế", NameEn = "Grilled Squid", Description = "Mực nướng sa tế cay nồng.", DescriptionEn = "Grilled squid with spicy sate sauce.", Price = 98000m, PriceUsd = 0m, ImageUrl = "http://192.168.1.237:5151/uploads/menu/booth-09-menu-01.png", UpdatedAtUtc = DateTime.UtcNow, IsDeleted = false },
+                new BoothMenuItem { Id = "booth-09-menu-02", BoothId = "booth-09", Name = "Tôm Nướng Muối Ớt", NameEn = "Grilled Shrimp", Description = "Tôm nướng muối ớt đậm đà.", DescriptionEn = "Grilled shrimp with chili salt.", Price = 115000m, PriceUsd = 0m, ImageUrl = "http://192.168.1.237:5151/uploads/menu/booth-09-menu-02.png", UpdatedAtUtc = DateTime.UtcNow, IsDeleted = false },
+                new BoothMenuItem { Id = "booth-09-menu-03", BoothId = "booth-09", Name = "Combo Hải Sản", NameEn = "Seafood Combo", Description = "Combo hải sản nướng thập cẩm.", DescriptionEn = "Mixed grilled seafood combo.", Price = 149000m, PriceUsd = 0m, ImageUrl = "http://192.168.1.237:5151/uploads/menu/booth-09-menu-03.png", UpdatedAtUtc = DateTime.UtcNow, IsDeleted = false },
+                new BoothMenuItem { Id = "booth-10-menu-01", BoothId = "booth-10", Name = "Cà Phê Sữa Đá", NameEn = "Iced Milk Coffee", Description = "Cà phê sữa đá truyền thống.", DescriptionEn = "Traditional Vietnamese iced milk coffee.", Price = 30000m, PriceUsd = 0m, ImageUrl = "http://192.168.1.237:5151/uploads/menu/booth-10-menu-01.png", UpdatedAtUtc = DateTime.UtcNow, IsDeleted = false },
+                new BoothMenuItem { Id = "booth-10-menu-02", BoothId = "booth-10", Name = "Trà Sữa Trân Châu", NameEn = "Bubble Milk Tea", Description = "Trà sữa trân châu đường đen.", DescriptionEn = "Milk tea with black sugar pearls.", Price = 42000m, PriceUsd = 0m, ImageUrl = "http://192.168.1.237:5151/uploads/menu/booth-10-menu-02.png", UpdatedAtUtc = DateTime.UtcNow, IsDeleted = false },
+                new BoothMenuItem { Id = "booth-10-menu-03", BoothId = "booth-10", Name = "Combo Đồ Uống", NameEn = "Drink Combo", Description = "Combo cà phê và trà sữa.", DescriptionEn = "Coffee and milk tea combo.", Price = 70000m, PriceUsd = 0m, ImageUrl = "http://192.168.1.237:5151/uploads/menu/booth-10-menu-03.png", UpdatedAtUtc = DateTime.UtcNow, IsDeleted = false }
+            };
 
             db.BoothMenuItems.AddRange(menuItems);
             await db.SaveChangesAsync();
         }
 
-        // 5. Bảng BoothMenuItemTranslations (Bản dịch món ăn) - 3 ví dụ
-        // 5. Bảng BoothMenuItemTranslations (Bản dịch món ăn) - Full 90 bản ghi từ poi.db
         if (!await db.BoothMenuItemTranslations.AnyAsync())
         {
             var itemTranslations = new List<BoothMenuItemTranslationLocal>();
-
-            // Booth 01 - Phở Hà Nội
             itemTranslations.Add(new BoothMenuItemTranslationLocal
             {
                 MenuItemId = "booth-01-menu-01",
                 LanguageCode = "vi",
-                Name = "Phở Hà Nội Phở đặc biệt",
-                Description = "Phở đặc biệt của Phở Hà Nội.",
+                Name = "Phở Đặc Biệt",
+                Description = "Phở bò truyền thống với đầy đủ topping.",
                 CurrencyCode = "VND",
                 LocalizedPrice = 65000m,
-                PriceText = "65.000đ"
+                PriceText = "65.000 đ"
             });
             itemTranslations.Add(new BoothMenuItemTranslationLocal
             {
                 MenuItemId = "booth-01-menu-01",
                 LanguageCode = "en",
-                Name = "Hanoi Pho Special",
-                Description = "Hanoi Special Pho with premium beef cuts.",
+                Name = "Special Pho",
+                Description = "Traditional beef pho with full toppings.",
                 CurrencyCode = "USD",
-                LocalizedPrice = 2.99m,
-                PriceText = "$2.99"
+                LocalizedPrice = Math.Round(65000m / 25000m, 2),
+                PriceText = $"${Math.Round(65000m / 25000m, 2):0.##}"
             });
             itemTranslations.Add(new BoothMenuItemTranslationLocal
             {
                 MenuItemId = "booth-01-menu-01",
                 LanguageCode = "zh",
-                Name = "河内特制牛肉粉",
-                Description = "河内正宗特制牛肉粉，选用上等牛肉。",
+                Name = "特制牛肉粉",
+                Description = "配有完整配料的传统牛肉河粉。",
                 CurrencyCode = "CNY",
-                LocalizedPrice = 18.0m,
-                PriceText = "¥18.0"
+                LocalizedPrice = Math.Round(65000m / 3500m, 2),
+                PriceText = $"¥{Math.Round(65000m / 3500m, 2):0.##}"
             });
             itemTranslations.Add(new BoothMenuItemTranslationLocal
             {
                 MenuItemId = "booth-01-menu-01",
                 LanguageCode = "ja",
-                Name = "ハノイ特製フォー",
-                Description = "ハノイの特製牛肉フォー、最高級の牛肉を使用。",
+                Name = "特製フォー",
+                Description = "具材たっぷりの伝統的な牛肉フォー。",
                 CurrencyCode = "JPY",
-                LocalizedPrice = 390m,
-                PriceText = "¥390"
+                LocalizedPrice = Math.Round(65000m / 170m, 0),
+                PriceText = $"¥{Math.Round(65000m / 170m, 0):0}"
             });
             itemTranslations.Add(new BoothMenuItemTranslationLocal
             {
                 MenuItemId = "booth-01-menu-01",
                 LanguageCode = "ko",
-                Name = "하노이 스페셜 쌀국수",
-                Description = "최상급 소고기를 곁들인 하노이 전통 스페셜 쌀국수.",
+                Name = "스페셜 쌀국수",
+                Description = "다양한 토핑이 들어간 전통 소고기 쌀국수.",
                 CurrencyCode = "KRW",
-                LocalizedPrice = 3500m,
-                PriceText = "₩3,500"
+                LocalizedPrice = Math.Round(65000m / 18m, 0),
+                PriceText = $"₩{Math.Round(65000m / 18m, 0):0}"
             });
-
-            // Booth 02 - Bún Bò Huế
+            itemTranslations.Add(new BoothMenuItemTranslationLocal
+            {
+                MenuItemId = "booth-01-menu-01",
+                LanguageCode = "fr",
+                Name = "Pho spécial",
+                Description = "Pho traditionnel au bœuf avec garnitures complètes.",
+                CurrencyCode = "EUR",
+                LocalizedPrice = Math.Round(65000m / 27000m, 2),
+                PriceText = $"€{Math.Round(65000m / 27000m, 2):0.##}"
+            });
+            itemTranslations.Add(new BoothMenuItemTranslationLocal
+            {
+                MenuItemId = "booth-01-menu-01",
+                LanguageCode = "es",
+                Name = "Pho especial",
+                Description = "Pho tradicional de ternera con todos los acompañamientos.",
+                CurrencyCode = "EUR",
+                LocalizedPrice = Math.Round(65000m / 27000m, 2),
+                PriceText = $"€{Math.Round(65000m / 27000m, 2):0.##}"
+            });
+            itemTranslations.Add(new BoothMenuItemTranslationLocal
+            {
+                MenuItemId = "booth-01-menu-01",
+                LanguageCode = "it",
+                Name = "Pho speciale",
+                Description = "Pho tradizionale di manzo con condimenti completi.",
+                CurrencyCode = "EUR",
+                LocalizedPrice = Math.Round(65000m / 27000m, 2),
+                PriceText = $"€{Math.Round(65000m / 27000m, 2):0.##}"
+            });
+            itemTranslations.Add(new BoothMenuItemTranslationLocal
+            {
+                MenuItemId = "booth-01-menu-01",
+                LanguageCode = "ru",
+                Name = "Фо спешл",
+                Description = "Традиционный фо с говядиной и полным набором топпингов.",
+                CurrencyCode = "RUB",
+                LocalizedPrice = Math.Round(65000m / 300m, 2),
+                PriceText = $"₽{Math.Round(65000m / 300m, 2):0.##}"
+            });
+            itemTranslations.Add(new BoothMenuItemTranslationLocal
+            {
+                MenuItemId = "booth-01-menu-02",
+                LanguageCode = "vi",
+                Name = "Phở Tái Nạm",
+                Description = "Phở tái nạm tươi ngon.",
+                CurrencyCode = "VND",
+                LocalizedPrice = 72000m,
+                PriceText = "72.000 đ"
+            });
+            itemTranslations.Add(new BoothMenuItemTranslationLocal
+            {
+                MenuItemId = "booth-01-menu-02",
+                LanguageCode = "en",
+                Name = "Rare & Brisket Pho",
+                Description = "Pho with rare beef and brisket.",
+                CurrencyCode = "USD",
+                LocalizedPrice = Math.Round(72000m / 25000m, 2),
+                PriceText = $"${Math.Round(72000m / 25000m, 2):0.##}"
+            });
+            itemTranslations.Add(new BoothMenuItemTranslationLocal
+            {
+                MenuItemId = "booth-01-menu-02",
+                LanguageCode = "zh",
+                Name = "生熟牛肉粉",
+                Description = "配有生牛肉和牛腩的河粉。",
+                CurrencyCode = "CNY",
+                LocalizedPrice = Math.Round(72000m / 3500m, 2),
+                PriceText = $"¥{Math.Round(72000m / 3500m, 2):0.##}"
+            });
+            itemTranslations.Add(new BoothMenuItemTranslationLocal
+            {
+                MenuItemId = "booth-01-menu-02",
+                LanguageCode = "ja",
+                Name = "レア＆ブリスケットフォー",
+                Description = "レア牛肉とブリスケット入りのフォー。",
+                CurrencyCode = "JPY",
+                LocalizedPrice = Math.Round(72000m / 170m, 0),
+                PriceText = $"¥{Math.Round(72000m / 170m, 0):0}"
+            });
+            itemTranslations.Add(new BoothMenuItemTranslationLocal
+            {
+                MenuItemId = "booth-01-menu-02",
+                LanguageCode = "ko",
+                Name = "타이남 쌀국수",
+                Description = "얇은 소고기와 양지머리가 들어간 쌀국수.",
+                CurrencyCode = "KRW",
+                LocalizedPrice = Math.Round(72000m / 18m, 0),
+                PriceText = $"₩{Math.Round(72000m / 18m, 0):0}"
+            });
+            itemTranslations.Add(new BoothMenuItemTranslationLocal
+            {
+                MenuItemId = "booth-01-menu-02",
+                LanguageCode = "fr",
+                Name = "Pho bœuf saignant et poitrine",
+                Description = "Pho avec bœuf saignant et poitrine.",
+                CurrencyCode = "EUR",
+                LocalizedPrice = Math.Round(72000m / 27000m, 2),
+                PriceText = $"€{Math.Round(72000m / 27000m, 2):0.##}"
+            });
+            itemTranslations.Add(new BoothMenuItemTranslationLocal
+            {
+                MenuItemId = "booth-01-menu-02",
+                LanguageCode = "es",
+                Name = "Pho con carne poco hecha y pecho",
+                Description = "Pho con ternera poco hecha y pecho.",
+                CurrencyCode = "EUR",
+                LocalizedPrice = Math.Round(72000m / 27000m, 2),
+                PriceText = $"€{Math.Round(72000m / 27000m, 2):0.##}"
+            });
+            itemTranslations.Add(new BoothMenuItemTranslationLocal
+            {
+                MenuItemId = "booth-01-menu-02",
+                LanguageCode = "it",
+                Name = "Pho con manzo al sangue e punta di petto",
+                Description = "Pho con manzo al sangue e punta di petto.",
+                CurrencyCode = "EUR",
+                LocalizedPrice = Math.Round(72000m / 27000m, 2),
+                PriceText = $"€{Math.Round(72000m / 27000m, 2):0.##}"
+            });
+            itemTranslations.Add(new BoothMenuItemTranslationLocal
+            {
+                MenuItemId = "booth-01-menu-02",
+                LanguageCode = "ru",
+                Name = "Фо с сырым мясом и грудинкой",
+                Description = "Фо с тонкими ломтиками говядины и грудинкой.",
+                CurrencyCode = "RUB",
+                LocalizedPrice = Math.Round(72000m / 300m, 2),
+                PriceText = $"₽{Math.Round(72000m / 300m, 2):0.##}"
+            });
+            itemTranslations.Add(new BoothMenuItemTranslationLocal
+            {
+                MenuItemId = "booth-01-menu-03",
+                LanguageCode = "vi",
+                Name = "Phở Bò Viên",
+                Description = "Phở bò viên dai giòn.",
+                CurrencyCode = "VND",
+                LocalizedPrice = 59000m,
+                PriceText = "59.000 đ"
+            });
+            itemTranslations.Add(new BoothMenuItemTranslationLocal
+            {
+                MenuItemId = "booth-01-menu-03",
+                LanguageCode = "en",
+                Name = "Meatball Pho",
+                Description = "Pho with chewy beef meatballs.",
+                CurrencyCode = "USD",
+                LocalizedPrice = Math.Round(59000m / 25000m, 2),
+                PriceText = $"${Math.Round(59000m / 25000m, 2):0.##}"
+            });
+            itemTranslations.Add(new BoothMenuItemTranslationLocal
+            {
+                MenuItemId = "booth-01-menu-03",
+                LanguageCode = "zh",
+                Name = "牛肉丸河粉",
+                Description = "配有弹牙牛肉丸的河粉。",
+                CurrencyCode = "CNY",
+                LocalizedPrice = Math.Round(59000m / 3500m, 2),
+                PriceText = $"¥{Math.Round(59000m / 3500m, 2):0.##}"
+            });
+            itemTranslations.Add(new BoothMenuItemTranslationLocal
+            {
+                MenuItemId = "booth-01-menu-03",
+                LanguageCode = "ja",
+                Name = "ミートボールフォー",
+                Description = "弾力のある牛肉団子入りフォー。",
+                CurrencyCode = "JPY",
+                LocalizedPrice = Math.Round(59000m / 170m, 0),
+                PriceText = $"¥{Math.Round(59000m / 170m, 0):0}"
+            });
+            itemTranslations.Add(new BoothMenuItemTranslationLocal
+            {
+                MenuItemId = "booth-01-menu-03",
+                LanguageCode = "ko",
+                Name = "소고기 완자 쌀국수",
+                Description = "쫄깃한 소고기 완자가 들어간 쌀국수.",
+                CurrencyCode = "KRW",
+                LocalizedPrice = Math.Round(59000m / 18m, 0),
+                PriceText = $"₩{Math.Round(59000m / 18m, 0):0}"
+            });
+            itemTranslations.Add(new BoothMenuItemTranslationLocal
+            {
+                MenuItemId = "booth-01-menu-03",
+                LanguageCode = "fr",
+                Name = "Pho aux boulettes de bœuf",
+                Description = "Pho avec boulettes de bœuf moelleuses.",
+                CurrencyCode = "EUR",
+                LocalizedPrice = Math.Round(59000m / 27000m, 2),
+                PriceText = $"€{Math.Round(59000m / 27000m, 2):0.##}"
+            });
+            itemTranslations.Add(new BoothMenuItemTranslationLocal
+            {
+                MenuItemId = "booth-01-menu-03",
+                LanguageCode = "es",
+                Name = "Pho con albóndigas de ternera",
+                Description = "Pho con albóndigas de ternera suaves.",
+                CurrencyCode = "EUR",
+                LocalizedPrice = Math.Round(59000m / 27000m, 2),
+                PriceText = $"€{Math.Round(59000m / 27000m, 2):0.##}"
+            });
+            itemTranslations.Add(new BoothMenuItemTranslationLocal
+            {
+                MenuItemId = "booth-01-menu-03",
+                LanguageCode = "it",
+                Name = "Pho con polpette di manzo",
+                Description = "Pho con morbide polpette di manzo.",
+                CurrencyCode = "EUR",
+                LocalizedPrice = Math.Round(59000m / 27000m, 2),
+                PriceText = $"€{Math.Round(59000m / 27000m, 2):0.##}"
+            });
+            itemTranslations.Add(new BoothMenuItemTranslationLocal
+            {
+                MenuItemId = "booth-01-menu-03",
+                LanguageCode = "ru",
+                Name = "Фо с фрикадельками",
+                Description = "Фо с упругими говяжьими фрикадельками.",
+                CurrencyCode = "RUB",
+                LocalizedPrice = Math.Round(59000m / 300m, 2),
+                PriceText = $"₽{Math.Round(59000m / 300m, 2):0.##}"
+            });
             itemTranslations.Add(new BoothMenuItemTranslationLocal
             {
                 MenuItemId = "booth-02-menu-01",
                 LanguageCode = "vi",
-                Name = "Bún Bò Huế Đặc Biệt",
-                Description = "Bún bò đặc biệt của Bún Bò Huế, hương vị đậm đà.",
+                Name = "Bún Bò Đặc Biệt",
+                Description = "Bún bò Huế đặc biệt.",
                 CurrencyCode = "VND",
-                LocalizedPrice = 75000m,
-                PriceText = "75.000đ"
+                LocalizedPrice = 68000m,
+                PriceText = "68.000 đ"
             });
             itemTranslations.Add(new BoothMenuItemTranslationLocal
             {
                 MenuItemId = "booth-02-menu-01",
                 LanguageCode = "en",
-                Name = "Special Hue Beef Noodles",
-                Description = "Rich and spicy Hue style beef noodle soup.",
+                Name = "Special Hue Noodles",
+                Description = "Special Hue-style beef noodle soup.",
                 CurrencyCode = "USD",
-                LocalizedPrice = 3.20m,
-                PriceText = "$3.20"
+                LocalizedPrice = Math.Round(68000m / 25000m, 2),
+                PriceText = $"${Math.Round(68000m / 25000m, 2):0.##}"
             });
             itemTranslations.Add(new BoothMenuItemTranslationLocal
             {
                 MenuItemId = "booth-02-menu-01",
                 LanguageCode = "zh",
-                Name = "顺化牛肉粉特制版",
-                Description = "顺化风味特制牛肉米粉，配料丰富。",
+                Name = "特制顺化牛肉粉",
+                Description = "特制顺化风味牛肉米粉。",
                 CurrencyCode = "CNY",
-                LocalizedPrice = 19.8m,
-                PriceText = "¥19.8"
+                LocalizedPrice = Math.Round(68000m / 3500m, 2),
+                PriceText = $"¥{Math.Round(68000m / 3500m, 2):0.##}"
             });
             itemTranslations.Add(new BoothMenuItemTranslationLocal
             {
                 MenuItemId = "booth-02-menu-01",
                 LanguageCode = "ja",
-                Name = "フエ名物牛肉麺スペシャル",
-                Description = "フエ風の特製牛肉麺、具だくさんです。",
+                Name = "特製フエ牛肉麺",
+                Description = "特製フエ風牛肉麺。",
                 CurrencyCode = "JPY",
-                LocalizedPrice = 420m,
-                PriceText = "¥420"
+                LocalizedPrice = Math.Round(68000m / 170m, 0),
+                PriceText = $"¥{Math.Round(68000m / 170m, 0):0}"
             });
             itemTranslations.Add(new BoothMenuItemTranslationLocal
             {
                 MenuItemId = "booth-02-menu-01",
                 LanguageCode = "ko",
-                Name = "후에식 소고기 쌀국수 스페셜",
-                Description = "후에 스타일의 특별 소고기 국수로 다양한 토핑이 들어갑니다.",
+                Name = "후에식 스페셜 소고기 국수",
+                Description = "특별한 후에식 소고기 국수.",
                 CurrencyCode = "KRW",
-                LocalizedPrice = 3600m,
-                PriceText = "₩3,600"
+                LocalizedPrice = Math.Round(68000m / 18m, 0),
+                PriceText = $"₩{Math.Round(68000m / 18m, 0):0}"
             });
-
-            // Booth 03 - Cơm Tấm Sài Gòn
+            itemTranslations.Add(new BoothMenuItemTranslationLocal
+            {
+                MenuItemId = "booth-02-menu-01",
+                LanguageCode = "fr",
+                Name = "Bún bò Huế spécial",
+                Description = "Soupe spéciale de nouilles au bœuf de Hué.",
+                CurrencyCode = "EUR",
+                LocalizedPrice = Math.Round(68000m / 27000m, 2),
+                PriceText = $"€{Math.Round(68000m / 27000m, 2):0.##}"
+            });
+            itemTranslations.Add(new BoothMenuItemTranslationLocal
+            {
+                MenuItemId = "booth-02-menu-01",
+                LanguageCode = "es",
+                Name = "Bún bò Huế especial",
+                Description = "Sopa especial de fideos con ternera al estilo de Hué.",
+                CurrencyCode = "EUR",
+                LocalizedPrice = Math.Round(68000m / 27000m, 2),
+                PriceText = $"€{Math.Round(68000m / 27000m, 2):0.##}"
+            });
+            itemTranslations.Add(new BoothMenuItemTranslationLocal
+            {
+                MenuItemId = "booth-02-menu-01",
+                LanguageCode = "it",
+                Name = "Bún bò Huế speciale",
+                Description = "Zuppa speciale di noodle con manzo in stile Huế.",
+                CurrencyCode = "EUR",
+                LocalizedPrice = Math.Round(68000m / 27000m, 2),
+                PriceText = $"€{Math.Round(68000m / 27000m, 2):0.##}"
+            });
+            itemTranslations.Add(new BoothMenuItemTranslationLocal
+            {
+                MenuItemId = "booth-02-menu-01",
+                LanguageCode = "ru",
+                Name = "Бун бо Хюэ спешл",
+                Description = "Особый суп с говядиной в стиле Хюэ.",
+                CurrencyCode = "RUB",
+                LocalizedPrice = Math.Round(68000m / 300m, 2),
+                PriceText = $"₽{Math.Round(68000m / 300m, 2):0.##}"
+            });
+            itemTranslations.Add(new BoothMenuItemTranslationLocal
+            {
+                MenuItemId = "booth-02-menu-02",
+                LanguageCode = "vi",
+                Name = "Bún Bò Giò Heo",
+                Description = "Bún bò giò heo đặc trưng.",
+                CurrencyCode = "VND",
+                LocalizedPrice = 75000m,
+                PriceText = "75.000 đ"
+            });
+            itemTranslations.Add(new BoothMenuItemTranslationLocal
+            {
+                MenuItemId = "booth-02-menu-02",
+                LanguageCode = "en",
+                Name = "Hue Noodles with Pork Hock",
+                Description = "Hue noodles with tender pork hock.",
+                CurrencyCode = "USD",
+                LocalizedPrice = Math.Round(75000m / 25000m, 2),
+                PriceText = $"${Math.Round(75000m / 25000m, 2):0.##}"
+            });
+            itemTranslations.Add(new BoothMenuItemTranslationLocal
+            {
+                MenuItemId = "booth-02-menu-02",
+                LanguageCode = "zh",
+                Name = "猪蹄顺化牛肉粉",
+                Description = "顺化风味猪蹄牛肉粉。",
+                CurrencyCode = "CNY",
+                LocalizedPrice = Math.Round(75000m / 3500m, 2),
+                PriceText = $"¥{Math.Round(75000m / 3500m, 2):0.##}"
+            });
+            itemTranslations.Add(new BoothMenuItemTranslationLocal
+            {
+                MenuItemId = "booth-02-menu-02",
+                LanguageCode = "ja",
+                Name = "豚足入りフエ牛肉麺",
+                Description = "豚足入りのフエ風牛肉麺。",
+                CurrencyCode = "JPY",
+                LocalizedPrice = Math.Round(75000m / 170m, 0),
+                PriceText = $"¥{Math.Round(75000m / 170m, 0):0}"
+            });
+            itemTranslations.Add(new BoothMenuItemTranslationLocal
+            {
+                MenuItemId = "booth-02-menu-02",
+                LanguageCode = "ko",
+                Name = "족발 후에 국수",
+                Description = "부드러운 족발이 들어간 후에식 국수.",
+                CurrencyCode = "KRW",
+                LocalizedPrice = Math.Round(75000m / 18m, 0),
+                PriceText = $"₩{Math.Round(75000m / 18m, 0):0}"
+            });
+            itemTranslations.Add(new BoothMenuItemTranslationLocal
+            {
+                MenuItemId = "booth-02-menu-02",
+                LanguageCode = "fr",
+                Name = "Bún bò Huế au jarret",
+                Description = "Bún bò Huế avec jarret de porc tendre.",
+                CurrencyCode = "EUR",
+                LocalizedPrice = Math.Round(75000m / 27000m, 2),
+                PriceText = $"€{Math.Round(75000m / 27000m, 2):0.##}"
+            });
+            itemTranslations.Add(new BoothMenuItemTranslationLocal
+            {
+                MenuItemId = "booth-02-menu-02",
+                LanguageCode = "es",
+                Name = "Bún bò Huế con codillo",
+                Description = "Bún bò Huế con codillo de cerdo tierno.",
+                CurrencyCode = "EUR",
+                LocalizedPrice = Math.Round(75000m / 27000m, 2),
+                PriceText = $"€{Math.Round(75000m / 27000m, 2):0.##}"
+            });
+            itemTranslations.Add(new BoothMenuItemTranslationLocal
+            {
+                MenuItemId = "booth-02-menu-02",
+                LanguageCode = "it",
+                Name = "Bún bò Huế con stinco",
+                Description = "Bún bò Huế con stinco di maiale tenero.",
+                CurrencyCode = "EUR",
+                LocalizedPrice = Math.Round(75000m / 27000m, 2),
+                PriceText = $"€{Math.Round(75000m / 27000m, 2):0.##}"
+            });
+            itemTranslations.Add(new BoothMenuItemTranslationLocal
+            {
+                MenuItemId = "booth-02-menu-02",
+                LanguageCode = "ru",
+                Name = "Бун бо Хюэ с рулькой",
+                Description = "Бун бо Хюэ с нежной свиной рулькой.",
+                CurrencyCode = "RUB",
+                LocalizedPrice = Math.Round(75000m / 300m, 2),
+                PriceText = $"₽{Math.Round(75000m / 300m, 2):0.##}"
+            });
+            itemTranslations.Add(new BoothMenuItemTranslationLocal
+            {
+                MenuItemId = "booth-02-menu-03",
+                LanguageCode = "vi",
+                Name = "Bún Bò Thập Cẩm",
+                Description = "Bún bò thập cẩm đầy đủ.",
+                CurrencyCode = "VND",
+                LocalizedPrice = 79000m,
+                PriceText = "79.000 đ"
+            });
+            itemTranslations.Add(new BoothMenuItemTranslationLocal
+            {
+                MenuItemId = "booth-02-menu-03",
+                LanguageCode = "en",
+                Name = "Mixed Hue Noodles",
+                Description = "Mixed Hue noodles with assorted toppings.",
+                CurrencyCode = "USD",
+                LocalizedPrice = Math.Round(79000m / 25000m, 2),
+                PriceText = $"${Math.Round(79000m / 25000m, 2):0.##}"
+            });
+            itemTranslations.Add(new BoothMenuItemTranslationLocal
+            {
+                MenuItemId = "booth-02-menu-03",
+                LanguageCode = "zh",
+                Name = "什锦顺化牛肉粉",
+                Description = "配料丰富的顺化什锦牛肉粉。",
+                CurrencyCode = "CNY",
+                LocalizedPrice = Math.Round(79000m / 3500m, 2),
+                PriceText = $"¥{Math.Round(79000m / 3500m, 2):0.##}"
+            });
+            itemTranslations.Add(new BoothMenuItemTranslationLocal
+            {
+                MenuItemId = "booth-02-menu-03",
+                LanguageCode = "ja",
+                Name = "ミックスフエ牛肉麺",
+                Description = "具材たっぷりのフエ風ミックス牛肉麺。",
+                CurrencyCode = "JPY",
+                LocalizedPrice = Math.Round(79000m / 170m, 0),
+                PriceText = $"¥{Math.Round(79000m / 170m, 0):0}"
+            });
+            itemTranslations.Add(new BoothMenuItemTranslationLocal
+            {
+                MenuItemId = "booth-02-menu-03",
+                LanguageCode = "ko",
+                Name = "모둠 후에 국수",
+                Description = "다양한 토핑이 올라간 후에식 모둠 국수.",
+                CurrencyCode = "KRW",
+                LocalizedPrice = Math.Round(79000m / 18m, 0),
+                PriceText = $"₩{Math.Round(79000m / 18m, 0):0}"
+            });
+            itemTranslations.Add(new BoothMenuItemTranslationLocal
+            {
+                MenuItemId = "booth-02-menu-03",
+                LanguageCode = "fr",
+                Name = "Bún bò Huế assorti",
+                Description = "Bún bò Huế assorti avec plusieurs garnitures.",
+                CurrencyCode = "EUR",
+                LocalizedPrice = Math.Round(79000m / 27000m, 2),
+                PriceText = $"€{Math.Round(79000m / 27000m, 2):0.##}"
+            });
+            itemTranslations.Add(new BoothMenuItemTranslationLocal
+            {
+                MenuItemId = "booth-02-menu-03",
+                LanguageCode = "es",
+                Name = "Bún bò Huế mixto",
+                Description = "Bún bò Huế mixto con varios acompañamientos.",
+                CurrencyCode = "EUR",
+                LocalizedPrice = Math.Round(79000m / 27000m, 2),
+                PriceText = $"€{Math.Round(79000m / 27000m, 2):0.##}"
+            });
+            itemTranslations.Add(new BoothMenuItemTranslationLocal
+            {
+                MenuItemId = "booth-02-menu-03",
+                LanguageCode = "it",
+                Name = "Bún bò Huế misto",
+                Description = "Bún bò Huế misto con vari condimenti.",
+                CurrencyCode = "EUR",
+                LocalizedPrice = Math.Round(79000m / 27000m, 2),
+                PriceText = $"€{Math.Round(79000m / 27000m, 2):0.##}"
+            });
+            itemTranslations.Add(new BoothMenuItemTranslationLocal
+            {
+                MenuItemId = "booth-02-menu-03",
+                LanguageCode = "ru",
+                Name = "Бун бо Хюэ ассорти",
+                Description = "Бун бо Хюэ с разнообразными добавками.",
+                CurrencyCode = "RUB",
+                LocalizedPrice = Math.Round(79000m / 300m, 2),
+                PriceText = $"₽{Math.Round(79000m / 300m, 2):0.##}"
+            });
             itemTranslations.Add(new BoothMenuItemTranslationLocal
             {
                 MenuItemId = "booth-03-menu-01",
                 LanguageCode = "vi",
                 Name = "Cơm Tấm Sườn Bì Chả",
-                Description = "Cơm tấm đặc sản Sài Gòn với đầy đủ topping.",
+                Description = "Cơm tấm sườn bì chả truyền thống.",
                 CurrencyCode = "VND",
-                LocalizedPrice = 55000m,
-                PriceText = "55.000đ"
+                LocalizedPrice = 62000m,
+                PriceText = "62.000 đ"
             });
             itemTranslations.Add(new BoothMenuItemTranslationLocal
             {
                 MenuItemId = "booth-03-menu-01",
                 LanguageCode = "en",
-                Name = "Saigon Broken Rice Combo",
-                Description = "Famous broken rice with grilled pork chop, skin and egg meatloaf.",
+                Name = "Broken Rice Combo",
+                Description = "Broken rice with grilled pork, shredded pork skin, and steamed egg meatloaf.",
                 CurrencyCode = "USD",
-                LocalizedPrice = 2.50m,
-                PriceText = "$2.50"
+                LocalizedPrice = Math.Round(62000m / 25000m, 2),
+                PriceText = $"${Math.Round(62000m / 25000m, 2):0.##}"
             });
             itemTranslations.Add(new BoothMenuItemTranslationLocal
             {
                 MenuItemId = "booth-03-menu-01",
                 LanguageCode = "zh",
-                Name = "西贡碎米饭全套餐",
-                Description = "著名的碎米饭，搭配烤排骨、肉丝和肉饼。",
+                Name = "排骨猪皮蒸蛋碎米饭",
+                Description = "配烤排骨、猪皮丝和蒸蛋肉饼的碎米饭。",
                 CurrencyCode = "CNY",
-                LocalizedPrice = 16.5m,
-                PriceText = "¥16.5"
+                LocalizedPrice = Math.Round(62000m / 3500m, 2),
+                PriceText = $"¥{Math.Round(62000m / 3500m, 2):0.##}"
             });
             itemTranslations.Add(new BoothMenuItemTranslationLocal
             {
                 MenuItemId = "booth-03-menu-01",
                 LanguageCode = "ja",
-                Name = "サイゴン名物コムタム",
-                Description = "豚肉のグリルと卵のミートローフを添えたサイゴン風砕き米ご飯。",
+                Name = "コムタムコンボ",
+                Description = "焼き豚、豚皮、卵蒸しを添えたコムタム。",
                 CurrencyCode = "JPY",
-                LocalizedPrice = 350m,
-                PriceText = "¥350"
+                LocalizedPrice = Math.Round(62000m / 170m, 0),
+                PriceText = $"¥{Math.Round(62000m / 170m, 0):0}"
             });
             itemTranslations.Add(new BoothMenuItemTranslationLocal
             {
                 MenuItemId = "booth-03-menu-01",
                 LanguageCode = "ko",
-                Name = "사이공 껌땀 콤보",
-                Description = "그릴 돼지갈비와 계란 찜이 포함된 사이공 스타일 깨진 쌀밥.",
+                Name = "껌땀 콤보",
+                Description = "구운 돼지고기, 돼지껍질, 계란찜이 함께 나오는 껌땀.",
                 CurrencyCode = "KRW",
-                LocalizedPrice = 3000m,
-                PriceText = "₩3,000"
+                LocalizedPrice = Math.Round(62000m / 18m, 0),
+                PriceText = $"₩{Math.Round(62000m / 18m, 0):0}"
             });
-
-            // Booth 04 - Bánh Mì Việt
+            itemTranslations.Add(new BoothMenuItemTranslationLocal
+            {
+                MenuItemId = "booth-03-menu-01",
+                LanguageCode = "fr",
+                Name = "Riz brisé combo",
+                Description = "Riz brisé avec porc grillé, couenne et pâté aux œufs.",
+                CurrencyCode = "EUR",
+                LocalizedPrice = Math.Round(62000m / 27000m, 2),
+                PriceText = $"€{Math.Round(62000m / 27000m, 2):0.##}"
+            });
+            itemTranslations.Add(new BoothMenuItemTranslationLocal
+            {
+                MenuItemId = "booth-03-menu-01",
+                LanguageCode = "es",
+                Name = "Arroz quebrado combo",
+                Description = "Arroz quebrado con cerdo a la parrilla, piel de cerdo y pastel de huevo.",
+                CurrencyCode = "EUR",
+                LocalizedPrice = Math.Round(62000m / 27000m, 2),
+                PriceText = $"€{Math.Round(62000m / 27000m, 2):0.##}"
+            });
+            itemTranslations.Add(new BoothMenuItemTranslationLocal
+            {
+                MenuItemId = "booth-03-menu-01",
+                LanguageCode = "it",
+                Name = "Riso spezzato combo",
+                Description = "Riso spezzato con maiale alla griglia, cotenna e polpettone all’uovo.",
+                CurrencyCode = "EUR",
+                LocalizedPrice = Math.Round(62000m / 27000m, 2),
+                PriceText = $"€{Math.Round(62000m / 27000m, 2):0.##}"
+            });
+            itemTranslations.Add(new BoothMenuItemTranslationLocal
+            {
+                MenuItemId = "booth-03-menu-01",
+                LanguageCode = "ru",
+                Name = "Ком там комбо",
+                Description = "Дроблёный рис с жареной свининой, свиной кожей и яичным рулетом.",
+                CurrencyCode = "RUB",
+                LocalizedPrice = Math.Round(62000m / 300m, 2),
+                PriceText = $"₽{Math.Round(62000m / 300m, 2):0.##}"
+            });
+            itemTranslations.Add(new BoothMenuItemTranslationLocal
+            {
+                MenuItemId = "booth-03-menu-02",
+                LanguageCode = "vi",
+                Name = "Cơm Tấm Sườn Nướng",
+                Description = "Sườn nướng thơm ngon.",
+                CurrencyCode = "VND",
+                LocalizedPrice = 69000m,
+                PriceText = "69.000 đ"
+            });
+            itemTranslations.Add(new BoothMenuItemTranslationLocal
+            {
+                MenuItemId = "booth-03-menu-02",
+                LanguageCode = "en",
+                Name = "Broken Rice Grilled Pork",
+                Description = "Broken rice with fragrant grilled pork chops.",
+                CurrencyCode = "USD",
+                LocalizedPrice = Math.Round(69000m / 25000m, 2),
+                PriceText = $"${Math.Round(69000m / 25000m, 2):0.##}"
+            });
+            itemTranslations.Add(new BoothMenuItemTranslationLocal
+            {
+                MenuItemId = "booth-03-menu-02",
+                LanguageCode = "zh",
+                Name = "烤排骨碎米饭",
+                Description = "搭配香喷喷烤排骨的碎米饭。",
+                CurrencyCode = "CNY",
+                LocalizedPrice = Math.Round(69000m / 3500m, 2),
+                PriceText = $"¥{Math.Round(69000m / 3500m, 2):0.##}"
+            });
+            itemTranslations.Add(new BoothMenuItemTranslationLocal
+            {
+                MenuItemId = "booth-03-menu-02",
+                LanguageCode = "ja",
+                Name = "焼き豚コムタム",
+                Description = "香ばしい焼き豚をのせたコムタム。",
+                CurrencyCode = "JPY",
+                LocalizedPrice = Math.Round(69000m / 170m, 0),
+                PriceText = $"¥{Math.Round(69000m / 170m, 0):0}"
+            });
+            itemTranslations.Add(new BoothMenuItemTranslationLocal
+            {
+                MenuItemId = "booth-03-menu-02",
+                LanguageCode = "ko",
+                Name = "숯불 돼지고기 껌땀",
+                Description = "향긋한 숯불 돼지고기를 곁들인 껌땀.",
+                CurrencyCode = "KRW",
+                LocalizedPrice = Math.Round(69000m / 18m, 0),
+                PriceText = $"₩{Math.Round(69000m / 18m, 0):0}"
+            });
+            itemTranslations.Add(new BoothMenuItemTranslationLocal
+            {
+                MenuItemId = "booth-03-menu-02",
+                LanguageCode = "fr",
+                Name = "Riz brisé aux côtes grillées",
+                Description = "Riz brisé avec côtes de porc grillées parfumées.",
+                CurrencyCode = "EUR",
+                LocalizedPrice = Math.Round(69000m / 27000m, 2),
+                PriceText = $"€{Math.Round(69000m / 27000m, 2):0.##}"
+            });
+            itemTranslations.Add(new BoothMenuItemTranslationLocal
+            {
+                MenuItemId = "booth-03-menu-02",
+                LanguageCode = "es",
+                Name = "Arroz quebrado con cerdo a la parrilla",
+                Description = "Arroz quebrado con chuletas de cerdo a la parrilla.",
+                CurrencyCode = "EUR",
+                LocalizedPrice = Math.Round(69000m / 27000m, 2),
+                PriceText = $"€{Math.Round(69000m / 27000m, 2):0.##}"
+            });
+            itemTranslations.Add(new BoothMenuItemTranslationLocal
+            {
+                MenuItemId = "booth-03-menu-02",
+                LanguageCode = "it",
+                Name = "Riso spezzato con maiale grigliato",
+                Description = "Riso spezzato con costolette di maiale alla griglia.",
+                CurrencyCode = "EUR",
+                LocalizedPrice = Math.Round(69000m / 27000m, 2),
+                PriceText = $"€{Math.Round(69000m / 27000m, 2):0.##}"
+            });
+            itemTranslations.Add(new BoothMenuItemTranslationLocal
+            {
+                MenuItemId = "booth-03-menu-02",
+                LanguageCode = "ru",
+                Name = "Ком там с жареной свининой",
+                Description = "Дроблёный рис с ароматной жареной свининой.",
+                CurrencyCode = "RUB",
+                LocalizedPrice = Math.Round(69000m / 300m, 2),
+                PriceText = $"₽{Math.Round(69000m / 300m, 2):0.##}"
+            });
+            itemTranslations.Add(new BoothMenuItemTranslationLocal
+            {
+                MenuItemId = "booth-03-menu-03",
+                LanguageCode = "vi",
+                Name = "Cơm Tấm Đặc Biệt",
+                Description = "Cơm tấm đặc biệt.",
+                CurrencyCode = "VND",
+                LocalizedPrice = 79000m,
+                PriceText = "79.000 đ"
+            });
+            itemTranslations.Add(new BoothMenuItemTranslationLocal
+            {
+                MenuItemId = "booth-03-menu-03",
+                LanguageCode = "en",
+                Name = "Special Broken Rice",
+                Description = "Special broken rice with premium toppings.",
+                CurrencyCode = "USD",
+                LocalizedPrice = Math.Round(79000m / 25000m, 2),
+                PriceText = $"${Math.Round(79000m / 25000m, 2):0.##}"
+            });
+            itemTranslations.Add(new BoothMenuItemTranslationLocal
+            {
+                MenuItemId = "booth-03-menu-03",
+                LanguageCode = "zh",
+                Name = "特制碎米饭",
+                Description = "搭配高级配料的特制碎米饭。",
+                CurrencyCode = "CNY",
+                LocalizedPrice = Math.Round(79000m / 3500m, 2),
+                PriceText = $"¥{Math.Round(79000m / 3500m, 2):0.##}"
+            });
+            itemTranslations.Add(new BoothMenuItemTranslationLocal
+            {
+                MenuItemId = "booth-03-menu-03",
+                LanguageCode = "ja",
+                Name = "特製コムタム",
+                Description = "具材たっぷりの特製コムタム。",
+                CurrencyCode = "JPY",
+                LocalizedPrice = Math.Round(79000m / 170m, 0),
+                PriceText = $"¥{Math.Round(79000m / 170m, 0):0}"
+            });
+            itemTranslations.Add(new BoothMenuItemTranslationLocal
+            {
+                MenuItemId = "booth-03-menu-03",
+                LanguageCode = "ko",
+                Name = "스페셜 껌땀",
+                Description = "풍성한 토핑이 올라간 스페셜 껌땀.",
+                CurrencyCode = "KRW",
+                LocalizedPrice = Math.Round(79000m / 18m, 0),
+                PriceText = $"₩{Math.Round(79000m / 18m, 0):0}"
+            });
+            itemTranslations.Add(new BoothMenuItemTranslationLocal
+            {
+                MenuItemId = "booth-03-menu-03",
+                LanguageCode = "fr",
+                Name = "Riz brisé spécial",
+                Description = "Riz brisé spécial avec garnitures premium.",
+                CurrencyCode = "EUR",
+                LocalizedPrice = Math.Round(79000m / 27000m, 2),
+                PriceText = $"€{Math.Round(79000m / 27000m, 2):0.##}"
+            });
+            itemTranslations.Add(new BoothMenuItemTranslationLocal
+            {
+                MenuItemId = "booth-03-menu-03",
+                LanguageCode = "es",
+                Name = "Arroz quebrado especial",
+                Description = "Arroz quebrado especial con toppings premium.",
+                CurrencyCode = "EUR",
+                LocalizedPrice = Math.Round(79000m / 27000m, 2),
+                PriceText = $"€{Math.Round(79000m / 27000m, 2):0.##}"
+            });
+            itemTranslations.Add(new BoothMenuItemTranslationLocal
+            {
+                MenuItemId = "booth-03-menu-03",
+                LanguageCode = "it",
+                Name = "Riso spezzato speciale",
+                Description = "Riso spezzato speciale con condimenti premium.",
+                CurrencyCode = "EUR",
+                LocalizedPrice = Math.Round(79000m / 27000m, 2),
+                PriceText = $"€{Math.Round(79000m / 27000m, 2):0.##}"
+            });
+            itemTranslations.Add(new BoothMenuItemTranslationLocal
+            {
+                MenuItemId = "booth-03-menu-03",
+                LanguageCode = "ru",
+                Name = "Особый ком там",
+                Description = "Особый дроблёный рис с премиальными добавками.",
+                CurrencyCode = "RUB",
+                LocalizedPrice = Math.Round(79000m / 300m, 2),
+                PriceText = $"₽{Math.Round(79000m / 300m, 2):0.##}"
+            });
             itemTranslations.Add(new BoothMenuItemTranslationLocal
             {
                 MenuItemId = "booth-04-menu-01",
                 LanguageCode = "vi",
                 Name = "Bánh Mì Thịt Nướng",
-                Description = "Bánh mì giòn kẹp thịt nướng thơm ngon.",
+                Description = "Bánh mì kẹp thịt nướng.",
                 CurrencyCode = "VND",
-                LocalizedPrice = 30000m,
-                PriceText = "30.000đ"
+                LocalizedPrice = 35000m,
+                PriceText = "35.000 đ"
             });
             itemTranslations.Add(new BoothMenuItemTranslationLocal
             {
                 MenuItemId = "booth-04-menu-01",
                 LanguageCode = "en",
                 Name = "Grilled Pork Banh Mi",
-                Description = "Crunchy baguette filled with flavorful grilled pork.",
+                Description = "Crispy baguette with grilled pork.",
                 CurrencyCode = "USD",
-                LocalizedPrice = 1.30m,
-                PriceText = "$1.30"
+                LocalizedPrice = Math.Round(35000m / 25000m, 2),
+                PriceText = $"${Math.Round(35000m / 25000m, 2):0.##}"
             });
             itemTranslations.Add(new BoothMenuItemTranslationLocal
             {
                 MenuItemId = "booth-04-menu-01",
                 LanguageCode = "zh",
-                Name = "越式烤肉夹心面包",
-                Description = "酥脆的面包夹着香脆的烤肉。",
+                Name = "烤肉法棍",
+                Description = "夹着烤肉的酥脆法棍。",
                 CurrencyCode = "CNY",
-                LocalizedPrice = 9.0m,
-                PriceText = "¥9.0"
+                LocalizedPrice = Math.Round(35000m / 3500m, 2),
+                PriceText = $"¥{Math.Round(35000m / 3500m, 2):0.##}"
             });
             itemTranslations.Add(new BoothMenuItemTranslationLocal
             {
                 MenuItemId = "booth-04-menu-01",
                 LanguageCode = "ja",
-                Name = "豚焼き肉バインミー",
-                Description = "香ばしい焼き肉を挟んだカリカリのフランスパン。",
+                Name = "焼き豚バインミー",
+                Description = "焼き豚を挟んだカリッとしたバインミー。",
                 CurrencyCode = "JPY",
-                LocalizedPrice = 180m,
-                PriceText = "¥180"
+                LocalizedPrice = Math.Round(35000m / 170m, 0),
+                PriceText = $"¥{Math.Round(35000m / 170m, 0):0}"
             });
             itemTranslations.Add(new BoothMenuItemTranslationLocal
             {
                 MenuItemId = "booth-04-menu-01",
                 LanguageCode = "ko",
-                Name = "돼지구이 반미",
-                Description = "고소한 돼지구이가 듬뿍 들어간 바삭한 바게트.",
+                Name = "돼지고기 반미",
+                Description = "구운 돼지고기를 넣은 바삭한 반미.",
                 CurrencyCode = "KRW",
-                LocalizedPrice = 1600m,
-                PriceText = "₩1,600"
+                LocalizedPrice = Math.Round(35000m / 18m, 0),
+                PriceText = $"₩{Math.Round(35000m / 18m, 0):0}"
             });
-
-            // Booth 05 - Chè Ba Miền
+            itemTranslations.Add(new BoothMenuItemTranslationLocal
+            {
+                MenuItemId = "booth-04-menu-01",
+                LanguageCode = "fr",
+                Name = "Bánh mì au porc grillé",
+                Description = "Baguette croustillante garnie de porc grillé.",
+                CurrencyCode = "EUR",
+                LocalizedPrice = Math.Round(35000m / 27000m, 2),
+                PriceText = $"€{Math.Round(35000m / 27000m, 2):0.##}"
+            });
+            itemTranslations.Add(new BoothMenuItemTranslationLocal
+            {
+                MenuItemId = "booth-04-menu-01",
+                LanguageCode = "es",
+                Name = "Bánh mì de cerdo a la parrilla",
+                Description = "Baguette crujiente con cerdo a la parrilla.",
+                CurrencyCode = "EUR",
+                LocalizedPrice = Math.Round(35000m / 27000m, 2),
+                PriceText = $"€{Math.Round(35000m / 27000m, 2):0.##}"
+            });
+            itemTranslations.Add(new BoothMenuItemTranslationLocal
+            {
+                MenuItemId = "booth-04-menu-01",
+                LanguageCode = "it",
+                Name = "Bánh mì con maiale grigliato",
+                Description = "Baguette croccante con maiale alla griglia.",
+                CurrencyCode = "EUR",
+                LocalizedPrice = Math.Round(35000m / 27000m, 2),
+                PriceText = $"€{Math.Round(35000m / 27000m, 2):0.##}"
+            });
+            itemTranslations.Add(new BoothMenuItemTranslationLocal
+            {
+                MenuItemId = "booth-04-menu-01",
+                LanguageCode = "ru",
+                Name = "Баньми с жареной свининой",
+                Description = "Хрустящий багет с жареной свининой.",
+                CurrencyCode = "RUB",
+                LocalizedPrice = Math.Round(35000m / 300m, 2),
+                PriceText = $"₽{Math.Round(35000m / 300m, 2):0.##}"
+            });
+            itemTranslations.Add(new BoothMenuItemTranslationLocal
+            {
+                MenuItemId = "booth-04-menu-02",
+                LanguageCode = "vi",
+                Name = "Bánh Mì Gà",
+                Description = "Bánh mì gà xé.",
+                CurrencyCode = "VND",
+                LocalizedPrice = 38000m,
+                PriceText = "38.000 đ"
+            });
+            itemTranslations.Add(new BoothMenuItemTranslationLocal
+            {
+                MenuItemId = "booth-04-menu-02",
+                LanguageCode = "en",
+                Name = "Chicken Banh Mi",
+                Description = "Banh mi with shredded chicken.",
+                CurrencyCode = "USD",
+                LocalizedPrice = Math.Round(38000m / 25000m, 2),
+                PriceText = $"${Math.Round(38000m / 25000m, 2):0.##}"
+            });
+            itemTranslations.Add(new BoothMenuItemTranslationLocal
+            {
+                MenuItemId = "booth-04-menu-02",
+                LanguageCode = "zh",
+                Name = "鸡肉法棍",
+                Description = "夹有鸡丝的越式法棍。",
+                CurrencyCode = "CNY",
+                LocalizedPrice = Math.Round(38000m / 3500m, 2),
+                PriceText = $"¥{Math.Round(38000m / 3500m, 2):0.##}"
+            });
+            itemTranslations.Add(new BoothMenuItemTranslationLocal
+            {
+                MenuItemId = "booth-04-menu-02",
+                LanguageCode = "ja",
+                Name = "チキンバインミー",
+                Description = "ほぐし鶏入りのバインミー。",
+                CurrencyCode = "JPY",
+                LocalizedPrice = Math.Round(38000m / 170m, 0),
+                PriceText = $"¥{Math.Round(38000m / 170m, 0):0}"
+            });
+            itemTranslations.Add(new BoothMenuItemTranslationLocal
+            {
+                MenuItemId = "booth-04-menu-02",
+                LanguageCode = "ko",
+                Name = "치킨 반미",
+                Description = "닭고기를 넣은 반미.",
+                CurrencyCode = "KRW",
+                LocalizedPrice = Math.Round(38000m / 18m, 0),
+                PriceText = $"₩{Math.Round(38000m / 18m, 0):0}"
+            });
+            itemTranslations.Add(new BoothMenuItemTranslationLocal
+            {
+                MenuItemId = "booth-04-menu-02",
+                LanguageCode = "fr",
+                Name = "Bánh mì au poulet",
+                Description = "Bánh mì au poulet effiloché.",
+                CurrencyCode = "EUR",
+                LocalizedPrice = Math.Round(38000m / 27000m, 2),
+                PriceText = $"€{Math.Round(38000m / 27000m, 2):0.##}"
+            });
+            itemTranslations.Add(new BoothMenuItemTranslationLocal
+            {
+                MenuItemId = "booth-04-menu-02",
+                LanguageCode = "es",
+                Name = "Bánh mì de pollo",
+                Description = "Bánh mì con pollo desmenuzado.",
+                CurrencyCode = "EUR",
+                LocalizedPrice = Math.Round(38000m / 27000m, 2),
+                PriceText = $"€{Math.Round(38000m / 27000m, 2):0.##}"
+            });
+            itemTranslations.Add(new BoothMenuItemTranslationLocal
+            {
+                MenuItemId = "booth-04-menu-02",
+                LanguageCode = "it",
+                Name = "Bánh mì al pollo",
+                Description = "Bánh mì con pollo sfilacciato.",
+                CurrencyCode = "EUR",
+                LocalizedPrice = Math.Round(38000m / 27000m, 2),
+                PriceText = $"€{Math.Round(38000m / 27000m, 2):0.##}"
+            });
+            itemTranslations.Add(new BoothMenuItemTranslationLocal
+            {
+                MenuItemId = "booth-04-menu-02",
+                LanguageCode = "ru",
+                Name = "Баньми с курицей",
+                Description = "Баньми с куриным мясом.",
+                CurrencyCode = "RUB",
+                LocalizedPrice = Math.Round(38000m / 300m, 2),
+                PriceText = $"₽{Math.Round(38000m / 300m, 2):0.##}"
+            });
+            itemTranslations.Add(new BoothMenuItemTranslationLocal
+            {
+                MenuItemId = "booth-04-menu-03",
+                LanguageCode = "vi",
+                Name = "Bánh Mì Đặc Biệt",
+                Description = "Bánh mì đặc biệt đầy đủ.",
+                CurrencyCode = "VND",
+                LocalizedPrice = 45000m,
+                PriceText = "45.000 đ"
+            });
+            itemTranslations.Add(new BoothMenuItemTranslationLocal
+            {
+                MenuItemId = "booth-04-menu-03",
+                LanguageCode = "en",
+                Name = "Special Banh Mi",
+                Description = "Special banh mi with assorted fillings.",
+                CurrencyCode = "USD",
+                LocalizedPrice = Math.Round(45000m / 25000m, 2),
+                PriceText = $"${Math.Round(45000m / 25000m, 2):0.##}"
+            });
+            itemTranslations.Add(new BoothMenuItemTranslationLocal
+            {
+                MenuItemId = "booth-04-menu-03",
+                LanguageCode = "zh",
+                Name = "特制法棍",
+                Description = "夹有多种馅料的特制越式法棍。",
+                CurrencyCode = "CNY",
+                LocalizedPrice = Math.Round(45000m / 3500m, 2),
+                PriceText = $"¥{Math.Round(45000m / 3500m, 2):0.##}"
+            });
+            itemTranslations.Add(new BoothMenuItemTranslationLocal
+            {
+                MenuItemId = "booth-04-menu-03",
+                LanguageCode = "ja",
+                Name = "特製バインミー",
+                Description = "具沢山の特製バインミー。",
+                CurrencyCode = "JPY",
+                LocalizedPrice = Math.Round(45000m / 170m, 0),
+                PriceText = $"¥{Math.Round(45000m / 170m, 0):0}"
+            });
+            itemTranslations.Add(new BoothMenuItemTranslationLocal
+            {
+                MenuItemId = "booth-04-menu-03",
+                LanguageCode = "ko",
+                Name = "스페셜 반미",
+                Description = "다양한 속재료가 들어간 스페셜 반미.",
+                CurrencyCode = "KRW",
+                LocalizedPrice = Math.Round(45000m / 18m, 0),
+                PriceText = $"₩{Math.Round(45000m / 18m, 0):0}"
+            });
+            itemTranslations.Add(new BoothMenuItemTranslationLocal
+            {
+                MenuItemId = "booth-04-menu-03",
+                LanguageCode = "fr",
+                Name = "Bánh mì spécial",
+                Description = "Bánh mì spécial avec garnitures assorties.",
+                CurrencyCode = "EUR",
+                LocalizedPrice = Math.Round(45000m / 27000m, 2),
+                PriceText = $"€{Math.Round(45000m / 27000m, 2):0.##}"
+            });
+            itemTranslations.Add(new BoothMenuItemTranslationLocal
+            {
+                MenuItemId = "booth-04-menu-03",
+                LanguageCode = "es",
+                Name = "Bánh mì especial",
+                Description = "Bánh mì especial con rellenos variados.",
+                CurrencyCode = "EUR",
+                LocalizedPrice = Math.Round(45000m / 27000m, 2),
+                PriceText = $"€{Math.Round(45000m / 27000m, 2):0.##}"
+            });
+            itemTranslations.Add(new BoothMenuItemTranslationLocal
+            {
+                MenuItemId = "booth-04-menu-03",
+                LanguageCode = "it",
+                Name = "Bánh mì speciale",
+                Description = "Bánh mì speciale con ripieni assortiti.",
+                CurrencyCode = "EUR",
+                LocalizedPrice = Math.Round(45000m / 27000m, 2),
+                PriceText = $"€{Math.Round(45000m / 27000m, 2):0.##}"
+            });
+            itemTranslations.Add(new BoothMenuItemTranslationLocal
+            {
+                MenuItemId = "booth-04-menu-03",
+                LanguageCode = "ru",
+                Name = "Специальный баньми",
+                Description = "Особый баньми с различными начинками.",
+                CurrencyCode = "RUB",
+                LocalizedPrice = Math.Round(45000m / 300m, 2),
+                PriceText = $"₽{Math.Round(45000m / 300m, 2):0.##}"
+            });
             itemTranslations.Add(new BoothMenuItemTranslationLocal
             {
                 MenuItemId = "booth-05-menu-01",
                 LanguageCode = "vi",
                 Name = "Chè Đậu Xanh",
-                Description = "Chè đậu xanh ngọt mát, thanh nhiệt.",
+                Description = "Chè đậu xanh thanh mát.",
                 CurrencyCode = "VND",
-                LocalizedPrice = 20000m,
-                PriceText = "20.000đ"
+                LocalizedPrice = 28000m,
+                PriceText = "28.000 đ"
             });
             itemTranslations.Add(new BoothMenuItemTranslationLocal
             {
                 MenuItemId = "booth-05-menu-01",
                 LanguageCode = "en",
                 Name = "Mung Bean Sweet Soup",
-                Description = "Refreshing and cooling mung bean dessert.",
+                Description = "Refreshing mung bean sweet soup.",
                 CurrencyCode = "USD",
-                LocalizedPrice = 0.90m,
-                PriceText = "$0.90"
+                LocalizedPrice = Math.Round(28000m / 25000m, 2),
+                PriceText = $"${Math.Round(28000m / 25000m, 2):0.##}"
             });
             itemTranslations.Add(new BoothMenuItemTranslationLocal
             {
                 MenuItemId = "booth-05-menu-01",
                 LanguageCode = "zh",
-                Name = "绿豆甜羹",
-                Description = "清凉解暑的甜绿豆汤。",
+                Name = "绿豆甜汤",
+                Description = "清爽的绿豆甜汤。",
                 CurrencyCode = "CNY",
-                LocalizedPrice = 6.0m,
-                PriceText = "¥6.0"
+                LocalizedPrice = Math.Round(28000m / 3500m, 2),
+                PriceText = $"¥{Math.Round(28000m / 3500m, 2):0.##}"
             });
-
-            // Booth 06 - Nem Nướng Đà Lạt
+            itemTranslations.Add(new BoothMenuItemTranslationLocal
+            {
+                MenuItemId = "booth-05-menu-01",
+                LanguageCode = "ja",
+                Name = "緑豆チェー",
+                Description = "さっぱりした緑豆のチェー。",
+                CurrencyCode = "JPY",
+                LocalizedPrice = Math.Round(28000m / 170m, 0),
+                PriceText = $"¥{Math.Round(28000m / 170m, 0):0}"
+            });
+            itemTranslations.Add(new BoothMenuItemTranslationLocal
+            {
+                MenuItemId = "booth-05-menu-01",
+                LanguageCode = "ko",
+                Name = "녹두 체",
+                Description = "시원한 녹두 디저트.",
+                CurrencyCode = "KRW",
+                LocalizedPrice = Math.Round(28000m / 18m, 0),
+                PriceText = $"₩{Math.Round(28000m / 18m, 0):0}"
+            });
+            itemTranslations.Add(new BoothMenuItemTranslationLocal
+            {
+                MenuItemId = "booth-05-menu-01",
+                LanguageCode = "fr",
+                Name = "Dessert aux haricots mungo",
+                Description = "Dessert rafraîchissant aux haricots mungo.",
+                CurrencyCode = "EUR",
+                LocalizedPrice = Math.Round(28000m / 27000m, 2),
+                PriceText = $"€{Math.Round(28000m / 27000m, 2):0.##}"
+            });
+            itemTranslations.Add(new BoothMenuItemTranslationLocal
+            {
+                MenuItemId = "booth-05-menu-01",
+                LanguageCode = "es",
+                Name = "Postre de frijol mungo",
+                Description = "Postre refrescante de frijol mungo.",
+                CurrencyCode = "EUR",
+                LocalizedPrice = Math.Round(28000m / 27000m, 2),
+                PriceText = $"€{Math.Round(28000m / 27000m, 2):0.##}"
+            });
+            itemTranslations.Add(new BoothMenuItemTranslationLocal
+            {
+                MenuItemId = "booth-05-menu-01",
+                LanguageCode = "it",
+                Name = "Dessert di fagioli mung",
+                Description = "Dessert rinfrescante ai fagioli mung.",
+                CurrencyCode = "EUR",
+                LocalizedPrice = Math.Round(28000m / 27000m, 2),
+                PriceText = $"€{Math.Round(28000m / 27000m, 2):0.##}"
+            });
+            itemTranslations.Add(new BoothMenuItemTranslationLocal
+            {
+                MenuItemId = "booth-05-menu-01",
+                LanguageCode = "ru",
+                Name = "Сладкий суп из маша",
+                Description = "Освежающий сладкий суп из бобов маш.",
+                CurrencyCode = "RUB",
+                LocalizedPrice = Math.Round(28000m / 300m, 2),
+                PriceText = $"₽{Math.Round(28000m / 300m, 2):0.##}"
+            });
+            itemTranslations.Add(new BoothMenuItemTranslationLocal
+            {
+                MenuItemId = "booth-05-menu-02",
+                LanguageCode = "vi",
+                Name = "Chè Thập Cẩm",
+                Description = "Chè thập cẩm đủ loại.",
+                CurrencyCode = "VND",
+                LocalizedPrice = 32000m,
+                PriceText = "32.000 đ"
+            });
+            itemTranslations.Add(new BoothMenuItemTranslationLocal
+            {
+                MenuItemId = "booth-05-menu-02",
+                LanguageCode = "en",
+                Name = "Mixed Sweet Soup",
+                Description = "Sweet soup with assorted ingredients.",
+                CurrencyCode = "USD",
+                LocalizedPrice = Math.Round(32000m / 25000m, 2),
+                PriceText = $"${Math.Round(32000m / 25000m, 2):0.##}"
+            });
+            itemTranslations.Add(new BoothMenuItemTranslationLocal
+            {
+                MenuItemId = "booth-05-menu-02",
+                LanguageCode = "zh",
+                Name = "什锦甜汤",
+                Description = "含多种配料的甜汤。",
+                CurrencyCode = "CNY",
+                LocalizedPrice = Math.Round(32000m / 3500m, 2),
+                PriceText = $"¥{Math.Round(32000m / 3500m, 2):0.##}"
+            });
+            itemTranslations.Add(new BoothMenuItemTranslationLocal
+            {
+                MenuItemId = "booth-05-menu-02",
+                LanguageCode = "ja",
+                Name = "ミックスチェー",
+                Description = "さまざまな具材が入ったチェー。",
+                CurrencyCode = "JPY",
+                LocalizedPrice = Math.Round(32000m / 170m, 0),
+                PriceText = $"¥{Math.Round(32000m / 170m, 0):0}"
+            });
+            itemTranslations.Add(new BoothMenuItemTranslationLocal
+            {
+                MenuItemId = "booth-05-menu-02",
+                LanguageCode = "ko",
+                Name = "모둠 체",
+                Description = "여러 재료가 들어간 달콤한 디저트.",
+                CurrencyCode = "KRW",
+                LocalizedPrice = Math.Round(32000m / 18m, 0),
+                PriceText = $"₩{Math.Round(32000m / 18m, 0):0}"
+            });
+            itemTranslations.Add(new BoothMenuItemTranslationLocal
+            {
+                MenuItemId = "booth-05-menu-02",
+                LanguageCode = "fr",
+                Name = "Dessert sucré assorti",
+                Description = "Soupe sucrée avec ingrédients variés.",
+                CurrencyCode = "EUR",
+                LocalizedPrice = Math.Round(32000m / 27000m, 2),
+                PriceText = $"€{Math.Round(32000m / 27000m, 2):0.##}"
+            });
+            itemTranslations.Add(new BoothMenuItemTranslationLocal
+            {
+                MenuItemId = "booth-05-menu-02",
+                LanguageCode = "es",
+                Name = "Postre dulce mixto",
+                Description = "Sopa dulce con ingredientes variados.",
+                CurrencyCode = "EUR",
+                LocalizedPrice = Math.Round(32000m / 27000m, 2),
+                PriceText = $"€{Math.Round(32000m / 27000m, 2):0.##}"
+            });
+            itemTranslations.Add(new BoothMenuItemTranslationLocal
+            {
+                MenuItemId = "booth-05-menu-02",
+                LanguageCode = "it",
+                Name = "Dessert dolce misto",
+                Description = "Zuppa dolce con ingredienti assortiti.",
+                CurrencyCode = "EUR",
+                LocalizedPrice = Math.Round(32000m / 27000m, 2),
+                PriceText = $"€{Math.Round(32000m / 27000m, 2):0.##}"
+            });
+            itemTranslations.Add(new BoothMenuItemTranslationLocal
+            {
+                MenuItemId = "booth-05-menu-02",
+                LanguageCode = "ru",
+                Name = "Смешанный сладкий суп",
+                Description = "Сладкий десерт с разнообразными ингредиентами.",
+                CurrencyCode = "RUB",
+                LocalizedPrice = Math.Round(32000m / 300m, 2),
+                PriceText = $"₽{Math.Round(32000m / 300m, 2):0.##}"
+            });
+            itemTranslations.Add(new BoothMenuItemTranslationLocal
+            {
+                MenuItemId = "booth-05-menu-03",
+                LanguageCode = "vi",
+                Name = "Chè Dừa Non",
+                Description = "Chè dừa non béo ngậy.",
+                CurrencyCode = "VND",
+                LocalizedPrice = 36000m,
+                PriceText = "36.000 đ"
+            });
+            itemTranslations.Add(new BoothMenuItemTranslationLocal
+            {
+                MenuItemId = "booth-05-menu-03",
+                LanguageCode = "en",
+                Name = "Young Coconut Sweet Soup",
+                Description = "Creamy young coconut sweet soup.",
+                CurrencyCode = "USD",
+                LocalizedPrice = Math.Round(36000m / 25000m, 2),
+                PriceText = $"${Math.Round(36000m / 25000m, 2):0.##}"
+            });
+            itemTranslations.Add(new BoothMenuItemTranslationLocal
+            {
+                MenuItemId = "booth-05-menu-03",
+                LanguageCode = "zh",
+                Name = "嫩椰甜汤",
+                Description = "香浓顺滑的嫩椰甜汤。",
+                CurrencyCode = "CNY",
+                LocalizedPrice = Math.Round(36000m / 3500m, 2),
+                PriceText = $"¥{Math.Round(36000m / 3500m, 2):0.##}"
+            });
+            itemTranslations.Add(new BoothMenuItemTranslationLocal
+            {
+                MenuItemId = "booth-05-menu-03",
+                LanguageCode = "ja",
+                Name = "若いココナッツチェー",
+                Description = "コクのある若いココナッツのチェー。",
+                CurrencyCode = "JPY",
+                LocalizedPrice = Math.Round(36000m / 170m, 0),
+                PriceText = $"¥{Math.Round(36000m / 170m, 0):0}"
+            });
+            itemTranslations.Add(new BoothMenuItemTranslationLocal
+            {
+                MenuItemId = "booth-05-menu-03",
+                LanguageCode = "ko",
+                Name = "어린 코코넛 체",
+                Description = "고소한 어린 코코넛 디저트.",
+                CurrencyCode = "KRW",
+                LocalizedPrice = Math.Round(36000m / 18m, 0),
+                PriceText = $"₩{Math.Round(36000m / 18m, 0):0}"
+            });
+            itemTranslations.Add(new BoothMenuItemTranslationLocal
+            {
+                MenuItemId = "booth-05-menu-03",
+                LanguageCode = "fr",
+                Name = "Dessert à la jeune noix de coco",
+                Description = "Dessert crémeux à la jeune noix de coco.",
+                CurrencyCode = "EUR",
+                LocalizedPrice = Math.Round(36000m / 27000m, 2),
+                PriceText = $"€{Math.Round(36000m / 27000m, 2):0.##}"
+            });
+            itemTranslations.Add(new BoothMenuItemTranslationLocal
+            {
+                MenuItemId = "booth-05-menu-03",
+                LanguageCode = "es",
+                Name = "Postre de coco joven",
+                Description = "Postre cremoso de coco joven.",
+                CurrencyCode = "EUR",
+                LocalizedPrice = Math.Round(36000m / 27000m, 2),
+                PriceText = $"€{Math.Round(36000m / 27000m, 2):0.##}"
+            });
+            itemTranslations.Add(new BoothMenuItemTranslationLocal
+            {
+                MenuItemId = "booth-05-menu-03",
+                LanguageCode = "it",
+                Name = "Dessert al cocco giovane",
+                Description = "Dessert cremoso al cocco giovane.",
+                CurrencyCode = "EUR",
+                LocalizedPrice = Math.Round(36000m / 27000m, 2),
+                PriceText = $"€{Math.Round(36000m / 27000m, 2):0.##}"
+            });
+            itemTranslations.Add(new BoothMenuItemTranslationLocal
+            {
+                MenuItemId = "booth-05-menu-03",
+                LanguageCode = "ru",
+                Name = "Сладкий суп с молодым кокосом",
+                Description = "Нежный сладкий десерт с молодым кокосом.",
+                CurrencyCode = "RUB",
+                LocalizedPrice = Math.Round(36000m / 300m, 2),
+                PriceText = $"₽{Math.Round(36000m / 300m, 2):0.##}"
+            });
             itemTranslations.Add(new BoothMenuItemTranslationLocal
             {
                 MenuItemId = "booth-06-menu-01",
                 LanguageCode = "vi",
-                Name = "Nem Nướng Đà Lạt Phần",
-                Description = "Suất nem nướng đặc sản Đà Lạt.",
+                Name = "Nem Nướng Phần",
+                Description = "Nem nướng đặc sản Đà Lạt.",
                 CurrencyCode = "VND",
-                LocalizedPrice = 60000m,
-                PriceText = "60.000đ"
+                LocalizedPrice = 68000m,
+                PriceText = "68.000 đ"
             });
             itemTranslations.Add(new BoothMenuItemTranslationLocal
             {
                 MenuItemId = "booth-06-menu-01",
                 LanguageCode = "en",
-                Name = "Dalat Grilled Pork Set",
-                Description = "Authentic Dalat grilled pork rolls served with herbs.",
+                Name = "Grilled Pork Rolls Set",
+                Description = "Dalat grilled pork rolls set.",
                 CurrencyCode = "USD",
-                LocalizedPrice = 2.60m,
-                PriceText = "$2.60"
+                LocalizedPrice = Math.Round(68000m / 25000m, 2),
+                PriceText = $"${Math.Round(68000m / 25000m, 2):0.##}"
             });
-
-            // Booth 07 - Bánh Xèo Miền Tây
+            itemTranslations.Add(new BoothMenuItemTranslationLocal
+            {
+                MenuItemId = "booth-06-menu-01",
+                LanguageCode = "zh",
+                Name = "大叻烤肉卷套餐",
+                Description = "大叻风味烤肉卷套餐。",
+                CurrencyCode = "CNY",
+                LocalizedPrice = Math.Round(68000m / 3500m, 2),
+                PriceText = $"¥{Math.Round(68000m / 3500m, 2):0.##}"
+            });
+            itemTranslations.Add(new BoothMenuItemTranslationLocal
+            {
+                MenuItemId = "booth-06-menu-01",
+                LanguageCode = "ja",
+                Name = "ダラット焼き豚ロールセット",
+                Description = "ダラット名物焼き豚ロールのセット。",
+                CurrencyCode = "JPY",
+                LocalizedPrice = Math.Round(68000m / 170m, 0),
+                PriceText = $"¥{Math.Round(68000m / 170m, 0):0}"
+            });
+            itemTranslations.Add(new BoothMenuItemTranslationLocal
+            {
+                MenuItemId = "booth-06-menu-01",
+                LanguageCode = "ko",
+                Name = "달랏 넴느엉 세트",
+                Description = "달랏식 넴느엉 세트 메뉴.",
+                CurrencyCode = "KRW",
+                LocalizedPrice = Math.Round(68000m / 18m, 0),
+                PriceText = $"₩{Math.Round(68000m / 18m, 0):0}"
+            });
+            itemTranslations.Add(new BoothMenuItemTranslationLocal
+            {
+                MenuItemId = "booth-06-menu-01",
+                LanguageCode = "fr",
+                Name = "Set de rouleaux de porc grillé",
+                Description = "Set de rouleaux de porc grillé de Dalat.",
+                CurrencyCode = "EUR",
+                LocalizedPrice = Math.Round(68000m / 27000m, 2),
+                PriceText = $"€{Math.Round(68000m / 27000m, 2):0.##}"
+            });
+            itemTranslations.Add(new BoothMenuItemTranslationLocal
+            {
+                MenuItemId = "booth-06-menu-01",
+                LanguageCode = "es",
+                Name = "Set de rollos de cerdo a la parrilla",
+                Description = "Set de rollos de cerdo a la parrilla de Dalat.",
+                CurrencyCode = "EUR",
+                LocalizedPrice = Math.Round(68000m / 27000m, 2),
+                PriceText = $"€{Math.Round(68000m / 27000m, 2):0.##}"
+            });
+            itemTranslations.Add(new BoothMenuItemTranslationLocal
+            {
+                MenuItemId = "booth-06-menu-01",
+                LanguageCode = "it",
+                Name = "Set di involtini di maiale grigliato",
+                Description = "Set di involtini di maiale grigliato di Dalat.",
+                CurrencyCode = "EUR",
+                LocalizedPrice = Math.Round(68000m / 27000m, 2),
+                PriceText = $"€{Math.Round(68000m / 27000m, 2):0.##}"
+            });
+            itemTranslations.Add(new BoothMenuItemTranslationLocal
+            {
+                MenuItemId = "booth-06-menu-01",
+                LanguageCode = "ru",
+                Name = "Сет роллов из жареной свинины",
+                Description = "Сет далатских роллов из жареной свинины.",
+                CurrencyCode = "RUB",
+                LocalizedPrice = Math.Round(68000m / 300m, 2),
+                PriceText = $"₽{Math.Round(68000m / 300m, 2):0.##}"
+            });
+            itemTranslations.Add(new BoothMenuItemTranslationLocal
+            {
+                MenuItemId = "booth-06-menu-02",
+                LanguageCode = "vi",
+                Name = "Nem Nướng Combo",
+                Description = "Combo nem nướng hấp dẫn.",
+                CurrencyCode = "VND",
+                LocalizedPrice = 79000m,
+                PriceText = "79.000 đ"
+            });
+            itemTranslations.Add(new BoothMenuItemTranslationLocal
+            {
+                MenuItemId = "booth-06-menu-02",
+                LanguageCode = "en",
+                Name = "Grilled Pork Combo",
+                Description = "Combo with grilled pork rolls and sides.",
+                CurrencyCode = "USD",
+                LocalizedPrice = Math.Round(79000m / 25000m, 2),
+                PriceText = $"${Math.Round(79000m / 25000m, 2):0.##}"
+            });
+            itemTranslations.Add(new BoothMenuItemTranslationLocal
+            {
+                MenuItemId = "booth-06-menu-02",
+                LanguageCode = "zh",
+                Name = "烤肉卷组合",
+                Description = "烤肉卷搭配配菜的组合。",
+                CurrencyCode = "CNY",
+                LocalizedPrice = Math.Round(79000m / 3500m, 2),
+                PriceText = $"¥{Math.Round(79000m / 3500m, 2):0.##}"
+            });
+            itemTranslations.Add(new BoothMenuItemTranslationLocal
+            {
+                MenuItemId = "booth-06-menu-02",
+                LanguageCode = "ja",
+                Name = "焼き豚ロールコンボ",
+                Description = "焼き豚ロールと付け合わせのコンボ。",
+                CurrencyCode = "JPY",
+                LocalizedPrice = Math.Round(79000m / 170m, 0),
+                PriceText = $"¥{Math.Round(79000m / 170m, 0):0}"
+            });
+            itemTranslations.Add(new BoothMenuItemTranslationLocal
+            {
+                MenuItemId = "booth-06-menu-02",
+                LanguageCode = "ko",
+                Name = "넴느엉 콤보",
+                Description = "넴느엉과 곁들임 메뉴가 함께 나오는 콤보.",
+                CurrencyCode = "KRW",
+                LocalizedPrice = Math.Round(79000m / 18m, 0),
+                PriceText = $"₩{Math.Round(79000m / 18m, 0):0}"
+            });
+            itemTranslations.Add(new BoothMenuItemTranslationLocal
+            {
+                MenuItemId = "booth-06-menu-02",
+                LanguageCode = "fr",
+                Name = "Combo de porc grillé",
+                Description = "Combo de rouleaux de porc grillé avec accompagnements.",
+                CurrencyCode = "EUR",
+                LocalizedPrice = Math.Round(79000m / 27000m, 2),
+                PriceText = $"€{Math.Round(79000m / 27000m, 2):0.##}"
+            });
+            itemTranslations.Add(new BoothMenuItemTranslationLocal
+            {
+                MenuItemId = "booth-06-menu-02",
+                LanguageCode = "es",
+                Name = "Combo de cerdo a la parrilla",
+                Description = "Combo de rollos de cerdo a la parrilla con acompañamientos.",
+                CurrencyCode = "EUR",
+                LocalizedPrice = Math.Round(79000m / 27000m, 2),
+                PriceText = $"€{Math.Round(79000m / 27000m, 2):0.##}"
+            });
+            itemTranslations.Add(new BoothMenuItemTranslationLocal
+            {
+                MenuItemId = "booth-06-menu-02",
+                LanguageCode = "it",
+                Name = "Combo di maiale grigliato",
+                Description = "Combo di involtini di maiale grigliato con contorni.",
+                CurrencyCode = "EUR",
+                LocalizedPrice = Math.Round(79000m / 27000m, 2),
+                PriceText = $"€{Math.Round(79000m / 27000m, 2):0.##}"
+            });
+            itemTranslations.Add(new BoothMenuItemTranslationLocal
+            {
+                MenuItemId = "booth-06-menu-02",
+                LanguageCode = "ru",
+                Name = "Комбо из жареной свинины",
+                Description = "Комбо из роллов из жареной свинины с гарнирами.",
+                CurrencyCode = "RUB",
+                LocalizedPrice = Math.Round(79000m / 300m, 2),
+                PriceText = $"₽{Math.Round(79000m / 300m, 2):0.##}"
+            });
+            itemTranslations.Add(new BoothMenuItemTranslationLocal
+            {
+                MenuItemId = "booth-06-menu-03",
+                LanguageCode = "vi",
+                Name = "Nem Nướng Đặc Biệt",
+                Description = "Nem nướng đặc biệt.",
+                CurrencyCode = "VND",
+                LocalizedPrice = 89000m,
+                PriceText = "89.000 đ"
+            });
+            itemTranslations.Add(new BoothMenuItemTranslationLocal
+            {
+                MenuItemId = "booth-06-menu-03",
+                LanguageCode = "en",
+                Name = "Special Grilled Pork Rolls",
+                Description = "Special Dalat grilled pork rolls.",
+                CurrencyCode = "USD",
+                LocalizedPrice = Math.Round(89000m / 25000m, 2),
+                PriceText = $"${Math.Round(89000m / 25000m, 2):0.##}"
+            });
+            itemTranslations.Add(new BoothMenuItemTranslationLocal
+            {
+                MenuItemId = "booth-06-menu-03",
+                LanguageCode = "zh",
+                Name = "特制烤肉卷",
+                Description = "特制大叻风味烤肉卷。",
+                CurrencyCode = "CNY",
+                LocalizedPrice = Math.Round(89000m / 3500m, 2),
+                PriceText = $"¥{Math.Round(89000m / 3500m, 2):0.##}"
+            });
+            itemTranslations.Add(new BoothMenuItemTranslationLocal
+            {
+                MenuItemId = "booth-06-menu-03",
+                LanguageCode = "ja",
+                Name = "特製焼き豚ロール",
+                Description = "特製ダラット風焼き豚ロール。",
+                CurrencyCode = "JPY",
+                LocalizedPrice = Math.Round(89000m / 170m, 0),
+                PriceText = $"¥{Math.Round(89000m / 170m, 0):0}"
+            });
+            itemTranslations.Add(new BoothMenuItemTranslationLocal
+            {
+                MenuItemId = "booth-06-menu-03",
+                LanguageCode = "ko",
+                Name = "스페셜 넴느엉",
+                Description = "특제 달랏식 넴느엉.",
+                CurrencyCode = "KRW",
+                LocalizedPrice = Math.Round(89000m / 18m, 0),
+                PriceText = $"₩{Math.Round(89000m / 18m, 0):0}"
+            });
+            itemTranslations.Add(new BoothMenuItemTranslationLocal
+            {
+                MenuItemId = "booth-06-menu-03",
+                LanguageCode = "fr",
+                Name = "Rouleaux de porc grillé spéciaux",
+                Description = "Rouleaux de porc grillé spéciaux de Dalat.",
+                CurrencyCode = "EUR",
+                LocalizedPrice = Math.Round(89000m / 27000m, 2),
+                PriceText = $"€{Math.Round(89000m / 27000m, 2):0.##}"
+            });
+            itemTranslations.Add(new BoothMenuItemTranslationLocal
+            {
+                MenuItemId = "booth-06-menu-03",
+                LanguageCode = "es",
+                Name = "Rollos de cerdo a la parrilla especiales",
+                Description = "Rollos especiales de cerdo a la parrilla de Dalat.",
+                CurrencyCode = "EUR",
+                LocalizedPrice = Math.Round(89000m / 27000m, 2),
+                PriceText = $"€{Math.Round(89000m / 27000m, 2):0.##}"
+            });
+            itemTranslations.Add(new BoothMenuItemTranslationLocal
+            {
+                MenuItemId = "booth-06-menu-03",
+                LanguageCode = "it",
+                Name = "Involtini di maiale grigliato speciali",
+                Description = "Involtini speciali di maiale grigliato di Dalat.",
+                CurrencyCode = "EUR",
+                LocalizedPrice = Math.Round(89000m / 27000m, 2),
+                PriceText = $"€{Math.Round(89000m / 27000m, 2):0.##}"
+            });
+            itemTranslations.Add(new BoothMenuItemTranslationLocal
+            {
+                MenuItemId = "booth-06-menu-03",
+                LanguageCode = "ru",
+                Name = "Особые роллы из жареной свинины",
+                Description = "Особые далатские роллы из жареной свинины.",
+                CurrencyCode = "RUB",
+                LocalizedPrice = Math.Round(89000m / 300m, 2),
+                PriceText = $"₽{Math.Round(89000m / 300m, 2):0.##}"
+            });
             itemTranslations.Add(new BoothMenuItemTranslationLocal
             {
                 MenuItemId = "booth-07-menu-01",
                 LanguageCode = "vi",
                 Name = "Bánh Xèo Tôm Thịt",
-                Description = "Bánh xèo giòn tan nhân tôm thịt.",
+                Description = "Bánh xèo nhân tôm thịt.",
                 CurrencyCode = "VND",
-                LocalizedPrice = 45000m,
-                PriceText = "45.000đ"
+                LocalizedPrice = 65000m,
+                PriceText = "65.000 đ"
             });
             itemTranslations.Add(new BoothMenuItemTranslationLocal
             {
                 MenuItemId = "booth-07-menu-01",
                 LanguageCode = "en",
-                Name = "Shrimp & Pork Pancake",
-                Description = "Crispy Vietnamese pancake with shrimp and pork.",
+                Name = "Shrimp Pork Pancake",
+                Description = "Crispy pancake with shrimp and pork.",
                 CurrencyCode = "USD",
-                LocalizedPrice = 2.00m,
-                PriceText = "$2.00"
+                LocalizedPrice = Math.Round(65000m / 25000m, 2),
+                PriceText = $"${Math.Round(65000m / 25000m, 2):0.##}"
             });
-
-            // Booth 08 - Gỏi Cuốn Tươi
+            itemTranslations.Add(new BoothMenuItemTranslationLocal
+            {
+                MenuItemId = "booth-07-menu-01",
+                LanguageCode = "zh",
+                Name = "虾肉煎饼",
+                Description = "酥脆的越南煎饼，内馅是虾和猪肉。",
+                CurrencyCode = "CNY",
+                LocalizedPrice = Math.Round(65000m / 3500m, 2),
+                PriceText = $"¥{Math.Round(65000m / 3500m, 2):0.##}"
+            });
+            itemTranslations.Add(new BoothMenuItemTranslationLocal
+            {
+                MenuItemId = "booth-07-menu-01",
+                LanguageCode = "ja",
+                Name = "海老と豚肉のバインセオ",
+                Description = "海老と豚肉入りのカリカリのバインセオ。",
+                CurrencyCode = "JPY",
+                LocalizedPrice = Math.Round(65000m / 170m, 0),
+                PriceText = $"¥{Math.Round(65000m / 170m, 0):0}"
+            });
+            itemTranslations.Add(new BoothMenuItemTranslationLocal
+            {
+                MenuItemId = "booth-07-menu-01",
+                LanguageCode = "ko",
+                Name = "새우 돼지고기 반쎄오",
+                Description = "새우와 돼지고기 속이 들어간 바삭한 반쎄오.",
+                CurrencyCode = "KRW",
+                LocalizedPrice = Math.Round(65000m / 18m, 0),
+                PriceText = $"₩{Math.Round(65000m / 18m, 0):0}"
+            });
+            itemTranslations.Add(new BoothMenuItemTranslationLocal
+            {
+                MenuItemId = "booth-07-menu-01",
+                LanguageCode = "fr",
+                Name = "Crêpe crevettes et porc",
+                Description = "Crêpe croustillante aux crevettes et au porc.",
+                CurrencyCode = "EUR",
+                LocalizedPrice = Math.Round(65000m / 27000m, 2),
+                PriceText = $"€{Math.Round(65000m / 27000m, 2):0.##}"
+            });
+            itemTranslations.Add(new BoothMenuItemTranslationLocal
+            {
+                MenuItemId = "booth-07-menu-01",
+                LanguageCode = "es",
+                Name = "Panqueque de camarón y cerdo",
+                Description = "Panqueque crujiente con camarón y cerdo.",
+                CurrencyCode = "EUR",
+                LocalizedPrice = Math.Round(65000m / 27000m, 2),
+                PriceText = $"€{Math.Round(65000m / 27000m, 2):0.##}"
+            });
+            itemTranslations.Add(new BoothMenuItemTranslationLocal
+            {
+                MenuItemId = "booth-07-menu-01",
+                LanguageCode = "it",
+                Name = "Pancake con gamberi e maiale",
+                Description = "Pancake croccante con gamberi e maiale.",
+                CurrencyCode = "EUR",
+                LocalizedPrice = Math.Round(65000m / 27000m, 2),
+                PriceText = $"€{Math.Round(65000m / 27000m, 2):0.##}"
+            });
+            itemTranslations.Add(new BoothMenuItemTranslationLocal
+            {
+                MenuItemId = "booth-07-menu-01",
+                LanguageCode = "ru",
+                Name = "Бань сео с креветками и свининой",
+                Description = "Хрустящий вьетнамский блин с креветками и свининой.",
+                CurrencyCode = "RUB",
+                LocalizedPrice = Math.Round(65000m / 300m, 2),
+                PriceText = $"₽{Math.Round(65000m / 300m, 2):0.##}"
+            });
+            itemTranslations.Add(new BoothMenuItemTranslationLocal
+            {
+                MenuItemId = "booth-07-menu-02",
+                LanguageCode = "vi",
+                Name = "Bánh Xèo Chay",
+                Description = "Bánh xèo nhân đậu xanh.",
+                CurrencyCode = "VND",
+                LocalizedPrice = 58000m,
+                PriceText = "58.000 đ"
+            });
+            itemTranslations.Add(new BoothMenuItemTranslationLocal
+            {
+                MenuItemId = "booth-07-menu-02",
+                LanguageCode = "en",
+                Name = "Vegetarian Pancake",
+                Description = "Vegetarian crispy pancake with mung bean filling.",
+                CurrencyCode = "USD",
+                LocalizedPrice = Math.Round(58000m / 25000m, 2),
+                PriceText = $"${Math.Round(58000m / 25000m, 2):0.##}"
+            });
+            itemTranslations.Add(new BoothMenuItemTranslationLocal
+            {
+                MenuItemId = "booth-07-menu-02",
+                LanguageCode = "zh",
+                Name = "素食煎饼",
+                Description = "以绿豆为馅的素食越南煎饼。",
+                CurrencyCode = "CNY",
+                LocalizedPrice = Math.Round(58000m / 3500m, 2),
+                PriceText = $"¥{Math.Round(58000m / 3500m, 2):0.##}"
+            });
+            itemTranslations.Add(new BoothMenuItemTranslationLocal
+            {
+                MenuItemId = "booth-07-menu-02",
+                LanguageCode = "ja",
+                Name = "ベジタリアンバインセオ",
+                Description = "緑豆入りのベジタリアンバインセオ。",
+                CurrencyCode = "JPY",
+                LocalizedPrice = Math.Round(58000m / 170m, 0),
+                PriceText = $"¥{Math.Round(58000m / 170m, 0):0}"
+            });
+            itemTranslations.Add(new BoothMenuItemTranslationLocal
+            {
+                MenuItemId = "booth-07-menu-02",
+                LanguageCode = "ko",
+                Name = "채식 반쎄오",
+                Description = "녹두 속이 들어간 채식 반쎄오.",
+                CurrencyCode = "KRW",
+                LocalizedPrice = Math.Round(58000m / 18m, 0),
+                PriceText = $"₩{Math.Round(58000m / 18m, 0):0}"
+            });
+            itemTranslations.Add(new BoothMenuItemTranslationLocal
+            {
+                MenuItemId = "booth-07-menu-02",
+                LanguageCode = "fr",
+                Name = "Crêpe végétarienne",
+                Description = "Crêpe croustillante végétarienne aux haricots mungo.",
+                CurrencyCode = "EUR",
+                LocalizedPrice = Math.Round(58000m / 27000m, 2),
+                PriceText = $"€{Math.Round(58000m / 27000m, 2):0.##}"
+            });
+            itemTranslations.Add(new BoothMenuItemTranslationLocal
+            {
+                MenuItemId = "booth-07-menu-02",
+                LanguageCode = "es",
+                Name = "Panqueque vegetariano",
+                Description = "Panqueque crujiente vegetariano con relleno de frijol mungo.",
+                CurrencyCode = "EUR",
+                LocalizedPrice = Math.Round(58000m / 27000m, 2),
+                PriceText = $"€{Math.Round(58000m / 27000m, 2):0.##}"
+            });
+            itemTranslations.Add(new BoothMenuItemTranslationLocal
+            {
+                MenuItemId = "booth-07-menu-02",
+                LanguageCode = "it",
+                Name = "Pancake vegetariano",
+                Description = "Pancake croccante vegetariano con ripieno di fagioli mung.",
+                CurrencyCode = "EUR",
+                LocalizedPrice = Math.Round(58000m / 27000m, 2),
+                PriceText = $"€{Math.Round(58000m / 27000m, 2):0.##}"
+            });
+            itemTranslations.Add(new BoothMenuItemTranslationLocal
+            {
+                MenuItemId = "booth-07-menu-02",
+                LanguageCode = "ru",
+                Name = "Вегетарианский бань сео",
+                Description = "Хрустящий вегетарианский блин с начинкой из маша.",
+                CurrencyCode = "RUB",
+                LocalizedPrice = Math.Round(58000m / 300m, 2),
+                PriceText = $"₽{Math.Round(58000m / 300m, 2):0.##}"
+            });
+            itemTranslations.Add(new BoothMenuItemTranslationLocal
+            {
+                MenuItemId = "booth-07-menu-03",
+                LanguageCode = "vi",
+                Name = "Bánh Xèo Đặc Biệt",
+                Description = "Bánh xèo đặc biệt siêu to.",
+                CurrencyCode = "VND",
+                LocalizedPrice = 76000m,
+                PriceText = "76.000 đ"
+            });
+            itemTranslations.Add(new BoothMenuItemTranslationLocal
+            {
+                MenuItemId = "booth-07-menu-03",
+                LanguageCode = "en",
+                Name = "Special Pancake",
+                Description = "Extra-large special crispy pancake.",
+                CurrencyCode = "USD",
+                LocalizedPrice = Math.Round(76000m / 25000m, 2),
+                PriceText = $"${Math.Round(76000m / 25000m, 2):0.##}"
+            });
+            itemTranslations.Add(new BoothMenuItemTranslationLocal
+            {
+                MenuItemId = "booth-07-menu-03",
+                LanguageCode = "zh",
+                Name = "特大特制煎饼",
+                Description = "超大份特制越南煎饼。",
+                CurrencyCode = "CNY",
+                LocalizedPrice = Math.Round(76000m / 3500m, 2),
+                PriceText = $"¥{Math.Round(76000m / 3500m, 2):0.##}"
+            });
+            itemTranslations.Add(new BoothMenuItemTranslationLocal
+            {
+                MenuItemId = "booth-07-menu-03",
+                LanguageCode = "ja",
+                Name = "特製バインセオ",
+                Description = "特大サイズの特製バインセオ。",
+                CurrencyCode = "JPY",
+                LocalizedPrice = Math.Round(76000m / 170m, 0),
+                PriceText = $"¥{Math.Round(76000m / 170m, 0):0}"
+            });
+            itemTranslations.Add(new BoothMenuItemTranslationLocal
+            {
+                MenuItemId = "booth-07-menu-03",
+                LanguageCode = "ko",
+                Name = "스페셜 반쎄오",
+                Description = "아주 큰 스페셜 반쎄오.",
+                CurrencyCode = "KRW",
+                LocalizedPrice = Math.Round(76000m / 18m, 0),
+                PriceText = $"₩{Math.Round(76000m / 18m, 0):0}"
+            });
+            itemTranslations.Add(new BoothMenuItemTranslationLocal
+            {
+                MenuItemId = "booth-07-menu-03",
+                LanguageCode = "fr",
+                Name = "Crêpe spéciale",
+                Description = "Grande crêpe croustillante spéciale.",
+                CurrencyCode = "EUR",
+                LocalizedPrice = Math.Round(76000m / 27000m, 2),
+                PriceText = $"€{Math.Round(76000m / 27000m, 2):0.##}"
+            });
+            itemTranslations.Add(new BoothMenuItemTranslationLocal
+            {
+                MenuItemId = "booth-07-menu-03",
+                LanguageCode = "es",
+                Name = "Panqueque especial",
+                Description = "Panqueque crujiente especial de gran tamaño.",
+                CurrencyCode = "EUR",
+                LocalizedPrice = Math.Round(76000m / 27000m, 2),
+                PriceText = $"€{Math.Round(76000m / 27000m, 2):0.##}"
+            });
+            itemTranslations.Add(new BoothMenuItemTranslationLocal
+            {
+                MenuItemId = "booth-07-menu-03",
+                LanguageCode = "it",
+                Name = "Pancake speciale",
+                Description = "Grande pancake croccante speciale.",
+                CurrencyCode = "EUR",
+                LocalizedPrice = Math.Round(76000m / 27000m, 2),
+                PriceText = $"€{Math.Round(76000m / 27000m, 2):0.##}"
+            });
+            itemTranslations.Add(new BoothMenuItemTranslationLocal
+            {
+                MenuItemId = "booth-07-menu-03",
+                LanguageCode = "ru",
+                Name = "Особый бань сео",
+                Description = "Большой особый хрустящий блин.",
+                CurrencyCode = "RUB",
+                LocalizedPrice = Math.Round(76000m / 300m, 2),
+                PriceText = $"₽{Math.Round(76000m / 300m, 2):0.##}"
+            });
             itemTranslations.Add(new BoothMenuItemTranslationLocal
             {
                 MenuItemId = "booth-08-menu-01",
                 LanguageCode = "vi",
                 Name = "Gỏi Cuốn Tôm Thịt",
-                Description = "Cuốn tôm thịt tươi ngon mỗi ngày.",
+                Description = "Gỏi cuốn tôm thịt tươi ngon.",
                 CurrencyCode = "VND",
-                LocalizedPrice = 10000m,
-                PriceText = "10.000đ"
+                LocalizedPrice = 42000m,
+                PriceText = "42.000 đ"
             });
             itemTranslations.Add(new BoothMenuItemTranslationLocal
             {
                 MenuItemId = "booth-08-menu-01",
                 LanguageCode = "en",
-                Name = "Shrimp & Pork Spring Rolls",
-                Description = "Fresh rice paper rolls with shrimp and pork.",
+                Name = "Shrimp Pork Spring Rolls",
+                Description = "Fresh spring rolls with shrimp and pork.",
                 CurrencyCode = "USD",
-                LocalizedPrice = 0.45m,
-                PriceText = "$0.45"
+                LocalizedPrice = Math.Round(42000m / 25000m, 2),
+                PriceText = $"${Math.Round(42000m / 25000m, 2):0.##}"
             });
-
-            // Booth 09 - Hải Sản Nướng
+            itemTranslations.Add(new BoothMenuItemTranslationLocal
+            {
+                MenuItemId = "booth-08-menu-01",
+                LanguageCode = "zh",
+                Name = "鲜虾猪肉春卷",
+                Description = "新鲜的虾肉猪肉春卷。",
+                CurrencyCode = "CNY",
+                LocalizedPrice = Math.Round(42000m / 3500m, 2),
+                PriceText = $"¥{Math.Round(42000m / 3500m, 2):0.##}"
+            });
+            itemTranslations.Add(new BoothMenuItemTranslationLocal
+            {
+                MenuItemId = "booth-08-menu-01",
+                LanguageCode = "ja",
+                Name = "海老と豚肉の生春巻き",
+                Description = "海老と豚肉入りの新鮮な生春巻き。",
+                CurrencyCode = "JPY",
+                LocalizedPrice = Math.Round(42000m / 170m, 0),
+                PriceText = $"¥{Math.Round(42000m / 170m, 0):0}"
+            });
+            itemTranslations.Add(new BoothMenuItemTranslationLocal
+            {
+                MenuItemId = "booth-08-menu-01",
+                LanguageCode = "ko",
+                Name = "새우 돼지고기 생춘권",
+                Description = "새우와 돼지고기가 들어간 신선한 생춘권.",
+                CurrencyCode = "KRW",
+                LocalizedPrice = Math.Round(42000m / 18m, 0),
+                PriceText = $"₩{Math.Round(42000m / 18m, 0):0}"
+            });
+            itemTranslations.Add(new BoothMenuItemTranslationLocal
+            {
+                MenuItemId = "booth-08-menu-01",
+                LanguageCode = "fr",
+                Name = "Rouleaux frais crevettes et porc",
+                Description = "Rouleaux frais avec crevettes et porc.",
+                CurrencyCode = "EUR",
+                LocalizedPrice = Math.Round(42000m / 27000m, 2),
+                PriceText = $"€{Math.Round(42000m / 27000m, 2):0.##}"
+            });
+            itemTranslations.Add(new BoothMenuItemTranslationLocal
+            {
+                MenuItemId = "booth-08-menu-01",
+                LanguageCode = "es",
+                Name = "Rollitos frescos de camarón y cerdo",
+                Description = "Rollitos frescos con camarón y cerdo.",
+                CurrencyCode = "EUR",
+                LocalizedPrice = Math.Round(42000m / 27000m, 2),
+                PriceText = $"€{Math.Round(42000m / 27000m, 2):0.##}"
+            });
+            itemTranslations.Add(new BoothMenuItemTranslationLocal
+            {
+                MenuItemId = "booth-08-menu-01",
+                LanguageCode = "it",
+                Name = "Involtini freschi con gamberi e maiale",
+                Description = "Involtini freschi con gamberi e maiale.",
+                CurrencyCode = "EUR",
+                LocalizedPrice = Math.Round(42000m / 27000m, 2),
+                PriceText = $"€{Math.Round(42000m / 27000m, 2):0.##}"
+            });
+            itemTranslations.Add(new BoothMenuItemTranslationLocal
+            {
+                MenuItemId = "booth-08-menu-01",
+                LanguageCode = "ru",
+                Name = "Свежие роллы с креветками и свининой",
+                Description = "Свежие роллы с креветками и свининой.",
+                CurrencyCode = "RUB",
+                LocalizedPrice = Math.Round(42000m / 300m, 2),
+                PriceText = $"₽{Math.Round(42000m / 300m, 2):0.##}"
+            });
+            itemTranslations.Add(new BoothMenuItemTranslationLocal
+            {
+                MenuItemId = "booth-08-menu-02",
+                LanguageCode = "vi",
+                Name = "Gỏi Cuốn Bò Nướng",
+                Description = "Gỏi cuốn nhân bò nướng.",
+                CurrencyCode = "VND",
+                LocalizedPrice = 48000m,
+                PriceText = "48.000 đ"
+            });
+            itemTranslations.Add(new BoothMenuItemTranslationLocal
+            {
+                MenuItemId = "booth-08-menu-02",
+                LanguageCode = "en",
+                Name = "Beef Spring Rolls",
+                Description = "Fresh spring rolls with grilled beef.",
+                CurrencyCode = "USD",
+                LocalizedPrice = Math.Round(48000m / 25000m, 2),
+                PriceText = $"${Math.Round(48000m / 25000m, 2):0.##}"
+            });
+            itemTranslations.Add(new BoothMenuItemTranslationLocal
+            {
+                MenuItemId = "booth-08-menu-02",
+                LanguageCode = "zh",
+                Name = "烤牛肉春卷",
+                Description = "夹有烤牛肉的新鲜春卷。",
+                CurrencyCode = "CNY",
+                LocalizedPrice = Math.Round(48000m / 3500m, 2),
+                PriceText = $"¥{Math.Round(48000m / 3500m, 2):0.##}"
+            });
+            itemTranslations.Add(new BoothMenuItemTranslationLocal
+            {
+                MenuItemId = "booth-08-menu-02",
+                LanguageCode = "ja",
+                Name = "牛肉の生春巻き",
+                Description = "焼き牛肉入りの生春巻き。",
+                CurrencyCode = "JPY",
+                LocalizedPrice = Math.Round(48000m / 170m, 0),
+                PriceText = $"¥{Math.Round(48000m / 170m, 0):0}"
+            });
+            itemTranslations.Add(new BoothMenuItemTranslationLocal
+            {
+                MenuItemId = "booth-08-menu-02",
+                LanguageCode = "ko",
+                Name = "소고기 생춘권",
+                Description = "구운 소고기가 들어간 생춘권.",
+                CurrencyCode = "KRW",
+                LocalizedPrice = Math.Round(48000m / 18m, 0),
+                PriceText = $"₩{Math.Round(48000m / 18m, 0):0}"
+            });
+            itemTranslations.Add(new BoothMenuItemTranslationLocal
+            {
+                MenuItemId = "booth-08-menu-02",
+                LanguageCode = "fr",
+                Name = "Rouleaux frais au bœuf",
+                Description = "Rouleaux frais avec bœuf grillé.",
+                CurrencyCode = "EUR",
+                LocalizedPrice = Math.Round(48000m / 27000m, 2),
+                PriceText = $"€{Math.Round(48000m / 27000m, 2):0.##}"
+            });
+            itemTranslations.Add(new BoothMenuItemTranslationLocal
+            {
+                MenuItemId = "booth-08-menu-02",
+                LanguageCode = "es",
+                Name = "Rollitos frescos de ternera",
+                Description = "Rollitos frescos con carne de res a la parrilla.",
+                CurrencyCode = "EUR",
+                LocalizedPrice = Math.Round(48000m / 27000m, 2),
+                PriceText = $"€{Math.Round(48000m / 27000m, 2):0.##}"
+            });
+            itemTranslations.Add(new BoothMenuItemTranslationLocal
+            {
+                MenuItemId = "booth-08-menu-02",
+                LanguageCode = "it",
+                Name = "Involtini freschi al manzo",
+                Description = "Involtini freschi con manzo grigliato.",
+                CurrencyCode = "EUR",
+                LocalizedPrice = Math.Round(48000m / 27000m, 2),
+                PriceText = $"€{Math.Round(48000m / 27000m, 2):0.##}"
+            });
+            itemTranslations.Add(new BoothMenuItemTranslationLocal
+            {
+                MenuItemId = "booth-08-menu-02",
+                LanguageCode = "ru",
+                Name = "Свежие роллы с говядиной",
+                Description = "Свежие роллы с жареной говядиной.",
+                CurrencyCode = "RUB",
+                LocalizedPrice = Math.Round(48000m / 300m, 2),
+                PriceText = $"₽{Math.Round(48000m / 300m, 2):0.##}"
+            });
+            itemTranslations.Add(new BoothMenuItemTranslationLocal
+            {
+                MenuItemId = "booth-08-menu-03",
+                LanguageCode = "vi",
+                Name = "Combo 6 Cuốn",
+                Description = "Combo 6 cuốn đầy đủ.",
+                CurrencyCode = "VND",
+                LocalizedPrice = 75000m,
+                PriceText = "75.000 đ"
+            });
+            itemTranslations.Add(new BoothMenuItemTranslationLocal
+            {
+                MenuItemId = "booth-08-menu-03",
+                LanguageCode = "en",
+                Name = "6-roll Combo",
+                Description = "Combo of six assorted spring rolls.",
+                CurrencyCode = "USD",
+                LocalizedPrice = Math.Round(75000m / 25000m, 2),
+                PriceText = $"${Math.Round(75000m / 25000m, 2):0.##}"
+            });
+            itemTranslations.Add(new BoothMenuItemTranslationLocal
+            {
+                MenuItemId = "booth-08-menu-03",
+                LanguageCode = "zh",
+                Name = "六卷组合",
+                Description = "六个什锦春卷组合。",
+                CurrencyCode = "CNY",
+                LocalizedPrice = Math.Round(75000m / 3500m, 2),
+                PriceText = $"¥{Math.Round(75000m / 3500m, 2):0.##}"
+            });
+            itemTranslations.Add(new BoothMenuItemTranslationLocal
+            {
+                MenuItemId = "booth-08-menu-03",
+                LanguageCode = "ja",
+                Name = "6本ロールセット",
+                Description = "6本入りの生春巻きコンボ。",
+                CurrencyCode = "JPY",
+                LocalizedPrice = Math.Round(75000m / 170m, 0),
+                PriceText = $"¥{Math.Round(75000m / 170m, 0):0}"
+            });
+            itemTranslations.Add(new BoothMenuItemTranslationLocal
+            {
+                MenuItemId = "booth-08-menu-03",
+                LanguageCode = "ko",
+                Name = "6개 롤 콤보",
+                Description = "6개의 다양한 롤이 들어간 콤보.",
+                CurrencyCode = "KRW",
+                LocalizedPrice = Math.Round(75000m / 18m, 0),
+                PriceText = $"₩{Math.Round(75000m / 18m, 0):0}"
+            });
+            itemTranslations.Add(new BoothMenuItemTranslationLocal
+            {
+                MenuItemId = "booth-08-menu-03",
+                LanguageCode = "fr",
+                Name = "Combo 6 rouleaux",
+                Description = "Combo de six rouleaux assortis.",
+                CurrencyCode = "EUR",
+                LocalizedPrice = Math.Round(75000m / 27000m, 2),
+                PriceText = $"€{Math.Round(75000m / 27000m, 2):0.##}"
+            });
+            itemTranslations.Add(new BoothMenuItemTranslationLocal
+            {
+                MenuItemId = "booth-08-menu-03",
+                LanguageCode = "es",
+                Name = "Combo de 6 rollitos",
+                Description = "Combo de seis rollitos variados.",
+                CurrencyCode = "EUR",
+                LocalizedPrice = Math.Round(75000m / 27000m, 2),
+                PriceText = $"€{Math.Round(75000m / 27000m, 2):0.##}"
+            });
+            itemTranslations.Add(new BoothMenuItemTranslationLocal
+            {
+                MenuItemId = "booth-08-menu-03",
+                LanguageCode = "it",
+                Name = "Combo da 6 involtini",
+                Description = "Combo di sei involtini assortiti.",
+                CurrencyCode = "EUR",
+                LocalizedPrice = Math.Round(75000m / 27000m, 2),
+                PriceText = $"€{Math.Round(75000m / 27000m, 2):0.##}"
+            });
+            itemTranslations.Add(new BoothMenuItemTranslationLocal
+            {
+                MenuItemId = "booth-08-menu-03",
+                LanguageCode = "ru",
+                Name = "Комбо из 6 роллов",
+                Description = "Комбо из шести ассорти-роллов.",
+                CurrencyCode = "RUB",
+                LocalizedPrice = Math.Round(75000m / 300m, 2),
+                PriceText = $"₽{Math.Round(75000m / 300m, 2):0.##}"
+            });
             itemTranslations.Add(new BoothMenuItemTranslationLocal
             {
                 MenuItemId = "booth-09-menu-01",
                 LanguageCode = "vi",
                 Name = "Mực Nướng Sa Tế",
-                Description = "Mực nướng cay nồng vị sa tế.",
+                Description = "Mực nướng sa tế cay nồng.",
                 CurrencyCode = "VND",
-                LocalizedPrice = 120000m,
-                PriceText = "120.000đ"
+                LocalizedPrice = 98000m,
+                PriceText = "98.000 đ"
             });
             itemTranslations.Add(new BoothMenuItemTranslationLocal
             {
                 MenuItemId = "booth-09-menu-01",
                 LanguageCode = "en",
-                Name = "Sate Grilled Squid",
+                Name = "Grilled Squid",
                 Description = "Grilled squid with spicy sate sauce.",
                 CurrencyCode = "USD",
-                LocalizedPrice = 5.20m,
-                PriceText = "$5.20"
+                LocalizedPrice = Math.Round(98000m / 25000m, 2),
+                PriceText = $"${Math.Round(98000m / 25000m, 2):0.##}"
             });
-
-            // Booth 10 - Cà Phê & Trà Sữa
+            itemTranslations.Add(new BoothMenuItemTranslationLocal
+            {
+                MenuItemId = "booth-09-menu-01",
+                LanguageCode = "zh",
+                Name = "沙爹烤鱿鱼",
+                Description = "配辣味沙爹酱的烤鱿鱼。",
+                CurrencyCode = "CNY",
+                LocalizedPrice = Math.Round(98000m / 3500m, 2),
+                PriceText = $"¥{Math.Round(98000m / 3500m, 2):0.##}"
+            });
+            itemTranslations.Add(new BoothMenuItemTranslationLocal
+            {
+                MenuItemId = "booth-09-menu-01",
+                LanguageCode = "ja",
+                Name = "サテソース焼きイカ",
+                Description = "ピリ辛サテソースの焼きイカ。",
+                CurrencyCode = "JPY",
+                LocalizedPrice = Math.Round(98000m / 170m, 0),
+                PriceText = $"¥{Math.Round(98000m / 170m, 0):0}"
+            });
+            itemTranslations.Add(new BoothMenuItemTranslationLocal
+            {
+                MenuItemId = "booth-09-menu-01",
+                LanguageCode = "ko",
+                Name = "사테 오징어 구이",
+                Description = "매콤한 사테 소스를 곁들인 오징어 구이.",
+                CurrencyCode = "KRW",
+                LocalizedPrice = Math.Round(98000m / 18m, 0),
+                PriceText = $"₩{Math.Round(98000m / 18m, 0):0}"
+            });
+            itemTranslations.Add(new BoothMenuItemTranslationLocal
+            {
+                MenuItemId = "booth-09-menu-01",
+                LanguageCode = "fr",
+                Name = "Calmar grillé au saté",
+                Description = "Calmar grillé avec sauce saté épicée.",
+                CurrencyCode = "EUR",
+                LocalizedPrice = Math.Round(98000m / 27000m, 2),
+                PriceText = $"€{Math.Round(98000m / 27000m, 2):0.##}"
+            });
+            itemTranslations.Add(new BoothMenuItemTranslationLocal
+            {
+                MenuItemId = "booth-09-menu-01",
+                LanguageCode = "es",
+                Name = "Calamar a la parrilla con saté",
+                Description = "Calamar a la parrilla con salsa saté picante.",
+                CurrencyCode = "EUR",
+                LocalizedPrice = Math.Round(98000m / 27000m, 2),
+                PriceText = $"€{Math.Round(98000m / 27000m, 2):0.##}"
+            });
+            itemTranslations.Add(new BoothMenuItemTranslationLocal
+            {
+                MenuItemId = "booth-09-menu-01",
+                LanguageCode = "it",
+                Name = "Calamaro grigliato al saté",
+                Description = "Calamaro grigliato con salsa saté piccante.",
+                CurrencyCode = "EUR",
+                LocalizedPrice = Math.Round(98000m / 27000m, 2),
+                PriceText = $"€{Math.Round(98000m / 27000m, 2):0.##}"
+            });
+            itemTranslations.Add(new BoothMenuItemTranslationLocal
+            {
+                MenuItemId = "booth-09-menu-01",
+                LanguageCode = "ru",
+                Name = "Кальмар на гриле с соусом сате",
+                Description = "Кальмар на гриле с острым соусом сате.",
+                CurrencyCode = "RUB",
+                LocalizedPrice = Math.Round(98000m / 300m, 2),
+                PriceText = $"₽{Math.Round(98000m / 300m, 2):0.##}"
+            });
+            itemTranslations.Add(new BoothMenuItemTranslationLocal
+            {
+                MenuItemId = "booth-09-menu-02",
+                LanguageCode = "vi",
+                Name = "Tôm Nướng Muối Ớt",
+                Description = "Tôm nướng muối ớt đậm đà.",
+                CurrencyCode = "VND",
+                LocalizedPrice = 115000m,
+                PriceText = "115.000 đ"
+            });
+            itemTranslations.Add(new BoothMenuItemTranslationLocal
+            {
+                MenuItemId = "booth-09-menu-02",
+                LanguageCode = "en",
+                Name = "Grilled Shrimp",
+                Description = "Grilled shrimp with chili salt.",
+                CurrencyCode = "USD",
+                LocalizedPrice = Math.Round(115000m / 25000m, 2),
+                PriceText = $"${Math.Round(115000m / 25000m, 2):0.##}"
+            });
+            itemTranslations.Add(new BoothMenuItemTranslationLocal
+            {
+                MenuItemId = "booth-09-menu-02",
+                LanguageCode = "zh",
+                Name = "椒盐烤虾",
+                Description = "配辣椒盐的烤虾。",
+                CurrencyCode = "CNY",
+                LocalizedPrice = Math.Round(115000m / 3500m, 2),
+                PriceText = $"¥{Math.Round(115000m / 3500m, 2):0.##}"
+            });
+            itemTranslations.Add(new BoothMenuItemTranslationLocal
+            {
+                MenuItemId = "booth-09-menu-02",
+                LanguageCode = "ja",
+                Name = "海老の塩辛焼き",
+                Description = "唐辛子塩で焼いた海老。",
+                CurrencyCode = "JPY",
+                LocalizedPrice = Math.Round(115000m / 170m, 0),
+                PriceText = $"¥{Math.Round(115000m / 170m, 0):0}"
+            });
+            itemTranslations.Add(new BoothMenuItemTranslationLocal
+            {
+                MenuItemId = "booth-09-menu-02",
+                LanguageCode = "ko",
+                Name = "새우 소금고추 구이",
+                Description = "고추소금을 곁들인 새우 구이.",
+                CurrencyCode = "KRW",
+                LocalizedPrice = Math.Round(115000m / 18m, 0),
+                PriceText = $"₩{Math.Round(115000m / 18m, 0):0}"
+            });
+            itemTranslations.Add(new BoothMenuItemTranslationLocal
+            {
+                MenuItemId = "booth-09-menu-02",
+                LanguageCode = "fr",
+                Name = "Crevettes grillées au sel pimenté",
+                Description = "Crevettes grillées au sel et au piment.",
+                CurrencyCode = "EUR",
+                LocalizedPrice = Math.Round(115000m / 27000m, 2),
+                PriceText = $"€{Math.Round(115000m / 27000m, 2):0.##}"
+            });
+            itemTranslations.Add(new BoothMenuItemTranslationLocal
+            {
+                MenuItemId = "booth-09-menu-02",
+                LanguageCode = "es",
+                Name = "Camarones a la parrilla con sal y chile",
+                Description = "Camarones a la parrilla con sal picante.",
+                CurrencyCode = "EUR",
+                LocalizedPrice = Math.Round(115000m / 27000m, 2),
+                PriceText = $"€{Math.Round(115000m / 27000m, 2):0.##}"
+            });
+            itemTranslations.Add(new BoothMenuItemTranslationLocal
+            {
+                MenuItemId = "booth-09-menu-02",
+                LanguageCode = "it",
+                Name = "Gamberi grigliati con sale e peperoncino",
+                Description = "Gamberi grigliati con sale al peperoncino.",
+                CurrencyCode = "EUR",
+                LocalizedPrice = Math.Round(115000m / 27000m, 2),
+                PriceText = $"€{Math.Round(115000m / 27000m, 2):0.##}"
+            });
+            itemTranslations.Add(new BoothMenuItemTranslationLocal
+            {
+                MenuItemId = "booth-09-menu-02",
+                LanguageCode = "ru",
+                Name = "Креветки на гриле с солью и перцем",
+                Description = "Креветки на гриле с острым соляным соусом.",
+                CurrencyCode = "RUB",
+                LocalizedPrice = Math.Round(115000m / 300m, 2),
+                PriceText = $"₽{Math.Round(115000m / 300m, 2):0.##}"
+            });
+            itemTranslations.Add(new BoothMenuItemTranslationLocal
+            {
+                MenuItemId = "booth-09-menu-03",
+                LanguageCode = "vi",
+                Name = "Combo Hải Sản",
+                Description = "Combo hải sản nướng thập cẩm.",
+                CurrencyCode = "VND",
+                LocalizedPrice = 149000m,
+                PriceText = "149.000 đ"
+            });
+            itemTranslations.Add(new BoothMenuItemTranslationLocal
+            {
+                MenuItemId = "booth-09-menu-03",
+                LanguageCode = "en",
+                Name = "Seafood Combo",
+                Description = "Mixed grilled seafood combo.",
+                CurrencyCode = "USD",
+                LocalizedPrice = Math.Round(149000m / 25000m, 2),
+                PriceText = $"${Math.Round(149000m / 25000m, 2):0.##}"
+            });
+            itemTranslations.Add(new BoothMenuItemTranslationLocal
+            {
+                MenuItemId = "booth-09-menu-03",
+                LanguageCode = "zh",
+                Name = "海鲜组合",
+                Description = "什锦烤海鲜组合。",
+                CurrencyCode = "CNY",
+                LocalizedPrice = Math.Round(149000m / 3500m, 2),
+                PriceText = $"¥{Math.Round(149000m / 3500m, 2):0.##}"
+            });
+            itemTranslations.Add(new BoothMenuItemTranslationLocal
+            {
+                MenuItemId = "booth-09-menu-03",
+                LanguageCode = "ja",
+                Name = "シーフードコンボ",
+                Description = "焼きシーフードの盛り合わせコンボ。",
+                CurrencyCode = "JPY",
+                LocalizedPrice = Math.Round(149000m / 170m, 0),
+                PriceText = $"¥{Math.Round(149000m / 170m, 0):0}"
+            });
+            itemTranslations.Add(new BoothMenuItemTranslationLocal
+            {
+                MenuItemId = "booth-09-menu-03",
+                LanguageCode = "ko",
+                Name = "해산물 콤보",
+                Description = "모둠 해산물 구이 콤보.",
+                CurrencyCode = "KRW",
+                LocalizedPrice = Math.Round(149000m / 18m, 0),
+                PriceText = $"₩{Math.Round(149000m / 18m, 0):0}"
+            });
+            itemTranslations.Add(new BoothMenuItemTranslationLocal
+            {
+                MenuItemId = "booth-09-menu-03",
+                LanguageCode = "fr",
+                Name = "Combo fruits de mer",
+                Description = "Combo de fruits de mer grillés assortis.",
+                CurrencyCode = "EUR",
+                LocalizedPrice = Math.Round(149000m / 27000m, 2),
+                PriceText = $"€{Math.Round(149000m / 27000m, 2):0.##}"
+            });
+            itemTranslations.Add(new BoothMenuItemTranslationLocal
+            {
+                MenuItemId = "booth-09-menu-03",
+                LanguageCode = "es",
+                Name = "Combo de mariscos",
+                Description = "Combo de mariscos a la parrilla surtidos.",
+                CurrencyCode = "EUR",
+                LocalizedPrice = Math.Round(149000m / 27000m, 2),
+                PriceText = $"€{Math.Round(149000m / 27000m, 2):0.##}"
+            });
+            itemTranslations.Add(new BoothMenuItemTranslationLocal
+            {
+                MenuItemId = "booth-09-menu-03",
+                LanguageCode = "it",
+                Name = "Combo di frutti di mare",
+                Description = "Combo misto di frutti di mare alla griglia.",
+                CurrencyCode = "EUR",
+                LocalizedPrice = Math.Round(149000m / 27000m, 2),
+                PriceText = $"€{Math.Round(149000m / 27000m, 2):0.##}"
+            });
+            itemTranslations.Add(new BoothMenuItemTranslationLocal
+            {
+                MenuItemId = "booth-09-menu-03",
+                LanguageCode = "ru",
+                Name = "Комбо из морепродуктов",
+                Description = "Ассорти-комбо из жареных морепродуктов.",
+                CurrencyCode = "RUB",
+                LocalizedPrice = Math.Round(149000m / 300m, 2),
+                PriceText = $"₽{Math.Round(149000m / 300m, 2):0.##}"
+            });
             itemTranslations.Add(new BoothMenuItemTranslationLocal
             {
                 MenuItemId = "booth-10-menu-01",
                 LanguageCode = "vi",
                 Name = "Cà Phê Sữa Đá",
-                Description = "Cà phê sữa đá pha phin đậm chất Việt.",
+                Description = "Cà phê sữa đá truyền thống.",
                 CurrencyCode = "VND",
-                LocalizedPrice = 25000m,
-                PriceText = "25.000đ"
+                LocalizedPrice = 30000m,
+                PriceText = "30.000 đ"
             });
             itemTranslations.Add(new BoothMenuItemTranslationLocal
             {
                 MenuItemId = "booth-10-menu-01",
                 LanguageCode = "en",
-                Name = "Vietnamese Iced Milk Coffee",
-                Description = "Traditional drip coffee with condensed milk.",
+                Name = "Iced Milk Coffee",
+                Description = "Traditional Vietnamese iced milk coffee.",
                 CurrencyCode = "USD",
-                LocalizedPrice = 1.10m,
-                PriceText = "$1.10"
+                LocalizedPrice = Math.Round(30000m / 25000m, 2),
+                PriceText = $"${Math.Round(30000m / 25000m, 2):0.##}"
             });
             itemTranslations.Add(new BoothMenuItemTranslationLocal
             {
                 MenuItemId = "booth-10-menu-01",
                 LanguageCode = "zh",
                 Name = "越式冰奶咖啡",
-                Description = "传统滴漏咖啡，搭配炼乳。",
+                Description = "传统越式冰奶咖啡。",
                 CurrencyCode = "CNY",
-                LocalizedPrice = 7.5m,
-                PriceText = "¥7.5"
+                LocalizedPrice = Math.Round(30000m / 3500m, 2),
+                PriceText = $"¥{Math.Round(30000m / 3500m, 2):0.##}"
             });
+            itemTranslations.Add(new BoothMenuItemTranslationLocal
+            {
+                MenuItemId = "booth-10-menu-01",
+                LanguageCode = "ja",
+                Name = "ベトナムアイスミルクコーヒー",
+                Description = "伝統的なベトナム風アイスミルクコーヒー。",
+                CurrencyCode = "JPY",
+                LocalizedPrice = Math.Round(30000m / 170m, 0),
+                PriceText = $"¥{Math.Round(30000m / 170m, 0):0}"
+            });
+            itemTranslations.Add(new BoothMenuItemTranslationLocal
+            {
+                MenuItemId = "booth-10-menu-01",
+                LanguageCode = "ko",
+                Name = "베트남 연유 아이스커피",
+                Description = "전통적인 베트남식 연유 아이스커피.",
+                CurrencyCode = "KRW",
+                LocalizedPrice = Math.Round(30000m / 18m, 0),
+                PriceText = $"₩{Math.Round(30000m / 18m, 0):0}"
+            });
+            itemTranslations.Add(new BoothMenuItemTranslationLocal
+            {
+                MenuItemId = "booth-10-menu-01",
+                LanguageCode = "fr",
+                Name = "Café glacé au lait vietnamien",
+                Description = "Café vietnamien glacé au lait condensé.",
+                CurrencyCode = "EUR",
+                LocalizedPrice = Math.Round(30000m / 27000m, 2),
+                PriceText = $"€{Math.Round(30000m / 27000m, 2):0.##}"
+            });
+            itemTranslations.Add(new BoothMenuItemTranslationLocal
+            {
+                MenuItemId = "booth-10-menu-01",
+                LanguageCode = "es",
+                Name = "Café helado vietnamita con leche",
+                Description = "Café vietnamita helado con leche condensada.",
+                CurrencyCode = "EUR",
+                LocalizedPrice = Math.Round(30000m / 27000m, 2),
+                PriceText = $"€{Math.Round(30000m / 27000m, 2):0.##}"
+            });
+            itemTranslations.Add(new BoothMenuItemTranslationLocal
+            {
+                MenuItemId = "booth-10-menu-01",
+                LanguageCode = "it",
+                Name = "Caffè vietnamita freddo al latte",
+                Description = "Caffè vietnamita freddo con latte condensato.",
+                CurrencyCode = "EUR",
+                LocalizedPrice = Math.Round(30000m / 27000m, 2),
+                PriceText = $"€{Math.Round(30000m / 27000m, 2):0.##}"
+            });
+            itemTranslations.Add(new BoothMenuItemTranslationLocal
+            {
+                MenuItemId = "booth-10-menu-01",
+                LanguageCode = "ru",
+                Name = "Вьетнамский кофе со льдом и молоком",
+                Description = "Традиционный вьетнамский кофе со льдом и молоком.",
+                CurrencyCode = "RUB",
+                LocalizedPrice = Math.Round(30000m / 300m, 2),
+                PriceText = $"₽{Math.Round(30000m / 300m, 2):0.##}"
+            });
+            itemTranslations.Add(new BoothMenuItemTranslationLocal
+            {
+                MenuItemId = "booth-10-menu-02",
+                LanguageCode = "vi",
+                Name = "Trà Sữa Trân Châu",
+                Description = "Trà sữa trân châu đường đen.",
+                CurrencyCode = "VND",
+                LocalizedPrice = 42000m,
+                PriceText = "42.000 đ"
+            });
+            itemTranslations.Add(new BoothMenuItemTranslationLocal
+            {
+                MenuItemId = "booth-10-menu-02",
+                LanguageCode = "en",
+                Name = "Bubble Milk Tea",
+                Description = "Milk tea with black sugar pearls.",
+                CurrencyCode = "USD",
+                LocalizedPrice = Math.Round(42000m / 25000m, 2),
+                PriceText = $"${Math.Round(42000m / 25000m, 2):0.##}"
+            });
+            itemTranslations.Add(new BoothMenuItemTranslationLocal
+            {
+                MenuItemId = "booth-10-menu-02",
+                LanguageCode = "zh",
+                Name = "黑糖珍珠奶茶",
+                Description = "配黑糖珍珠的奶茶。",
+                CurrencyCode = "CNY",
+                LocalizedPrice = Math.Round(42000m / 3500m, 2),
+                PriceText = $"¥{Math.Round(42000m / 3500m, 2):0.##}"
+            });
+            itemTranslations.Add(new BoothMenuItemTranslationLocal
+            {
+                MenuItemId = "booth-10-menu-02",
+                LanguageCode = "ja",
+                Name = "黒糖タピオカミルクティー",
+                Description = "黒糖タピオカ入りミルクティー。",
+                CurrencyCode = "JPY",
+                LocalizedPrice = Math.Round(42000m / 170m, 0),
+                PriceText = $"¥{Math.Round(42000m / 170m, 0):0}"
+            });
+            itemTranslations.Add(new BoothMenuItemTranslationLocal
+            {
+                MenuItemId = "booth-10-menu-02",
+                LanguageCode = "ko",
+                Name = "흑당 버블 밀크티",
+                Description = "흑당 펄이 들어간 밀크티.",
+                CurrencyCode = "KRW",
+                LocalizedPrice = Math.Round(42000m / 18m, 0),
+                PriceText = $"₩{Math.Round(42000m / 18m, 0):0}"
+            });
+            itemTranslations.Add(new BoothMenuItemTranslationLocal
+            {
+                MenuItemId = "booth-10-menu-02",
+                LanguageCode = "fr",
+                Name = "Thé au lait perlé",
+                Description = "Thé au lait avec perles au sucre noir.",
+                CurrencyCode = "EUR",
+                LocalizedPrice = Math.Round(42000m / 27000m, 2),
+                PriceText = $"€{Math.Round(42000m / 27000m, 2):0.##}"
+            });
+            itemTranslations.Add(new BoothMenuItemTranslationLocal
+            {
+                MenuItemId = "booth-10-menu-02",
+                LanguageCode = "es",
+                Name = "Té con leche y perlas",
+                Description = "Té con leche con perlas de azúcar negro.",
+                CurrencyCode = "EUR",
+                LocalizedPrice = Math.Round(42000m / 27000m, 2),
+                PriceText = $"€{Math.Round(42000m / 27000m, 2):0.##}"
+            });
+            itemTranslations.Add(new BoothMenuItemTranslationLocal
+            {
+                MenuItemId = "booth-10-menu-02",
+                LanguageCode = "it",
+                Name = "Tè al latte con perle",
+                Description = "Tè al latte con perle di zucchero nero.",
+                CurrencyCode = "EUR",
+                LocalizedPrice = Math.Round(42000m / 27000m, 2),
+                PriceText = $"€{Math.Round(42000m / 27000m, 2):0.##}"
+            });
+            itemTranslations.Add(new BoothMenuItemTranslationLocal
+            {
+                MenuItemId = "booth-10-menu-02",
+                LanguageCode = "ru",
+                Name = "Молочный чай с тапиокой",
+                Description = "Молочный чай с шариками тапиоки и чёрным сахаром.",
+                CurrencyCode = "RUB",
+                LocalizedPrice = Math.Round(42000m / 300m, 2),
+                PriceText = $"₽{Math.Round(42000m / 300m, 2):0.##}"
+            });
+            itemTranslations.Add(new BoothMenuItemTranslationLocal
+            {
+                MenuItemId = "booth-10-menu-03",
+                LanguageCode = "vi",
+                Name = "Combo Đồ Uống",
+                Description = "Combo cà phê và trà sữa.",
+                CurrencyCode = "VND",
+                LocalizedPrice = 70000m,
+                PriceText = "70.000 đ"
+            });
+            itemTranslations.Add(new BoothMenuItemTranslationLocal
+            {
+                MenuItemId = "booth-10-menu-03",
+                LanguageCode = "en",
+                Name = "Drink Combo",
+                Description = "Coffee and milk tea combo.",
+                CurrencyCode = "USD",
+                LocalizedPrice = Math.Round(70000m / 25000m, 2),
+                PriceText = $"${Math.Round(70000m / 25000m, 2):0.##}"
+            });
+            itemTranslations.Add(new BoothMenuItemTranslationLocal
+            {
+                MenuItemId = "booth-10-menu-03",
+                LanguageCode = "zh",
+                Name = "饮品组合",
+                Description = "咖啡与奶茶组合。",
+                CurrencyCode = "CNY",
+                LocalizedPrice = Math.Round(70000m / 3500m, 2),
+                PriceText = $"¥{Math.Round(70000m / 3500m, 2):0.##}"
+            });
+            itemTranslations.Add(new BoothMenuItemTranslationLocal
+            {
+                MenuItemId = "booth-10-menu-03",
+                LanguageCode = "ja",
+                Name = "ドリンクコンボ",
+                Description = "コーヒーとミルクティーのコンボ。",
+                CurrencyCode = "JPY",
+                LocalizedPrice = Math.Round(70000m / 170m, 0),
+                PriceText = $"¥{Math.Round(70000m / 170m, 0):0}"
+            });
+            itemTranslations.Add(new BoothMenuItemTranslationLocal
+            {
+                MenuItemId = "booth-10-menu-03",
+                LanguageCode = "ko",
+                Name = "음료 콤보",
+                Description = "커피와 밀크티 콤보.",
+                CurrencyCode = "KRW",
+                LocalizedPrice = Math.Round(70000m / 18m, 0),
+                PriceText = $"₩{Math.Round(70000m / 18m, 0):0}"
+            });
+            itemTranslations.Add(new BoothMenuItemTranslationLocal
+            {
+                MenuItemId = "booth-10-menu-03",
+                LanguageCode = "fr",
+                Name = "Combo boissons",
+                Description = "Combo café et thé au lait.",
+                CurrencyCode = "EUR",
+                LocalizedPrice = Math.Round(70000m / 27000m, 2),
+                PriceText = $"€{Math.Round(70000m / 27000m, 2):0.##}"
+            });
+            itemTranslations.Add(new BoothMenuItemTranslationLocal
+            {
+                MenuItemId = "booth-10-menu-03",
+                LanguageCode = "es",
+                Name = "Combo de bebidas",
+                Description = "Combo de café y té con leche.",
+                CurrencyCode = "EUR",
+                LocalizedPrice = Math.Round(70000m / 27000m, 2),
+                PriceText = $"€{Math.Round(70000m / 27000m, 2):0.##}"
+            });
+            itemTranslations.Add(new BoothMenuItemTranslationLocal
+            {
+                MenuItemId = "booth-10-menu-03",
+                LanguageCode = "it",
+                Name = "Combo bevande",
+                Description = "Combo di caffè e tè al latte.",
+                CurrencyCode = "EUR",
+                LocalizedPrice = Math.Round(70000m / 27000m, 2),
+                PriceText = $"€{Math.Round(70000m / 27000m, 2):0.##}"
+            });
+            itemTranslations.Add(new BoothMenuItemTranslationLocal
+            {
+                MenuItemId = "booth-10-menu-03",
+                LanguageCode = "ru",
+                Name = "Комбо напитков",
+                Description = "Комбо из кофе и молочного чая.",
+                CurrencyCode = "RUB",
+                LocalizedPrice = Math.Round(70000m / 300m, 2),
+                PriceText = $"₽{Math.Round(70000m / 300m, 2):0.##}"
+            });
+
             db.BoothMenuItemTranslations.AddRange(itemTranslations);
             await db.SaveChangesAsync();
         }
 
-        // 6. Bảng PlaybackLogs (Nhật ký) - 3 ví dụ (Đã có IsSynced)
-        // 6. Bảng PlaybackLogs (Nhật ký) - Đầy đủ 15 bản ghi từ poi.db
         if (!await db.PlaybackLogs.AnyAsync())
         {
             db.PlaybackLogs.AddRange(new List<PlaybackLog>
-    {
-        new PlaybackLog { BoothId = "booth-01", TriggerType = "QR", Language = "vi", PlayedAtUtc = DateTime.Parse("2026-04-08T08:00:00Z"), DurationSeconds = 12, Lat = 10.7768, Lng = 106.7008, IsCompleted = true, SessionId = "session-001", IsSynced = true },
-        new PlaybackLog { BoothId = "booth-01", TriggerType = "GPS", Language = "vi", PlayedAtUtc = DateTime.Parse("2026-04-08T08:10:00Z"), DurationSeconds = 10, Lat = 10.77683, Lng = 106.70081, IsCompleted = true, SessionId = "session-002", IsSynced = true },
-        new PlaybackLog { BoothId = "booth-02", TriggerType = "QR", Language = "en", PlayedAtUtc = DateTime.Parse("2026-04-08T08:20:00Z"), DurationSeconds = 14, Lat = 10.77698, Lng = 106.7008, IsCompleted = true, SessionId = "session-003", IsSynced = true },
-        new PlaybackLog { BoothId = "booth-03", TriggerType = "Manual", Language = "en", PlayedAtUtc = DateTime.Parse("2026-04-08T08:35:00Z"), DurationSeconds = 9, Lat = 10.77716, Lng = 106.7008, IsCompleted = true, SessionId = "session-004", IsSynced = true },
-        new PlaybackLog { BoothId = "booth-04", TriggerType = "QR", Language = "vi", PlayedAtUtc = DateTime.Parse("2026-04-08T09:00:00Z"), DurationSeconds = 11, Lat = 10.77734, Lng = 106.7008, IsCompleted = true, SessionId = "session-005", IsSynced = true },
-        new PlaybackLog { BoothId = "booth-05", TriggerType = "GPS", Language = "vi", PlayedAtUtc = DateTime.Parse("2026-04-08T09:10:00Z"), DurationSeconds = 13, Lat = 10.77752, Lng = 106.7008, IsCompleted = true, SessionId = "session-006", IsSynced = true },
-        new PlaybackLog { BoothId = "booth-06", TriggerType = "QR", Language = "vi", PlayedAtUtc = DateTime.Parse("2026-04-08T09:30:00Z"), DurationSeconds = 12, Lat = 10.7768, Lng = 106.70102, IsCompleted = true, SessionId = "session-007", IsSynced = true },
-        new PlaybackLog { BoothId = "booth-07", TriggerType = "GPS", Language = "vi", PlayedAtUtc = DateTime.Parse("2026-04-08T10:00:00Z"), DurationSeconds = 15, Lat = 10.77698, Lng = 106.70102, IsCompleted = true, SessionId = "session-008", IsSynced = true },
-        new PlaybackLog { BoothId = "booth-08", TriggerType = "QR", Language = "zh", PlayedAtUtc = DateTime.Parse("2026-04-08T10:20:00Z"), DurationSeconds = 8, Lat = 10.77716, Lng = 106.70102, IsCompleted = true, SessionId = "session-009", IsSynced = true },
-        new PlaybackLog { BoothId = "booth-09", TriggerType = "Manual", Language = "en", PlayedAtUtc = DateTime.Parse("2026-04-08T10:40:00Z"), DurationSeconds = 17, Lat = 10.77734, Lng = 106.70102, IsCompleted = true, SessionId = "session-010", IsSynced = true },
-        new PlaybackLog { BoothId = "booth-10", TriggerType = "QR", Language = "vi", PlayedAtUtc = DateTime.Parse("2026-04-08T11:00:00Z"), DurationSeconds = 7, Lat = 10.77752, Lng = 106.70102, IsCompleted = true, SessionId = "session-011", IsSynced = true },
-        new PlaybackLog { BoothId = "booth-01", TriggerType = "QR", Language = "fr", PlayedAtUtc = DateTime.Parse("2026-04-08T11:10:00Z"), DurationSeconds = 9, Lat = 10.7768, Lng = 106.7008, IsCompleted = true, SessionId = "session-012", IsSynced = true },
-        new PlaybackLog { BoothId = "booth-02", TriggerType = "GPS", Language = "es", PlayedAtUtc = DateTime.Parse("2026-04-08T11:20:00Z"), DurationSeconds = 10, Lat = 10.77698, Lng = 106.7008, IsCompleted = true, SessionId = "session-013", IsSynced = true },
-        new PlaybackLog { BoothId = "booth-03", TriggerType = "QR", Language = "it", PlayedAtUtc = DateTime.Parse("2026-04-08T11:30:00Z"), DurationSeconds = 11, Lat = 10.77716, Lng = 106.7008, IsCompleted = true, SessionId = "session-014", IsSynced = true },
-        new PlaybackLog { BoothId = "booth-04", TriggerType = "QR", Language = "ru", PlayedAtUtc = DateTime.Parse("2026-04-08T11:40:00Z"), DurationSeconds = 12, Lat = 10.77734, Lng = 106.7008, IsCompleted = true, SessionId = "session-015", IsSynced = true }
-    });
+            {
+                new PlaybackLog { BoothId = "booth-01", TriggerType = "QR", Language = "vi", PlayedAtUtc = DateTime.Parse("2026-04-08T08:00:00Z"), DurationSeconds = 12, Lat = 10.7768, Lng = 106.7008, IsCompleted = true, SessionId = "session-001", IsSynced = true },
+                new PlaybackLog { BoothId = "booth-02", TriggerType = "GPS", Language = "en", PlayedAtUtc = DateTime.Parse("2026-04-08T08:10:00Z"), DurationSeconds = 10, Lat = 10.77698, Lng = 106.7008, IsCompleted = true, SessionId = "session-002", IsSynced = true },
+                new PlaybackLog { BoothId = "booth-03", TriggerType = "QR", Language = "ja", PlayedAtUtc = DateTime.Parse("2026-04-08T08:20:00Z"), DurationSeconds = 14, Lat = 10.77716, Lng = 106.7008, IsCompleted = true, SessionId = "session-003", IsSynced = true },
+                new PlaybackLog { BoothId = "booth-04", TriggerType = "Manual", Language = "ko", PlayedAtUtc = DateTime.Parse("2026-04-08T08:35:00Z"), DurationSeconds = 9, Lat = 10.77734, Lng = 106.7008, IsCompleted = true, SessionId = "session-004", IsSynced = true },
+                new PlaybackLog { BoothId = "booth-05", TriggerType = "QR", Language = "zh", PlayedAtUtc = DateTime.Parse("2026-04-08T09:00:00Z"), DurationSeconds = 11, Lat = 10.77752, Lng = 106.7008, IsCompleted = true, SessionId = "session-005", IsSynced = true }
+            });
+
             await db.SaveChangesAsync();
         }
     }

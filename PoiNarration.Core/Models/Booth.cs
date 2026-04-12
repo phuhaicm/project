@@ -45,4 +45,5 @@ public class Booth
     public string? AudioUrlEn { get; set; }
 
     public bool IsActive { get; set; } = true;
+    public string? QrCodeUrl { get; set; }
 }

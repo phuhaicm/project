@@ -1,63 +1,26 @@
-﻿<?xml version="1.0" encoding="utf-8" ?>
+<?xml version="1.0" encoding="utf-8" ?>
 <ContentPage
     x:Class="PoiNarration.Mobile.Views.BoothListPage"
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:model="clr-namespace:PoiNarration.Mobile.Models"
-    x:Name="ThisPage"
-    Title="{DynamicResource Ui_PageTitle}"
-    BackgroundColor="#0B0B10">
+    Title="Danh sách trạm"
+    BackgroundColor="{StaticResource PageBg}">
 
     <Grid RowDefinitions="Auto,Auto,Auto,Auto,*">
-
-        <Border Grid.Row="0"
-                Margin="16,16,16,8"
-                Padding="16"
-                StrokeThickness="0"
-                BackgroundColor="#161622"
-                StrokeShape="RoundRectangle 20">
-            <Grid ColumnDefinitions="*,Auto">
+        <Border Grid.Row="0" Margin="16,16,16,8" Padding="18" BackgroundColor="{StaticResource SurfaceRaised}" StrokeShape="RoundRectangle 24">
+            <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
                 <VerticalStackLayout Spacing="4">
-                    <Label Text="PoiNarration"
-                           FontSize="24"
-                           FontAttributes="Bold"
-                           TextColor="White" />
-
-                    <Label x:Name="SyncStatusLabel"
-                           Text="{DynamicResource Ui_SyncReady}"
-                           FontSize="12"
-                           TextColor="#B8B8C7" />
+                    <Label Text="PoiNarration" FontSize="26" FontAttributes="Bold" />
+                    <Label x:Name="SyncStatusLabel" Text="{DynamicResource Ui_SyncReady}" FontSize="12" TextColor="{StaticResource TextMuted}" />
                 </VerticalStackLayout>
-
-                <Button Grid.Column="1"
-                        Text="{DynamicResource Ui_Sync}"
-                        Clicked="OnSyncClicked"
-                        BackgroundColor="#6D5DF6"
-                        TextColor="White"
-                        CornerRadius="14"
-                        Padding="16,10"
-                        HeightRequest="44" />
+                <Button Grid.Column="1" Text="{DynamicResource Ui_Sync}" Clicked="OnSyncClicked" WidthRequest="110" BackgroundColor="{StaticResource Primary}" />
             </Grid>
         </Border>
 
-        <Grid Grid.Row="1"
-              Margin="16,0,16,8"
-              ColumnDefinitions="*,140"
-              ColumnSpacing="8">
-            <SearchBar x:Name="BoothSearchBar"
-                       Placeholder="{DynamicResource Ui_SearchPlaceholder}"
-                       SearchCommand="{x:Null}"
-                       TextChanged="OnSearchTextChanged"
-                       BackgroundColor="#161622"
-                       TextColor="White"
-                       PlaceholderColor="#B8B8C7" />
-
-            <Picker x:Name="LanguagePicker"
-                    Grid.Column="1"
-                    Title="{DynamicResource Ui_LangTitle}"
-                    SelectedIndexChanged="OnLanguageChanged"
-                    BackgroundColor="#161622"
-                    TextColor="White">
+        <Grid Grid.Row="1" Margin="16,0,16,8" ColumnDefinitions="*,120" ColumnSpacing="10">
+            <SearchBar x:Name="BoothSearchBar" Placeholder="{DynamicResource Ui_SearchPlaceholder}" TextChanged="OnSearchTextChanged" />
+            <Picker x:Name="LanguagePicker" Grid.Column="1" SelectedIndexChanged="OnLanguageChanged">
                 <Picker.ItemsSource>
                     <x:Array Type="{x:Type x:String}">
                         <x:String>vi</x:String>
@@ -74,145 +37,49 @@
             </Picker>
         </Grid>
 
-        <Grid Grid.Row="2"
-              Margin="16,0,16,8"
-              ColumnDefinitions="*,*,*"
-              ColumnSpacing="8">
-            <Button Text="{DynamicResource Ui_ScanQR}"
-                    Clicked="OnScanQrClicked"
-                    BackgroundColor="#6D5DF6"
-                    TextColor="White"
-                    CornerRadius="16"
-                    HeightRequest="46" />
-
-            <Button Grid.Column="1"
-                    Text="{DynamicResource Ui_GpsMode}"
-                    Clicked="OnGpsModeClicked"
-                    BackgroundColor="#2A2A38"
-                    TextColor="White"
-                    CornerRadius="16"
-                    HeightRequest="46" />
-
-            <Button Grid.Column="2"
-                    Text="{DynamicResource Ui_Map}"
-                    Clicked="OnMapClicked"
-                    BackgroundColor="#2A2A38"
-                    TextColor="White"
-                    CornerRadius="16"
-                    HeightRequest="46" />
+        <Grid Grid.Row="2" Margin="16,0,16,8" ColumnDefinitions="*,*,*" ColumnSpacing="8">
+            <Button Text="{DynamicResource Ui_ScanQR}" Clicked="OnScanQrClicked" />
+            <Button Grid.Column="1" Text="{DynamicResource Ui_GpsMode}" Clicked="OnGpsModeClicked" BackgroundColor="{StaticResource SurfaceSoft}" />
+            <Button Grid.Column="2" Text="{DynamicResource Ui_Map}" Clicked="OnMapClicked" BackgroundColor="{StaticResource SurfaceSoft}" />
         </Grid>
 
-        <Grid Grid.Row="3"
-              Margin="16,0,16,8"
-              ColumnDefinitions="*,*"
-              ColumnSpacing="8">
-            <Border Padding="12"
-                    StrokeThickness="0"
-                    BackgroundColor="#161622"
-                    StrokeShape="RoundRectangle 18">
+        <Grid Grid.Row="3" Margin="16,0,16,8" ColumnDefinitions="*,*" ColumnSpacing="10">
+            <Border Padding="14" BackgroundColor="{StaticResource SurfaceRaised}" StrokeShape="RoundRectangle 20">
                 <VerticalStackLayout>
-                    <Label Text="{DynamicResource Ui_TotalBooth}"
-                           FontSize="12"
-                           TextColor="#B8B8C7" />
-                    <Label x:Name="TotalBoothsLabel"
-                           Text="0"
-                           FontSize="24"
-                           FontAttributes="Bold"
-                           TextColor="White" />
+                    <Label Text="{DynamicResource Ui_TotalBooth}" FontSize="12" TextColor="{StaticResource TextMuted}" />
+                    <Label x:Name="TotalBoothsLabel" Text="0" FontSize="26" FontAttributes="Bold" />
                 </VerticalStackLayout>
             </Border>
-
-            <Border Grid.Column="1"
-                    Padding="12"
-                    StrokeThickness="0"
-                    BackgroundColor="#161622"
-                    StrokeShape="RoundRectangle 18">
+            <Border Grid.Column="1" Padding="14" BackgroundColor="{StaticResource SurfaceRaised}" StrokeShape="RoundRectangle 20">
                 <VerticalStackLayout>
-                    <Label Text="{DynamicResource Ui_CurrentLang}"
-                           FontSize="12"
-                           TextColor="#B8B8C7" />
-                    <Label x:Name="CurrentLanguageLabel"
-                           Text="vi"
-                           FontSize="24"
-                           FontAttributes="Bold"
-                           TextColor="White" />
+                    <Label Text="{DynamicResource Ui_CurrentLang}" FontSize="12" TextColor="{StaticResource TextMuted}" />
+                    <Label x:Name="CurrentLanguageLabel" Text="vi" FontSize="26" FontAttributes="Bold" />
                 </VerticalStackLayout>
             </Border>
         </Grid>
 
-        <CollectionView Grid.Row="4"
-                        x:Name="BoothsCollectionView"
-                        Margin="16,0,16,16"
-                        SelectionMode="None">
+        <CollectionView Grid.Row="4" x:Name="BoothsCollectionView" Margin="16,0,16,16" SelectionMode="None">
             <CollectionView.ItemTemplate>
                 <DataTemplate x:DataType="model:BoothCardVm">
-                    <Border Margin="0,8,0,0"
-                            Padding="12"
-                            StrokeThickness="0"
-                            BackgroundColor="#141421"
-                            StrokeShape="RoundRectangle 20">
-                        <Grid ColumnDefinitions="96,*" ColumnSpacing="12">
-
-                            <Border Grid.Column="0"
-                                    BackgroundColor="#232334"
-                                    StrokeThickness="0"
-                                    StrokeShape="RoundRectangle 16">
-                                <Image Source="{Binding ImageUrl}"
-                                       Aspect="AspectFill"
-                                       HeightRequest="96"
-                                       WidthRequest="96" />
+                    <Border Margin="0,0,0,12" Padding="14" BackgroundColor="{StaticResource Surface}" StrokeShape="RoundRectangle 24">
+                        <Grid ColumnDefinitions="100,*" ColumnSpacing="14">
+                            <Border Grid.Column="0" BackgroundColor="{StaticResource SurfaceSoft}" StrokeShape="RoundRectangle 18">
+                                <Image Source="{Binding ImageUrl}" Aspect="AspectFill" HeightRequest="100" WidthRequest="100" />
                             </Border>
-
                             <VerticalStackLayout Grid.Column="1" Spacing="8">
-                                <Label Text="{Binding Title}"
-                                       FontSize="20"
-                                       FontAttributes="Bold"
-                                       TextColor="White"
-                                       LineBreakMode="TailTruncation" />
-
-                                <Label Text="{Binding Subtitle}"
-                                       FontSize="14"
-                                       TextColor="#B8B8C7"
-                                       MaxLines="2"
-                                       LineBreakMode="TailTruncation" />
-
+                                <Label Text="{Binding Title}" FontSize="20" FontAttributes="Bold" />
+                                <Label Text="{Binding Subtitle}" FontSize="14" TextColor="{StaticResource TextMuted}" MaxLines="2" />
                                 <HorizontalStackLayout Spacing="8">
-                                    <Border BackgroundColor="#1E1E2D"
-                                            StrokeThickness="0"
-                                            Padding="10,4"
-                                            StrokeShape="RoundRectangle 10">
-                                        <Label Text="{Binding RadiusText}"
-                                               FontSize="12"
-                                               TextColor="#B8B8C7" />
+                                    <Border BackgroundColor="{StaticResource SurfaceSoft}" Padding="10,5" StrokeShape="RoundRectangle 12">
+                                        <Label Text="{Binding RadiusText}" FontSize="12" TextColor="{StaticResource TextMuted}" />
                                     </Border>
-
-                                    <Border BackgroundColor="#1E1E2D"
-                                            StrokeThickness="0"
-                                            Padding="10,4"
-                                            StrokeShape="RoundRectangle 10">
-                                        <Label Text="{Binding PriorityText}"
-                                               FontSize="12"
-                                               TextColor="#B8B8C7" />
+                                    <Border BackgroundColor="{StaticResource SurfaceSoft}" Padding="10,5" StrokeShape="RoundRectangle 12">
+                                        <Label Text="{Binding PriorityText}" FontSize="12" TextColor="{StaticResource TextMuted}" />
                                     </Border>
                                 </HorizontalStackLayout>
-
-                                <Grid ColumnDefinitions="*,*" ColumnSpacing="12" Margin="0,8,0,0">
-                                    <Button Text="{Binding DetailText}"
-                                            Clicked="OnOpenBoothClicked"
-                                            CommandParameter="{Binding Id}"
-                                            BackgroundColor="#6D5DF6"
-                                            TextColor="White"
-                                            CornerRadius="16"
-                                            HeightRequest="44" />
-
-                                    <Button Grid.Column="1"
-                                            Text="{Binding PreviewText}"
-                                            Clicked="OnPreviewBoothClicked"
-                                            CommandParameter="{Binding Id}"
-                                            BackgroundColor="#232334"
-                                            TextColor="White"
-                                            CornerRadius="16"
-                                            HeightRequest="44" />
+                                <Grid ColumnDefinitions="*,*" ColumnSpacing="10">
+                                    <Button Text="{Binding DetailText}" Clicked="OnOpenBoothClicked" CommandParameter="{Binding Id}" />
+                                    <Button Grid.Column="1" Text="{Binding PreviewText}" Clicked="OnPreviewBoothClicked" CommandParameter="{Binding Id}" BackgroundColor="{StaticResource SurfaceSoft}" />
                                 </Grid>
                             </VerticalStackLayout>
                         </Grid>

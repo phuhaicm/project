@@ -6,9 +6,9 @@
     Title="Zones">
 
     <VerticalStackLayout Padding="16" Spacing="12">
-        <Label Text="Chọn khu vực" FontSize="22"/>
+        <Label Text="{DynamicResource Ui_ChooseZone}" FontSize="22"/>
 
-        <Button Text="Zone A" Clicked="OnZoneAClicked"/>
-        <Button Text="Zone B" Clicked="OnZoneBClicked"/>
+        <Button Text="{DynamicResource Ui_ZoneA}" Clicked="OnZoneAClicked"/>
+        <Button Text="{DynamicResource Ui_ZoneB}" Clicked="OnZoneBClicked"/>
     </VerticalStackLayout>
 </ContentPage>

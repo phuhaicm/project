@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using PoiNarration.Api.Data;
 using PoiNarration.Api.DTOs.Menu;
 using PoiNarration.Api.Services;
-using PoiNarration.Core.Models; // Sử dụng duy nhất nguồn Core
+using PoiNarration.Core.Models;
 
 namespace PoiNarration.Api.Controllers;
 
@@ -14,14 +14,12 @@ public class BoothMenuController : ControllerBase
     private readonly AppDbContext _db;
     private readonly ITranslationService _translationService;
 
-    // Hợp nhất thành một Constructor duy nhất
     public BoothMenuController(AppDbContext db, ITranslationService translationService)
     {
         _db = db;
         _translationService = translationService;
     }
 
-    // 1. Lấy danh sách món ăn
     [HttpGet("{boothId}")]
     public async Task<ActionResult<List<BoothMenuItem>>> GetByBooth(string boothId)
     {
@@ -33,7 +31,6 @@ public class BoothMenuController : ControllerBase
         return Ok(items);
     }
 
-    // 2. Thêm món mới
     [HttpPost("{boothId}")]
     public async Task<ActionResult<BoothMenuItem>> Create(string boothId, [FromBody] UpsertMenuItemRequest request)
     {
@@ -41,17 +38,20 @@ public class BoothMenuController : ControllerBase
         if (!boothExists)
             return NotFound("Không tìm thấy mã gian hàng này trong hệ thống.");
 
+        if (string.IsNullOrWhiteSpace(request.Name))
+            return BadRequest("Tên món ăn là bắt buộc.");
+
         var item = new BoothMenuItem
         {
             Id = Guid.NewGuid().ToString(),
             BoothId = boothId,
             Name = request.Name,
-            NameEn = request.NameEn,
+            NameEn = "",
             Description = request.Description,
-            DescriptionEn = request.DescriptionEn,
+            DescriptionEn = "",
             Price = request.Price,
-            PriceUsd = request.PriceUsd,
-            ImageUrl = request.ImageUrl,
+            PriceUsd = 0,
+            ImageUrl = request.ImageUrl ?? "",
             UpdatedAtUtc = DateTime.UtcNow,
             IsDeleted = false
         };
@@ -59,16 +59,13 @@ public class BoothMenuController : ControllerBase
         _db.BoothMenuItems.Add(item);
         await _db.SaveChangesAsync();
 
-        // --- THÊM THEO YÊU CẦU ---
         var translations = await _translationService.BuildMenuTranslationsAsync(item);
         _db.BoothMenuItemTranslations.AddRange(translations);
-
         await _db.SaveChangesAsync();
+
         return Ok(item);
-        // ------------------------
     }
 
-    // 3. Cập nhật món
     [HttpPut("{boothId}/items/{menuId}")]
     public async Task<ActionResult<BoothMenuItem>> Update(string boothId, string menuId, [FromBody] UpsertMenuItemRequest request)
     {
@@ -79,31 +76,32 @@ public class BoothMenuController : ControllerBase
             return NotFound("Không tìm thấy món ăn cần sửa.");
 
         item.Name = request.Name;
-        item.NameEn = request.NameEn;
+        item.NameEn = "";
         item.Description = request.Description;
-        item.DescriptionEn = request.DescriptionEn;
+        item.DescriptionEn = "";
         item.Price = request.Price;
-        item.PriceUsd = request.PriceUsd;
-        item.ImageUrl = request.ImageUrl;
+        item.PriceUsd = 0;
+
+        // Giữ ảnh cũ nếu không gửi ảnh mới
+        if (!string.IsNullOrWhiteSpace(request.ImageUrl))
+            item.ImageUrl = request.ImageUrl;
+
         item.UpdatedAtUtc = DateTime.UtcNow;
 
         await _db.SaveChangesAsync();
 
-        // --- THÊM THEO YÊU CẦU ---
+        // Rebuild translations
         var oldTranslations = _db.BoothMenuItemTranslations.Where(x => x.MenuItemId == item.Id);
         _db.BoothMenuItemTranslations.RemoveRange(oldTranslations);
-
         await _db.SaveChangesAsync();
 
         var newTranslations = await _translationService.BuildMenuTranslationsAsync(item);
         _db.BoothMenuItemTranslations.AddRange(newTranslations);
-
         await _db.SaveChangesAsync();
+
         return Ok(item);
-        // ------------------------
     }
 
-    // 4. Xóa món (Soft Delete)
     [HttpDelete("{boothId}/items/{menuId}")]
     public async Task<IActionResult> Delete(string boothId, string menuId)
     {
@@ -117,7 +115,6 @@ public class BoothMenuController : ControllerBase
         item.UpdatedAtUtc = DateTime.UtcNow;
 
         await _db.SaveChangesAsync();
-
         return NoContent();
     }
 }

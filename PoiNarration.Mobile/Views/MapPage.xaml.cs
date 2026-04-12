@@ -54,8 +54,9 @@ public partial class MapPage : ContentPage
             MainThread.BeginInvokeOnMainThread(() =>
             {
                 FoodMap.IsShowingUser = true;   // thêm dòng này
-                BoothCountLabel.Text = $"Số booth: {_booths.Count}";
-                GpsStatusLabel.Text = "GPS: Đang hoạt động";
+                BoothCountLabel.Text = $"{LanguageService.T("Ui_BoothCount")}: {_booths.Count}";
+                GpsStatusLabel.Text = LanguageService.T("Ui_GpsActive");
+
                 LoadBoothPins();
             });
 
@@ -105,7 +106,8 @@ public partial class MapPage : ContentPage
                 if (e.CurrentLocation != null)
                 {
                     LocationLabel.Text =
-                        $"Vị trí hiện tại: {e.CurrentLocation.Latitude:F6}, {e.CurrentLocation.Longitude:F6}";
+     $"{LanguageService.T("Ui_CurrentLocation")}: {e.CurrentLocation.Latitude:F6}, {e.CurrentLocation.Longitude:F6}";
+
 
                     FoodMap.IsShowingUser = true;
 
@@ -138,41 +140,44 @@ public partial class MapPage : ContentPage
                         _lastMapMoveUtc = DateTime.UtcNow;
                     }
                 }
- 
 
-                BoothCountLabel.Text = $"Số booth: {_booths.Count}";
+
+                BoothCountLabel.Text = $"{LanguageService.T("Ui_BoothCount")}: {_booths.Count}";
+
 
                 if (e.NearestBooth != null)
                 {
-                    NearestBoothName.Text = e.NearestBooth.NameVi;
-                    NearestBoothDistance.Text = $"Khoảng cách: {e.NearestDistanceMeters:0} m";
+
+                    NearestBoothName.Text = LocalizeBoothName(e.NearestBooth);
+                    NearestBoothDistance.Text = $"{LanguageService.T("Ui_Distance")}: {e.NearestDistanceMeters:0} m";
+
                     OpenNearestButton.IsEnabled = true;
 
                     if (NearestBoothLabel != null)
-                        NearestBoothLabel.Text = $"Gian gần nhất: {e.NearestBooth.NameVi} ({e.NearestDistanceMeters:0}m)";
+                        NearestBoothLabel.Text = $"{LanguageService.T("Ui_NearestBoothHeader")}: {LocalizeBoothName(e.NearestBooth)} ({e.NearestDistanceMeters:0}m)";
 
                     if (!string.IsNullOrWhiteSpace(e.ActiveBoothId) &&
                         e.ActiveBoothId == e.NearestBooth.Id)
                     {
-                        GpsStatusLabel.Text = $"Đã vào vùng: {e.NearestBooth.NameVi}";
+                        GpsStatusLabel.Text = $"{LanguageService.T("Ui_EnteredZone")}: {LocalizeBoothName(e.NearestBooth)}";
                         GpsStatusLabel.TextColor = Color.Parse("#6D5DF6");
                     }
                     else
                     {
-                        GpsStatusLabel.Text = "GPS: Đang kiểm tra...";
+                        GpsStatusLabel.Text = $"{LanguageService.T("Ui_GpsChecking")}";
                         GpsStatusLabel.TextColor = Colors.White;
                     }
                 }
                 else
                 {
-                    NearestBoothName.Text = "Chưa xác định";
+                    NearestBoothName.Text = LanguageService.T("Ui_NearestUnknown");
                     NearestBoothDistance.Text = "";
                     OpenNearestButton.IsEnabled = false;
 
                     if (NearestBoothLabel != null)
-                        NearestBoothLabel.Text = "Chưa tìm thấy booth gần nhất";
+                        NearestBoothLabel.Text = LanguageService.T("Ui_NearestBoothNotFound");
 
-                    GpsStatusLabel.Text = "GPS: Đang kiểm tra...";
+                    GpsStatusLabel.Text = LanguageService.T("Ui_GpsChecking");
                     GpsStatusLabel.TextColor = Colors.White;
                 }
             });
@@ -193,17 +198,17 @@ public partial class MapPage : ContentPage
                 var ok = await _autoBoothNavigatorService.StartAsync();
                 if (!ok)
                 {
-                    await DisplayAlertAsync("GPS Mode", "Không bật được GPS hoặc chưa cấp quyền vị trí.", "OK");
+                    await DisplayAlertAsync("GPS Mode", LanguageService.T("Ui_GpsNotEnabledOrPermissionDenied"), "OK");
                     return;
                 }
 
                 _autoBoothNavigatorService.SetAutoNarrationEnabled(true);
 
                 _gpsModeEnabled = true;
-                GpsStatusLabel.Text = "GPS: ĐANG BẬT AUTO";
+                GpsStatusLabel.Text = $"{LanguageService.T("Ui_GpsMode")}: {LanguageService.T("Ui_GpsAutoEnabled")}";
                 GpsStatusLabel.TextColor = Color.Parse("#6D5DF6");
 
-                await DisplayAlertAsync("GPS Mode", "Đã bật chế độ tự động thuyết minh khi đến gần gian hàng.", "OK");
+                await DisplayAlertAsync(LanguageService.T("Ui_GpsMode"), LanguageService.T("Ui_GpsAutoEnabledMessage"), "OK");
             }
             else
             {
@@ -211,18 +216,18 @@ public partial class MapPage : ContentPage
                 _autoBoothNavigatorService.SetAutoNarrationEnabled(false);
 
                 _gpsModeEnabled = false;
-                GpsStatusLabel.Text = "GPS: CHỈ THEO DÕI";
+                GpsStatusLabel.Text = $"{LanguageService.T("Ui_GpsMode")}: {LanguageService.T("Ui_GpsManualEnabled")}";
                 GpsStatusLabel.TextColor = Colors.White;
 
                 // Giữ vị trí user trên bản đồ
                 FoodMap.IsShowingUser = true;
 
-                await DisplayAlertAsync("GPS Mode", "Đã tắt chế độ tự động. Bản đồ vẫn tiếp tục hiển thị vị trí của bạn.", "OK");
+                await DisplayAlertAsync(LanguageService.T("Ui_GpsMode"), LanguageService.T("Ui_GpsManualEnabledMessage"), "OK");
             }
         }
         catch (Exception ex)
         {
-            await DisplayAlertAsync("Lỗi GPS Mode", ex.ToString(), "OK");
+            await DisplayAlertAsync(LanguageService.T("Ui_GpsModeError"), ex.ToString(), "OK");
         }
     }
 
@@ -246,5 +251,11 @@ public partial class MapPage : ContentPage
     private async void OnRefreshLocationClicked(object sender, EventArgs e)
     {
         await _autoBoothNavigatorService.ForceRefreshAsync();
+    }
+    private string LocalizeBoothName(Booth booth)
+    {
+        return LanguageService.IsVi
+            ? booth.NameVi
+            : (!string.IsNullOrWhiteSpace(booth.NameEn) ? booth.NameEn : booth.NameVi);
     }
 }
