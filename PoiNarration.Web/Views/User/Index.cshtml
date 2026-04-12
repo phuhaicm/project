@@ -1,0 +1,106 @@
+﻿@model List<PoiNarration.Api.Models.Entities.AppUser>
+@{
+    ViewData["Title"] = "Quản lý tài khoản";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <div>
+        <h3 class="mb-0 text-primary fw-bold">@ViewData["Title"]</h3>
+        <div class="text-muted small">Danh sách quản trị viên và chủ gian hàng hệ thống</div>
+    </div>
+
+    <a asp-action="Create" class="btn btn-primary shadow-sm">
+        <i class="bi bi-person-plus-fill me-1"></i> Thêm người dùng
+    </a>
+</div>
+
+<div class="card card-shadow border-0 shadow-sm">
+    @* Dùng card-shadow để đồng bộ với Booth *@
+    <div class="card-body">
+        <div class="row g-2 mb-3">
+            <div class="col-md-5">
+                <div class="input-group">
+                    <span class="input-group-text bg-light border-end-0"><i class="bi bi-search"></i></span>
+                    <input id="userSearch" class="form-control border-start-0" placeholder="Tìm tên hoặc tài khoản..." />
+                </div>
+            </div>
+            <div class="col-md-7 text-md-end">
+                <span class="badge bg-primary-subtle text-primary border border-primary px-3 py-2">
+                    <i class="bi bi-people-fill me-1"></i> Tổng số: @Model.Count
+                </span>
+            </div>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table align-middle table-hover" id="userTable">
+                <thead class="table-light">
+                    <tr>
+                        <th style="width: 60px;" class="text-center">STT</th>
+                        <th>Thông tin tài khoản</th>
+                        <th>Họ tên</th>
+                        <th>Vai trò</th>
+                        <th class="text-end">Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @for (int i = 0; i < Model.Count; i++)
+                    {
+                        var u = Model[i];
+                        <tr>
+                            <td class="text-center text-muted fw-bold">@(i + 1)</td>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <div class="avatar-sm-text bg-light rounded-circle me-2 d-flex align-items-center justify-content-center" style="width:32px; height:32px;">
+                                        <i class="bi bi-person text-secondary"></i>
+                                    </div>
+                                    <span class="fw-bold text-dark">@u.Username</span>
+                                </div>
+                            </td>
+                            <td>@u.FullName</td>
+                            <td>
+                                @if (u.Role == "Admin")
+                                {
+                                    <span class="badge bg-danger-subtle text-danger border border-danger">
+                                        <i class="bi bi-shield-lock me-1"></i>Admin
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-info-subtle text-info border border-info">
+                                        <i class="bi bi-shop me-1"></i>Owner
+                                    </span>
+                                }
+                            </td>
+                            <td class="text-end">
+                                <div class="d-flex justify-content-end gap-1">
+                                    <a class="btn btn-outline-primary btn-sm" asp-action="Edit" asp-route-id="@u.Id" title="Chỉnh sửa">
+                                        <i class="bi bi-pencil"></i>
+                                    </a>
+                                    <button class="btn btn-outline-danger btn-sm" onclick="alert('Tính năng xóa đang bảo trì!')" title="Xóa tài khoản">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Bộ lọc tìm kiếm nhanh - Tối ưu giống file Booth
+        document.getElementById('userSearch').addEventListener('input', function() {
+            let val = this.value.toLowerCase();
+            let rows = document.querySelectorAll('#userTable tbody tr');
+            rows.forEach(row => {
+                // Tìm kiếm trong cột 2 (Tài khoản) và cột 3 (Họ tên)
+                let text = row.querySelector('td:nth-child(2)').innerText.toLowerCase() +
+                           row.querySelector('td:nth-child(3)').innerText.toLowerCase();
+                row.style.display = text.includes(val) ? '' : 'none';
+            });
+        });
+    </script>
+}

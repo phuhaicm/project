@@ -1,0 +1,118 @@
+﻿@* Giả sử bạn dùng chung ViewModel hoặc có BoothEditVm tương tự *@
+@model PoiNarration.Web.ViewModels.BoothCreateVm
+
+@{
+    ViewData["Title"] = "Cập nhật booth";
+}
+
+<div class="row justify-content-center">
+    <div class="col-12 col-lg-8">
+        <div class="card card-shadow border-0 shadow-sm mb-5">
+            <div class="card-body p-4">
+                <h3 class="fw-bold mb-4 text-primary">Cập nhật gian hàng</h3>
+
+                @* Sửa action thành Edit *@
+                <form asp-action="Edit" method="post" enctype="multipart/form-data">
+                    <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                    @* DÒNG NÀY CỰC KỲ QUAN TRỌNG: Ẩn ID đi để gửi về Server *@
+                    <input type="hidden" asp-for="Id" />
+
+                    <div class="row g-3">
+                        @* Thông tin cơ bản *@
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Zone (Khu vực)</label>
+                            <select asp-for="ZoneId" class="form-select">
+                                <option value="">-- Chọn khu vực --</option>
+                                <option value="zone-a">Zone A</option>
+                                <option value="zone-b">Zone B</option>
+                            </select>
+                            <span asp-validation-for="ZoneId" class="text-danger small"></span>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Priority (Độ ưu tiên)</label>
+                            <input asp-for="Priority" class="form-control" type="number" placeholder="0" />
+                        </div>
+
+                        @* Upload Ảnh *@
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Ảnh đại diện Booth mới</label>
+    
+                            <input type="hidden" asp-for="ExistingImageUrl" />
+
+                            @if (!string.IsNullOrEmpty(Model.ExistingImageUrl))
+                            {
+                                <div class="mb-2">
+                                    <img src="@Model.ExistingImageUrl" alt="Ảnh hiện tại" style="height: 120px; object-fit: cover; border-radius: 8px; border: 1px solid #dee2e6;" />
+                                    <div class="text-muted small mt-1">Ảnh hiện tại</div>
+                                </div>
+                            }
+
+                            <input type="file" class="form-control" asp-for="ImageFile" accept="image/*" />
+                            <div class="form-text text-warning">Chỉ chọn file nếu bạn muốn đổi ảnh mới. Bỏ trống để giữ lại ảnh cũ.</div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Tên tiếng Việt</label>
+                            <input asp-for="NameVi" class="form-control" />
+                            <span asp-validation-for="NameVi" class="text-danger small"></span>
+                        </div>
+
+                        <div class="col-12">
+                            <label class="form-label fw-semibold">Mô tả tiếng Việt</label>
+                            <textarea asp-for="DescVi" class="form-control" rows="2"></textarea>
+                        </div>
+
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold">Vĩ độ (Lat)</label>
+                            <input asp-for="Lat" class="form-control" type="number" step="any" />
+                        </div>
+
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold">Kinh độ (Lng)</label>
+                            <input asp-for="Lng" class="form-control" type="number" step="any" />
+                        </div>
+
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold">Bán kính (Radius)</label>
+                            <input asp-for="RadiusMeters" class="form-control" type="number" />
+                        </div>
+                    </div>
+
+                    <hr class="my-4" />
+                    <div class="d-flex align-items-center mb-3">
+                        <i class="bi bi-translate fs-4 me-2 text-info"></i>
+                        <h5 class="mb-0">Dịch tự động đa ngôn ngữ</h5>
+                    </div>
+
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <label class="form-label fw-semibold">Kịch bản đọc tiếng Việt (TTS)</label>
+                            <textarea asp-for="TtsScriptVi" class="form-control" rows="3"></textarea>
+                        </div>
+
+                        <div class="col-12">
+                            <label class="form-label fw-semibold">Đường dẫn file Audio tiếng Việt (URL)</label>
+                            <input asp-for="AudioUrlVi" class="form-control" placeholder="https://..." />
+                        </div>
+                    </div>
+
+                    @* Nút bấm *@
+                    <div class="mt-4 d-flex gap-2">
+                        <button class="btn btn-primary btn-lg px-5" type="submit">
+                            <i class="bi bi-save me-1"></i> Lưu thay đổi
+                        </button>
+                        <a class="btn btn-outline-secondary btn-lg px-4" asp-action="Index">Hủy</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

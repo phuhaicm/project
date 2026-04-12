@@ -1,0 +1,65 @@
+﻿@model PoiNarration.Web.Models.UserCreateViewModel
+
+@{
+    ViewData["Title"] = "Thêm người dùng mới";
+}
+
+<div class="row justify-content-center">
+    <div class="col-12 col-md-8 col-lg-6">
+        @* Thu nhỏ hơn một chút vì User ít trường dữ liệu hơn Booth *@
+        <div class="card card-shadow border-0 shadow-sm mb-5">
+            <div class="card-body p-4">
+                <h3 class="fw-bold mb-4 text-primary">
+                    <i class="bi bi-person-plus-fill me-2"></i>Thêm người dùng mới
+                </h3>
+
+                <form asp-action="Create" method="post">
+                    <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                    <div class="row g-3">
+                        @* Thông tin tài khoản *@
+                        <div class="col-12">
+                            <label class="form-label fw-semibold">Tên đăng nhập (Username)</label>
+                            <input asp-for="Username" class="form-control" placeholder="vd: admin_01" />
+                            <span asp-validation-for="Username" class="text-danger small"></span>
+                        </div>
+
+                        <div class="col-12">
+                            <label class="form-label fw-semibold">Họ và tên</label>
+                            <input asp-for="FullName" class="form-control" placeholder="Nguyễn Văn A" />
+                            <span asp-validation-for="FullName" class="text-danger small"></span>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Mật khẩu</label>
+                            <input asp-for="Password" type="password" class="form-control" />
+                            <span asp-validation-for="Password" class="text-danger small"></span>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Vai trò (Role)</label>
+                            <select asp-for="Role" class="form-select">
+                                <option value="Admin">Quản trị viên (Admin)</option>
+                                <option value="Owner">Chủ gian hàng (Owner)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <hr class="my-4" />
+
+                    <div class="alert alert-warning small">
+                        <i class="bi bi-shield-lock me-1"></i> Lưu ý: Mật khẩu nên bao gồm chữ hoa, chữ thường và số để đảm bảo bảo mật.
+                    </div>
+
+                    @* Nút bấm đồng bộ với Booth *@
+                    <div class="mt-4 d-flex gap-2">
+                        <button class="btn btn-primary btn-lg px-5" type="submit">
+                            <i class="bi bi-check-circle me-1"></i> Tạo người dùng
+                        </button>
+                        <a class="btn btn-outline-secondary btn-lg px-4" asp-action="Index">Hủy</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

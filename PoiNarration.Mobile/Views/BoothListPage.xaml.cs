@@ -97,8 +97,7 @@ public partial class BoothListPage : ContentPage
                 ZoneText = booth.ZoneId,
                 PriorityText = $"{(LanguageService.IsVi ? "Ưu tiên" : "Priority")} {booth.Priority}",
                 RadiusText = $"{booth.RadiusMeters}m",
-                ImageUrl = _apiService.ResolveMediaUrl(booth.ImageUrl),
-
+                ImageUrl = string.IsNullOrEmpty(booth.ImageUrl) ? "default_image.png" : booth.ImageUrl,
                 IsActive = booth.IsActive,
                 DetailText = LanguageService.IsVi ? "Chi tiết" : "Details",
                 PreviewText = LanguageService.IsVi ? "Nghe thử" : "Preview"
