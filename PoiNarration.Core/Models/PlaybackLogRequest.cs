@@ -1,7 +1,8 @@
-﻿namespace PoiNarration.Core.Models; // Đổi namespace sang Core
+﻿namespace PoiNarration.Core.Models;
 
 public class PlaybackLogRequest
 {
+    public string? VisitorUserId { get; set; }   // THÊM MỚI
     public string BoothId { get; set; } = "";
     public string TriggerType { get; set; } = "Manual";
     public string Language { get; set; } = "vi";

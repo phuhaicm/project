@@ -15,6 +15,10 @@
             <x:String x:Key="Ui_Tab_Booths">Booths</x:String>
             <x:String x:Key="Ui_Tab_Map">Bản đồ</x:String>
             <x:String x:Key="Ui_Tab_Qr">QR</x:String>
+            <x:String x:Key="Ui_BoothCount_Zero">Số booth: 0</x:String>
+            <x:String x:Key="Ui_Empty"></x:String>
+            <x:String x:Key="Ui_MenuList">Menu / Sản phẩm</x:String>
+            <x:String x:Key="Ui_BoothDetailTitle">Chi tiết trạm</x:String>
 
             <x:String x:Key="Ui_Page_BoothList">Danh sách trạm</x:String>
             <x:String x:Key="Ui_Page_BoothDetail">Chi tiết trạm</x:String>

@@ -4,6 +4,8 @@ using PoiNarration.Mobile.Services;
 namespace PoiNarration.Mobile.Views;
 
 [QueryProperty(nameof(BoothId), "boothId")]
+[QueryProperty(nameof(OpenTrigger), "trigger")]
+
 public partial class BoothDetailPage : ContentPage
 {
     private readonly AppDatabase _db;
@@ -13,6 +15,9 @@ public partial class BoothDetailPage : ContentPage
     private int _loadVersion = 0;
 
     public string BoothId { get; set; } = "";
+    public string OpenTrigger { get; set; } = "ManualOpen";
+
+
     private Booth? _currentBooth;
 
     public BoothDetailPage(
@@ -96,6 +101,39 @@ public partial class BoothDetailPage : ContentPage
     {
         await Shell.Current.GoToAsync("..");
     }
+    private async Task SaveVisitLogAsync(string boothId, string triggerType)
+    {
+        var visitorId = Preferences.Get("visitor_id_server", "");
+        if (string.IsNullOrWhiteSpace(visitorId))
+            return;
+
+        var sessionId = Preferences.Get("session_id", Guid.NewGuid().ToString());
+
+        var visitLog = new BoothVisitLog
+        {
+            VisitorUserId = visitorId,
+            BoothId = boothId,
+            TriggerType = string.IsNullOrWhiteSpace(triggerType) ? "ManualOpen" : triggerType,
+            Language = LanguageService.CurrentLanguage,
+            VisitedAtUtc = DateTime.UtcNow,
+            SessionId = sessionId,
+            IsSynced = false
+        };
+
+        // lưu local
+        await _db.SaveBoothVisitLogAsync(visitLog);
+
+        // gửi ngay API
+        try
+        {
+            await _apiService.PostBoothVisitLogAsync(visitLog);
+            await _db.MarkBoothVisitLogSyncedAsync(visitLog.Id);
+        }
+        catch
+        {
+            // giữ local để retry sau
+        }
+    }
     private static string BuildPriceText(BoothMenuItem item, string lang)
     {
         return lang switch
@@ -127,6 +165,7 @@ public partial class BoothDetailPage : ContentPage
             return;
 
         _currentBooth = booth;
+        await SaveVisitLogAsync(booth.Id, OpenTrigger);
 
         var lang = LanguageService.CurrentLanguage;
         var translation = await _db.GetBoothTranslationAsync(booth.Id, lang)
@@ -237,6 +276,7 @@ public partial class BoothDetailPage : ContentPage
             _ => vnd
         };
     }
+
 
 }
 

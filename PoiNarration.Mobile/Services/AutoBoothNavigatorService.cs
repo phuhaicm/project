@@ -163,9 +163,15 @@ public class AutoBoothNavigatorService
             if (!shouldSpeak || triggeredBooth == null)
                 return;
 
-            BoothTriggered?.Invoke(this, triggeredBooth);
+            var finalBooth = triggeredBooth;
+            var shell = Shell.Current;
 
-            var currentPage = Shell.Current?.CurrentPage;
+            if (shell == null)
+                return;
+
+            BoothTriggered?.Invoke(this, finalBooth);
+
+            var currentPage = shell.CurrentPage;
             var shouldNavigate = currentPage is not Views.BoothDetailPage;
 
             if (shouldNavigate)
@@ -178,7 +184,10 @@ public class AutoBoothNavigatorService
                 {
                     await MainThread.InvokeOnMainThreadAsync(async () =>
                     {
-                        await Shell.Current.GoToAsync($"{nameof(Views.BoothDetailPage)}?boothId={triggeredBooth.Id}");
+                        if (Shell.Current != null)
+                        {
+                            await Shell.Current.GoToAsync($"{nameof(Views.BoothDetailPage)}?boothId={finalBooth.Id}&trigger=GPS");
+                        }
                     });
 
                     await Task.Delay(150);
@@ -189,7 +198,7 @@ public class AutoBoothNavigatorService
                 }
             }
 
-            await _narrationService.SpeakBoothAsync(triggeredBooth, "GPS", loc);
+            await _narrationService.SpeakBoothAsync(finalBooth, "GPS", loc);
         }
         catch (Exception ex)
         {

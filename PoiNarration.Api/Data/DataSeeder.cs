@@ -33,6 +33,54 @@ public static class DataSeeder
             db.AppUsers.AddRange(users);
             await db.SaveChangesAsync();
         }
+        if (!await db.VisitorUsers.AnyAsync())
+        {
+            var visitors = new List<VisitorUser>
+    {
+        new VisitorUser
+        {
+            Id = "visitor-001",
+            VisitorCode = "VIS-001",
+            DisplayName = "Khách VIS-001",
+            DeviceKey = "device-demo-001",
+            PreferredLanguage = "vi",
+            Platform = "Android",
+            AppVersion = "1.0.0",
+            CreatedAtUtc = DateTime.UtcNow.AddDays(-3),
+            LastActiveAtUtc = DateTime.UtcNow.AddMinutes(-30),
+            IsActive = true
+        },
+        new VisitorUser
+        {
+            Id = "visitor-002",
+            VisitorCode = "VIS-002",
+            DisplayName = "Khách VIS-002",
+            DeviceKey = "device-demo-002",
+            PreferredLanguage = "en",
+            Platform = "Android",
+            AppVersion = "1.0.0",
+            CreatedAtUtc = DateTime.UtcNow.AddDays(-2),
+            LastActiveAtUtc = DateTime.UtcNow.AddMinutes(-10),
+            IsActive = true
+        },
+        new VisitorUser
+        {
+            Id = "visitor-003",
+            VisitorCode = "VIS-003",
+            DisplayName = "Khách VIS-003",
+            DeviceKey = "device-demo-003",
+            PreferredLanguage = "ja",
+            Platform = "Android",
+            AppVersion = "1.0.0",
+            CreatedAtUtc = DateTime.UtcNow.AddDays(-1),
+            LastActiveAtUtc = DateTime.UtcNow.AddMinutes(-5),
+            IsActive = true
+        }
+    };
+
+            db.VisitorUsers.AddRange(visitors);
+            await db.SaveChangesAsync();
+        }
 
         if (!await db.Booths.AnyAsync())
         {
@@ -3619,17 +3667,98 @@ public static class DataSeeder
             db.BoothMenuItemTranslations.AddRange(itemTranslations);
             await db.SaveChangesAsync();
         }
+        if (!await db.BoothVisitLogs.AnyAsync())
+        {
+            db.BoothVisitLogs.AddRange(new List<BoothVisitLog>
+    {
+        new BoothVisitLog
+        {
+            VisitorUserId = "visitor-001",
+            BoothId = "booth-01",
+            TriggerType = "QR",
+            Language = "vi",
+            VisitedAtUtc = DateTime.Parse("2026-04-08T07:55:00Z"),
+            SessionId = "session-001",
+            Lat = 10.7768,
+            Lng = 106.7008,
+            IsSynced = true
+        },
+        new BoothVisitLog
+        {
+            VisitorUserId = "visitor-002",
+            BoothId = "booth-02",
+            TriggerType = "GPS",
+            Language = "en",
+            VisitedAtUtc = DateTime.Parse("2026-04-08T08:08:00Z"),
+            SessionId = "session-002",
+            Lat = 10.77698,
+            Lng = 106.7008,
+            IsSynced = true
+        },
+        new BoothVisitLog
+        {
+            VisitorUserId = "visitor-003",
+            BoothId = "booth-03",
+            TriggerType = "ManualOpen",
+            Language = "ja",
+            VisitedAtUtc = DateTime.Parse("2026-04-08T08:18:00Z"),
+            SessionId = "session-003",
+            Lat = 10.77716,
+            Lng = 106.7008,
+            IsSynced = true
+        }
+    });
+
+            await db.SaveChangesAsync();
+        }
 
         if (!await db.PlaybackLogs.AnyAsync())
         {
             db.PlaybackLogs.AddRange(new List<PlaybackLog>
-            {
-                new PlaybackLog { BoothId = "booth-01", TriggerType = "QR", Language = "vi", PlayedAtUtc = DateTime.Parse("2026-04-08T08:00:00Z"), DurationSeconds = 12, Lat = 10.7768, Lng = 106.7008, IsCompleted = true, SessionId = "session-001", IsSynced = true },
-                new PlaybackLog { BoothId = "booth-02", TriggerType = "GPS", Language = "en", PlayedAtUtc = DateTime.Parse("2026-04-08T08:10:00Z"), DurationSeconds = 10, Lat = 10.77698, Lng = 106.7008, IsCompleted = true, SessionId = "session-002", IsSynced = true },
-                new PlaybackLog { BoothId = "booth-03", TriggerType = "QR", Language = "ja", PlayedAtUtc = DateTime.Parse("2026-04-08T08:20:00Z"), DurationSeconds = 14, Lat = 10.77716, Lng = 106.7008, IsCompleted = true, SessionId = "session-003", IsSynced = true },
-                new PlaybackLog { BoothId = "booth-04", TriggerType = "Manual", Language = "ko", PlayedAtUtc = DateTime.Parse("2026-04-08T08:35:00Z"), DurationSeconds = 9, Lat = 10.77734, Lng = 106.7008, IsCompleted = true, SessionId = "session-004", IsSynced = true },
-                new PlaybackLog { BoothId = "booth-05", TriggerType = "QR", Language = "zh", PlayedAtUtc = DateTime.Parse("2026-04-08T09:00:00Z"), DurationSeconds = 11, Lat = 10.77752, Lng = 106.7008, IsCompleted = true, SessionId = "session-005", IsSynced = true }
-            });
+    {
+        new PlaybackLog
+        {
+            VisitorUserId = "visitor-001",
+            BoothId = "booth-01",
+            TriggerType = "QR",
+            Language = "vi",
+            PlayedAtUtc = DateTime.Parse("2026-04-08T08:00:00Z"),
+            DurationSeconds = 12,
+            Lat = 10.7768,
+            Lng = 106.7008,
+            IsCompleted = true,
+            SessionId = "session-001",
+            IsSynced = true
+        },
+        new PlaybackLog
+        {
+            VisitorUserId = "visitor-002",
+            BoothId = "booth-02",
+            TriggerType = "GPS",
+            Language = "en",
+            PlayedAtUtc = DateTime.Parse("2026-04-08T08:10:00Z"),
+            DurationSeconds = 10,
+            Lat = 10.77698,
+            Lng = 106.7008,
+            IsCompleted = true,
+            SessionId = "session-002",
+            IsSynced = true
+        },
+        new PlaybackLog
+        {
+            VisitorUserId = "visitor-003",
+            BoothId = "booth-03",
+            TriggerType = "Manual",
+            Language = "ja",
+            PlayedAtUtc = DateTime.Parse("2026-04-08T08:20:00Z"),
+            DurationSeconds = 14,
+            Lat = 10.77716,
+            Lng = 106.7008,
+            IsCompleted = true,
+            SessionId = "session-003",
+            IsSynced = true
+        }
+    });
 
             await db.SaveChangesAsync();
         }

@@ -1,7 +1,7 @@
 ﻿using PoiNarration.Core.Models;
 using PoiNarration.Mobile.Models;
-using System.Net.Http.Json;
 using System.Diagnostics;
+using System.Net.Http.Json;
 
 namespace PoiNarration.Mobile.Services
 {
@@ -14,11 +14,10 @@ namespace PoiNarration.Mobile.Services
             _http = new HttpClient
             {
                 BaseAddress = new Uri(ApiConstants.GetBaseUrl()),
-                Timeout = TimeSpan.FromSeconds(30) // Nên có thêm dòng này: Quá 30s không phản hồi thì tự ngắt
+                Timeout = TimeSpan.FromSeconds(30)
             };
         }
 
-        // 1. HÀM MỚI THÊM: Lấy danh sách tất cả các trạm (Dành cho BoothListPage)
         public async Task<List<BoothCardVm>> GetBoothsAsync()
         {
             try
@@ -33,7 +32,6 @@ namespace PoiNarration.Mobile.Services
             }
         }
 
-        // 2. Hàm cũ của bạn (Đã bọc try...catch)
         public async Task<List<BoothMenuItem>> GetMenuByBoothAsync(string boothId)
         {
             try
@@ -48,31 +46,23 @@ namespace PoiNarration.Mobile.Services
             }
         }
 
-
-        // 3. Hàm cũ của bạn (Đã bọc try...catch)
         public async Task<BootstrapSyncResponse?> GetBootstrapAsync()
         {
             try
             {
                 var response = await _http.GetAsync("api/sync/bootstrap");
-
                 if (!response.IsSuccessStatusCode)
                 {
                     var body = await response.Content.ReadAsStringAsync();
-                    throw new Exception(
-                        $"API bootstrap trả lỗi {(int)response.StatusCode} {response.ReasonPhrase}. Body: {body}");
+                    throw new Exception($"API bootstrap trả lỗi {(int)response.StatusCode} {response.ReasonPhrase}. Body: {body}");
                 }
 
                 var json = await response.Content.ReadAsStringAsync();
-
                 Debug.WriteLine($"[Bootstrap JSON]: {json}");
 
                 var result = System.Text.Json.JsonSerializer.Deserialize<BootstrapSyncResponse>(
                     json,
-                    new System.Text.Json.JsonSerializerOptions
-                    {
-                        PropertyNameCaseInsensitive = true
-                    });
+                    new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true });
 
                 if (result == null)
                     throw new Exception("Deserialize bootstrap JSON bị null.");
@@ -86,8 +76,35 @@ namespace PoiNarration.Mobile.Services
             }
         }
 
+        public async Task<VisitorRegisterResponse?> RegisterVisitorAsync(VisitorRegisterRequest request)
+        {
+            try
+            {
+                var response = await _http.PostAsJsonAsync("api/visitors/register", request);
+                response.EnsureSuccessStatusCode();
+                return await response.Content.ReadFromJsonAsync<VisitorRegisterResponse>();
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"[Lỗi RegisterVisitorAsync]: {ex.Message}");
+                return null;
+            }
+        }
 
-        // 4. Hàm cũ của bạn (Đã bọc try...catch)
+        public async Task PostBoothVisitLogAsync(BoothVisitLog request)
+        {
+            try
+            {
+                var response = await _http.PostAsJsonAsync("api/boothvisitlogs", request);
+                response.EnsureSuccessStatusCode();
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"[Lỗi PostBoothVisitLogAsync]: {ex.Message}");
+                throw;
+            }
+        }
+
         public async Task PostPlaybackLogAsync(PlaybackLogRequest request)
         {
             try
@@ -98,7 +115,7 @@ namespace PoiNarration.Mobile.Services
             catch (Exception ex)
             {
                 Debug.WriteLine($"[Lỗi PostPlaybackLogAsync]: {ex.Message}");
-                // Có thể lưu local database ở đây nếu post thất bại để gửi lại sau
+                throw;
             }
         }
 
@@ -107,14 +124,28 @@ namespace PoiNarration.Mobile.Services
             if (string.IsNullOrWhiteSpace(path))
                 return "dotnet_bot";
 
-            // Nếu đã là URL đầy đủ
             if (Uri.TryCreate(path, UriKind.Absolute, out var absoluteUri))
                 return absoluteUri.ToString();
 
-            // Nếu là path tương đối, ghép với BaseAddress
             return new Uri(_http.BaseAddress!, path.TrimStart('/')).ToString();
         }
 
         public string BaseUrl => _http.BaseAddress?.ToString() ?? "";
     }
+
+    public class VisitorRegisterRequest
+    {
+        public string DeviceKey { get; set; } = "";
+        public string PreferredLanguage { get; set; } = "vi";
+        public string? Platform { get; set; }
+        public string? AppVersion { get; set; }
     }
+
+    public class VisitorRegisterResponse
+    {
+        public string VisitorId { get; set; } = "";
+        public string VisitorCode { get; set; } = "";
+        public string DisplayName { get; set; } = "";
+        public string PreferredLanguage { get; set; } = "vi";
+    }
+}

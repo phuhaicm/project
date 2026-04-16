@@ -152,9 +152,12 @@ public class NarrationService
                 },
                 speakCts.Token);
 
-            // Ghi log kết quả
+            var visitorId = Preferences.Get("visitor_id", "");
+            var sessionId = Preferences.Get("session_id", Guid.NewGuid().ToString());
+
             var log = new PlaybackLog
             {
+                VisitorUserId = visitorId,
                 BoothId = booth.Id,
                 TriggerType = triggerType,
                 Language = lang,
@@ -163,31 +166,13 @@ public class NarrationService
                 Lng = currentLocation?.Longitude ?? 0,
                 DurationSeconds = 10,
                 IsCompleted = true,
-                SessionId = Guid.NewGuid().ToString(),
+                SessionId = sessionId,
                 IsSynced = false
             };
 
-            //await _db.SavePlaybackLogAsync(log);
+            // LUÔN lưu local trước
+            await _db.SavePlaybackLogAsync(log);
 
-            try
-            {
-                await _apiService.PostPlaybackLogAsync(new PlaybackLogRequest
-                {
-                    BoothId = booth.Id,
-                    TriggerType = triggerType,
-                    Language = lang,
-                    DurationSeconds = 10,
-                    IsCompleted = true,
-                    SessionId = log.SessionId
-                });
-
-                //log.IsSynced = true;
-                //await _db.SavePlaybackLogAsync(log);
-            }
-            catch
-            {
-                // offline -> giữ local để sync sau
-            }
 
             _lastBoothId = booth.Id;
             _lastPlayedUtc = DateTime.UtcNow;

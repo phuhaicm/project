@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using PoiNarration.Api.Data;
-using PoiNarration.Core.Models; // Sử dụng Model và DTO từ Core
 using Microsoft.EntityFrameworkCore;
+using PoiNarration.Api.Data;
+using PoiNarration.Core.Models;
 
 namespace PoiNarration.Api.Controllers;
 
@@ -17,14 +17,14 @@ public class PlaybackLogsController : ControllerBase
     }
 
     [HttpPost]
-    public async Task<IActionResult> Create([FromBody] PlaybackLogRequest request) // Đã đổi sang PlaybackLogRequest từ Core
+    public async Task<IActionResult> Create([FromBody] PlaybackLogRequest request)
     {
         if (string.IsNullOrWhiteSpace(request.BoothId))
             return BadRequest("BoothId là bắt buộc.");
 
-        // Tạo Entity PlaybackLog (đã được chuyển sang Core)
         var log = new PlaybackLog
         {
+            VisitorUserId = request.VisitorUserId,
             BoothId = request.BoothId,
             TriggerType = request.TriggerType,
             Language = request.Language,
@@ -34,10 +34,23 @@ public class PlaybackLogsController : ControllerBase
             IsCompleted = request.IsCompleted,
             SessionId = request.SessionId,
             PlayedAtUtc = DateTime.UtcNow,
-            IsSynced = true // Vì lưu trực tiếp trên Server nên mặc định là đã Sync
+            IsSynced = true
         };
 
         _db.PlaybackLogs.Add(log);
+
+        // THÊM MỚI: cập nhật thời gian hoạt động cuối của visitor
+        if (!string.IsNullOrWhiteSpace(request.VisitorUserId))
+        {
+            var visitor = await _db.VisitorUsers
+                .FirstOrDefaultAsync(x => x.Id == request.VisitorUserId);
+
+            if (visitor != null)
+            {
+                visitor.LastActiveAtUtc = DateTime.UtcNow;
+            }
+        }
+
         await _db.SaveChangesAsync();
 
         return Ok(log);

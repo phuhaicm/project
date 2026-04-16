@@ -60,19 +60,31 @@ public partial class QrScanPage : ContentPage
 
             if (booth != null)
             {
-                await _narrationService.SpeakBoothAsync(booth, "QR");
-                await Shell.Current.GoToAsync($"{nameof(BoothDetailPage)}?boothId={booth.Id}");
-
-                _ = _apiService.PostPlaybackLogAsync(new PlaybackLogRequest
+                var visitLog = new BoothVisitLog
                 {
+                    VisitorUserId = Preferences.Get("visitor_id_server", ""),
                     BoothId = booth.Id,
                     TriggerType = "QR",
-                    Language = LanguageService.IsVi ? "vi" : "en",
-                    Lat = 0,
-                    Lng = 0,
-                    IsCompleted = true,
-                    SessionId = Guid.NewGuid().ToString()
-                });
+                    Language = LanguageService.CurrentLanguage,
+                    VisitedAtUtc = DateTime.UtcNow,
+                    SessionId = Preferences.Get("session_id", Guid.NewGuid().ToString()),
+                    IsSynced = false
+                };
+
+                await _db.SaveBoothVisitLogAsync(visitLog);
+
+                try
+                {
+                    await _apiService.PostBoothVisitLogAsync(visitLog);
+                    await _db.MarkBoothVisitLogSyncedAsync(visitLog.Id);
+                }
+                catch
+                {
+                    // giữ local
+                }
+
+                await _narrationService.SpeakBoothAsync(booth, "QR");
+                await Shell.Current.GoToAsync($"{nameof(BoothDetailPage)}?boothId={booth.Id}&trigger=QR");
             }
             else
             {

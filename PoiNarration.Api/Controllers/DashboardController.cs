@@ -47,6 +47,7 @@ public class DashboardController : ControllerBase
     public async Task<IActionResult> GetSummary()
     {
         var todayUtc = DateTime.UtcNow.Date;
+        var onlineThreshold = DateTime.UtcNow.AddMinutes(-5);
 
         var totalBooths = await _db.Booths.CountAsync();
         var totalOwners = await _db.AppUsers.CountAsync(x => x.Role == "Owner");
@@ -57,15 +58,29 @@ public class DashboardController : ControllerBase
             ? await _db.PlaybackLogs.AverageAsync(x => (double?)x.DurationSeconds) ?? 0
             : 0;
 
-        return Ok(new
+        // THÊM MỚI - user analytics
+        var totalVisitors = await _db.VisitorUsers.CountAsync();
+        var activeVisitorsToday = await _db.VisitorUsers.CountAsync(x => x.LastActiveAtUtc >= todayUtc);
+        var onlineVisitors = await _db.VisitorUsers.CountAsync(x => x.LastActiveAtUtc >= onlineThreshold);
+        var totalBoothVisits = await _db.BoothVisitLogs.CountAsync();
+
+        var dto = new PoiNarration.Api.DTOs.Dashboard.DashboardSummaryDto
         {
-            totalBooths,
-            totalOwners,
-            totalPlaybackLogs,
-            playbackToday,
-            averageDurationSeconds = avgDuration
-        });
+            TotalBooths = totalBooths,
+            TotalOwners = totalOwners,
+            TotalPlaybackLogs = totalPlaybackLogs,
+            PlaybackToday = playbackToday,
+            AverageDurationSeconds = avgDuration,
+
+            TotalVisitors = totalVisitors,
+            ActiveVisitorsToday = activeVisitorsToday,
+            OnlineVisitors = onlineVisitors,
+            TotalBoothVisits = totalBoothVisits
+        };
+
+        return Ok(dto);
     }
+
     [HttpGet("latest-logs")]
     public async Task<IActionResult> GetLatestLogs()
     {

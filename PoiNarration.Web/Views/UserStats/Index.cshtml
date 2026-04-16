@@ -1,0 +1,235 @@
+@model List<PoiNarration.Web.Models.VisitorUserDto>
+@{
+    ViewData["Title"] = "Thống kê User";
+    var stats = ViewBag.Stats as PoiNarration.Web.Models.VisitorStatsVm ?? new PoiNarration.Web.Models.VisitorStatsVm();
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <div>
+        <h3 class="mb-0">@ViewData["Title"]</h3>
+        <div class="text-muted small">Quản lý visitor và thống kê sử dụng app</div>
+    </div>
+</div>
+
+<div class="row g-3 mb-4">
+    <div class="col-md-4">
+        <div class="card shadow-sm border-0">
+            <div class="card-body">
+                <div class="text-muted small">Tổng Visitor</div>
+                <div class="fs-3 fw-bold">@stats.TotalVisitors</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card shadow-sm border-0">
+            <div class="card-body">
+                <div class="text-muted small">Tổng lượt ghé booth</div>
+                <div class="fs-3 fw-bold">@stats.TotalVisitLogs</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card shadow-sm border-0">
+            <div class="card-body">
+                <div class="text-muted small">Tổng lượt nghe narration</div>
+                <div class="fs-3 fw-bold">@stats.TotalPlaybackLogs</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-3 mb-4">
+    <div class="col-lg-4">
+        <div class="card shadow-sm border-0 h-100">
+            <div class="card-header bg-white fw-semibold">Ngôn ngữ phổ biến</div>
+            <div class="card-body">
+                @if (stats.TopLanguages.Any())
+                {
+                    <ul class="list-group list-group-flush">
+                        @foreach (var item in stats.TopLanguages)
+                        {
+                            <li class="list-group-item d-flex justify-content-between">
+                                <span>@item.Language</span>
+                                <strong>@item.Count</strong>
+                            </li>
+                        }
+                    </ul>
+                }
+                else
+                {
+                    <div class="text-muted">Chưa có dữ liệu.</div>
+                }
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <div class="card shadow-sm border-0 h-100">
+            <div class="card-header bg-white fw-semibold">Top booth được ghé</div>
+            <div class="card-body">
+                @if (stats.TopBoothsByVisit.Any())
+                {
+                    <ul class="list-group list-group-flush">
+                        @foreach (var item in stats.TopBoothsByVisit)
+                        {
+                            <li class="list-group-item d-flex justify-content-between">
+                                <span>@item.BoothId</span>
+                                <strong>@item.Count</strong>
+                            </li>
+                        }
+                    </ul>
+                }
+                else
+                {
+                    <div class="text-muted">Chưa có dữ liệu.</div>
+                }
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <div class="card shadow-sm border-0 h-100">
+            <div class="card-header bg-white fw-semibold">Top booth được nghe</div>
+            <div class="card-body">
+                @if (stats.TopBoothsByPlayback.Any())
+                {
+                    <ul class="list-group list-group-flush">
+                        @foreach (var item in stats.TopBoothsByPlayback)
+                        {
+                            <li class="list-group-item d-flex justify-content-between">
+                                <span>@item.BoothId</span>
+                                <strong>@item.Count</strong>
+                            </li>
+                        }
+                    </ul>
+                }
+                else
+                {
+                    <div class="text-muted">Chưa có dữ liệu.</div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card shadow-sm border-0">
+    <div class="card-header bg-white fw-semibold">Danh sách Visitor</div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th>VisitorCode</th>
+                        <th>DisplayName</th>
+                        <th>PreferredLanguage</th>
+                        <th>Platform</th>
+                        <th>AppVersion</th>
+                        <th>CreatedAtUtc</th>
+                        <th>LastActiveAtUtc</th>
+                        <th>Trạng thái</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model)
+                    {
+                        <tr>
+                            <td class="fw-semibold">@item.VisitorCode</td>
+                            <td>@item.DisplayName</td>
+                            <td>@item.PreferredLanguage</td>
+                            <td>@item.Platform</td>
+                            <td>@item.AppVersion</td>
+                            <td>@item.CreatedAtUtc.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</td>
+                            <td>@item.LastActiveAtUtc.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</td>
+                            <td>
+                                @{
+                                    var isOnline = item.LastActiveAtUtc >= DateTime.UtcNow.AddMinutes(-5);
+                                }
+                                @if (isOnline)
+                                {
+                                    <span class="badge bg-success">Đang online</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-secondary">Không online</span>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+<div class="row g-4 mt-4">
+    <div class="col-12 col-lg-6">
+        <div class="card shadow-sm border-0">
+            <div class="card-header bg-white fw-semibold">Biểu đồ ngôn ngữ visitor</div>
+            <div class="card-body">
+                <canvas id="visitorLanguagesChart" height="120"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-12 col-lg-6">
+        <div class="card shadow-sm border-0">
+            <div class="card-header bg-white fw-semibold">Biểu đồ top booth được ghé</div>
+            <div class="card-body">
+                <canvas id="topVisitedBoothsChart" height="120"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        const langLabels = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(stats.TopLanguages.Select(x => x.Language).ToList()));
+        const langCounts = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(stats.TopLanguages.Select(x => x.Count).ToList()));
+
+        const visitBoothLabels = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(stats.TopBoothsByVisit.Select(x => x.BoothId).ToList()));
+        const visitBoothCounts = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(stats.TopBoothsByVisit.Select(x => x.Count).ToList()));
+
+        if (langLabels.length > 0) {
+        const ctx1 = document.getElementById('visitorLanguagesChart').getContext('2d');
+        new Chart(ctx1, {
+        type: 'bar',
+        data: {
+        labels: langLabels,
+        datasets: [{
+        label: 'Số visitor',
+        data: langCounts,
+        backgroundColor: '#198754',
+        borderRadius: 6
+        }]
+        },
+        options: {
+        responsive: true,
+        maintainAspectRatio: true,
+        plugins: { legend: { display: false } },
+        scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } }
+        }
+        });
+        }
+
+        if (visitBoothLabels.length > 0) {
+        const ctx2 = document.getElementById('topVisitedBoothsChart').getContext('2d');
+        new Chart(ctx2, {
+        type: 'bar',
+        data: {
+        labels: visitBoothLabels,
+        datasets: [{
+        label: 'Lượt ghé',
+        data: visitBoothCounts,
+        backgroundColor: '#0d6efd',
+        borderRadius: 6
+        }]
+        },
+        options: {
+        responsive: true,
+        maintainAspectRatio: true,
+        plugins: { legend: { display: false } },
+        scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } }
+        }
+        });
+        }
+    </script>
+}
