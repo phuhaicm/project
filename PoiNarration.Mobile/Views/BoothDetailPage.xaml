@@ -26,7 +26,10 @@
 
                     <Grid ColumnDefinitions="*,*" ColumnSpacing="10" Margin="0,6,0,0">
                         <Button Text="{DynamicResource Ui_PlayAudio}" Clicked="OnPlayClicked" />
-                        <Button Grid.Column="1" Text="■ Stop" Clicked="OnStopClicked" BackgroundColor="{StaticResource SurfaceSoft}" />
+                        <Button Grid.Column="1"
+        Text="{DynamicResource Ui_StopAudio}"
+        Clicked="OnStopClicked"
+        BackgroundColor="{StaticResource SurfaceSoft}" />
                     </Grid>
                 </VerticalStackLayout>
             </Border>

@@ -1,6 +1,6 @@
 ﻿namespace PoiNarration.Web.ViewModels;
 
-public class OwnerMenuItemVm
+public class OwnerMenuItemRequest
 {
     public string BoothId { get; set; } = "";
     public string Name { get; set; } = "";

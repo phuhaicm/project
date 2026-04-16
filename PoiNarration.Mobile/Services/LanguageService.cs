@@ -36,6 +36,10 @@ public static class LanguageService
             ["Ui_Page_GateMode"] = "Chọn chế độ",
             ["Ui_Page_ZoneList"] = "Chọn khu vực",
             ["Ui_Page_BoothByZone"] = "Danh sách gian hàng",
+            ["Ui_BoothCount_Zero"] = "Số booth: 0",
+            ["Ui_Empty"] = "",
+            ["Ui_MenuList"] = "Menu / Sản phẩm",
+            ["Ui_BoothDetailTitle"] = "Chi tiết trạm",
 
             ["Ui_SyncReady"] = "Sẵn sàng đồng bộ dữ liệu",
             ["Ui_SyncSuccess"] = "Đồng bộ thành công",
@@ -109,6 +113,10 @@ public static class LanguageService
             ["Ui_Page_GateMode"] = "Choose Mode",
             ["Ui_Page_ZoneList"] = "Choose Zone",
             ["Ui_Page_BoothByZone"] = "Booths by Zone",
+            ["Ui_BoothCount_Zero"] = "Booths: 0",
+            ["Ui_Empty"] = "",
+            ["Ui_MenuList"] = "Menu / Products",
+            ["Ui_BoothDetailTitle"] = "Booth Detail",
 
             ["Ui_SyncReady"] = "Ready to sync",
             ["Ui_SyncSuccess"] = "Sync successful",

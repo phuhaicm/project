@@ -28,8 +28,15 @@ public class DashboardController : Controller
         vm.LatestLogs = await _http.GetFromJsonAsync<List<LatestPlaybackLogDto>>("api/dashboard/latest-logs")
                        ?? new List<LatestPlaybackLogDto>();
 
+        var visitorStats = await _http.GetFromJsonAsync<VisitorStatsVm>("api/visitors/stats")
+                          ?? new VisitorStatsVm();
+
+        vm.TopVisitorLanguages = visitorStats.TopLanguages;
+        vm.TopVisitedBooths = visitorStats.TopBoothsByVisit;
+
         return View(vm);
     }
+
     [HttpGet]
     public async Task<IActionResult> Activity()
     {

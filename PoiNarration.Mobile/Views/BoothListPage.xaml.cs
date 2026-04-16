@@ -10,11 +10,8 @@ public partial class BoothListPage : ContentPage
     private readonly SyncService _syncService;
     private readonly NarrationService _narrationService;
     private readonly AutoBoothNavigatorService _autoBoothNavigatorService;
-
     private List<Booth> _allBooths = new();
     private bool _gpsModeEnabled;
-
-
     private readonly ApiService _apiService;
 
     public BoothListPage(
@@ -25,14 +22,12 @@ public partial class BoothListPage : ContentPage
         ApiService apiService)
     {
         InitializeComponent();
-
         _db = db;
         _syncService = syncService;
         _narrationService = narrationService;
         _autoBoothNavigatorService = autoBoothNavigatorService;
         _apiService = apiService;
     }
-
 
     protected override async void OnAppearing()
     {
@@ -41,16 +36,31 @@ public partial class BoothListPage : ContentPage
         try
         {
             await _db.InitAsync();
-
             LanguagePicker.SelectedItem = LanguageService.CurrentLanguage;
             CurrentLanguageLabel.Text = LanguageService.CurrentLanguage;
-
+            RefreshVisitorInfo();
             await LoadBoothsAsync();
         }
         catch (Exception ex)
         {
             await DisplayAlertAsync("Lỗi", ex.ToString(), "OK");
         }
+    }
+
+    private void RefreshVisitorInfo()
+    {
+        var visitorCode = Preferences.Get("visitor_code", "");
+        var visitorServerId = Preferences.Get("visitor_id_server", "");
+        var currentLang = LanguageService.CurrentLanguage;
+
+        if (string.IsNullOrWhiteSpace(visitorCode))
+            visitorCode = "VIS-LOCAL";
+
+        VisitorCodeLabel.Text = visitorCode;
+        VisitorLangLabel.Text = currentLang;
+        VisitorSyncStatusLabel.Text = string.IsNullOrWhiteSpace(visitorServerId)
+            ? "Chưa đồng bộ server"
+            : "Đã đồng bộ server";
     }
 
     private async Task LoadBoothsAsync()
@@ -65,7 +75,6 @@ public partial class BoothListPage : ContentPage
     {
         var keyword = BoothSearchBar.Text?.Trim().ToLowerInvariant() ?? "";
         var lang = LanguageService.CurrentLanguage;
-
         var filtered = new List<BoothCardVm>();
 
         foreach (var booth in _allBooths)
@@ -100,7 +109,6 @@ public partial class BoothListPage : ContentPage
                 PreviewText = LanguageService.T("Ui_Preview"),
                 ImageUrl = _apiService.ResolveMediaUrl(booth.ImageUrl),
                 IsActive = booth.IsActive,
-                
             });
         }
 
@@ -118,6 +126,7 @@ public partial class BoothListPage : ContentPage
         {
             LanguageService.Set(lang);
             CurrentLanguageLabel.Text = lang;
+            RefreshVisitorInfo();
             await ApplyFilterAsync();
         }
     }
@@ -128,7 +137,10 @@ public partial class BoothListPage : ContentPage
         {
             SyncStatusLabel.Text = LanguageService.T("Ui_Syncing");
             await _syncService.SyncBootstrapAsync();
+            await _syncService.SyncBoothVisitLogsAsync();
+            await _syncService.SyncPlaybackLogsAsync();
             await LoadBoothsAsync();
+            RefreshVisitorInfo();
             SyncStatusLabel.Text = LanguageService.T("Ui_SyncSuccess");
         }
         catch (Exception ex)
@@ -150,15 +162,16 @@ public partial class BoothListPage : ContentPage
                 var ok = await _autoBoothNavigatorService.StartAsync();
                 if (!ok)
                 {
-                    await DisplayAlertAsync(LanguageService.T("Ui_GpsMode"), LanguageService.T("Ui_GpsNotEnabledOrPermissionDenied"), LanguageService.T("Ui_Alert_Ok"));
+                    await DisplayAlertAsync(
+                        LanguageService.T("Ui_GpsMode"),
+                        LanguageService.T("Ui_GpsNotEnabledOrPermissionDenied"),
+                        LanguageService.T("Ui_Alert_Ok"));
                     return;
                 }
 
                 _autoBoothNavigatorService.SetAutoNarrationEnabled(true);
-
                 _gpsModeEnabled = true;
                 SyncStatusLabel.Text = $"{LanguageService.T("Ui_GpsMode")}: {LanguageService.T("Ui_GpsAutoEnabled")}";
-
                 await DisplayAlertAsync(
                     LanguageService.T("Ui_GpsMode"),
                     LanguageService.T("Ui_GpsAutoEnabledMessage"),
@@ -167,10 +180,8 @@ public partial class BoothListPage : ContentPage
             else
             {
                 _autoBoothNavigatorService.SetAutoNarrationEnabled(false);
-
                 _gpsModeEnabled = false;
                 SyncStatusLabel.Text = $"{LanguageService.T("Ui_GpsMode")}: {LanguageService.T("Ui_GpsManualEnabled")}";
-
                 await DisplayAlertAsync(
                     LanguageService.T("Ui_GpsMode"),
                     LanguageService.T("Ui_GpsManualEnabledMessage"),
@@ -179,10 +190,12 @@ public partial class BoothListPage : ContentPage
         }
         catch (Exception ex)
         {
-            await DisplayAlertAsync(LanguageService.T("Ui_GpsModeError"), ex.ToString(), LanguageService.T("Ui_Alert_Ok"));
+            await DisplayAlertAsync(
+                LanguageService.T("Ui_GpsModeError"),
+                ex.ToString(),
+                LanguageService.T("Ui_Alert_Ok"));
         }
     }
-
 
     private async void OnMapClicked(object sender, EventArgs e)
     {
@@ -192,7 +205,7 @@ public partial class BoothListPage : ContentPage
     private async void OnOpenBoothClicked(object sender, EventArgs e)
     {
         if (sender is Button btn && btn.CommandParameter is string boothId)
-            await Shell.Current.GoToAsync($"{nameof(BoothDetailPage)}?boothId={boothId}");
+            await Shell.Current.GoToAsync($"{nameof(BoothDetailPage)}?boothId={boothId}&trigger=ManualOpen");
     }
 
     private async void OnScanQrClicked(object sender, EventArgs e)

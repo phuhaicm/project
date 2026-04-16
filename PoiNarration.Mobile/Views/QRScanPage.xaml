@@ -3,7 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:zxing="clr-namespace:ZXing.Net.Maui.Controls;assembly=ZXing.Net.MAUI.Controls"
              x:Class="PoiNarration.Mobile.Views.QrScanPage"
-             Title="Quét QR Gian Hàng"
+            Title="{DynamicResource Ui_Page_Qr}"
              BackgroundColor="#161622">
 
     <Grid>

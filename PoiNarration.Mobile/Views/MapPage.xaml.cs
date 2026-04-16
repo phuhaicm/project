@@ -236,7 +236,7 @@ public partial class MapPage : ContentPage
         e.HideInfoWindow = true;
         if (sender is Pin pin && _pinBoothMap.TryGetValue(pin, out var booth))
         {
-            await Shell.Current.GoToAsync($"{nameof(BoothDetailPage)}?boothId={booth.Id}");
+            await Shell.Current.GoToAsync($"{nameof(BoothDetailPage)}?boothId={booth.Id}&trigger=MapTap");
         }
     }
 
@@ -244,7 +244,7 @@ public partial class MapPage : ContentPage
     {
         if (_currentNearestBooth != null)
         {
-            await Shell.Current.GoToAsync($"{nameof(BoothDetailPage)}?boothId={_currentNearestBooth.Id}");
+            await Shell.Current.GoToAsync($"{nameof(BoothDetailPage)}?boothId={_currentNearestBooth.Id}&trigger=NearestButton");
         }
     }
 

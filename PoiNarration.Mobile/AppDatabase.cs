@@ -38,6 +38,8 @@ public class AppDatabase
                 await conn.CreateTableAsync<Booth>();
                 await conn.CreateTableAsync<BoothMenuItem>();
                 await conn.CreateTableAsync<PlaybackLog>();
+                await conn.CreateTableAsync<BoothVisitLog>();
+
                 await conn.CreateTableAsync<BoothTranslationLocal>();
                 await conn.CreateTableAsync<BoothMenuItemTranslationLocal>();
                 await conn.CreateTableAsync<Zone>();
@@ -282,6 +284,9 @@ public class AppDatabase
         await _database.DeleteAllAsync<BoothMenuItem>();
         await _database.DeleteAllAsync<BoothTranslationLocal>();
         await _database.DeleteAllAsync<BoothMenuItemTranslationLocal>();
+        await _database.DeleteAllAsync<BoothVisitLog>();
+
+
     }
     private static async Task EnsureMenuTranslationSchemaAsync(SQLiteAsyncConnection conn)
     {
@@ -318,6 +323,34 @@ public class AppDatabase
         public string? dflt_value { get; set; }
         public int pk { get; set; }
     }
+    public async Task<int> SaveBoothVisitLogAsync(BoothVisitLog item)
+    {
+        await InitAsync();
+        return await _database!.InsertAsync(item);
+    }
+
+    public async Task<List<BoothVisitLog>> GetUnsyncedBoothVisitLogsAsync()
+    {
+        await InitAsync();
+        return await _database!.Table<BoothVisitLog>()
+            .Where(x => !x.IsSynced)
+            .ToListAsync();
+    }
+
+    public async Task<int> MarkBoothVisitLogSyncedAsync(int id)
+    {
+        await InitAsync();
+
+        var log = await _database!.Table<BoothVisitLog>()
+            .FirstOrDefaultAsync(x => x.Id == id);
+
+        if (log == null)
+            return 0;
+
+        log.IsSynced = true;
+        return await _database.UpdateAsync(log);
+    }
+
 
 
 }

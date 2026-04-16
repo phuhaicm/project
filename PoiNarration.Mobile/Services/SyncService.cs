@@ -1,5 +1,4 @@
-﻿using PoiNarration.Core.Models; // Dùng hàng từ Core
-using PoiNarration.Mobile.Models;
+﻿using PoiNarration.Core.Models;
 using System.Diagnostics;
 
 namespace PoiNarration.Mobile.Services;
@@ -14,7 +13,6 @@ public class SyncService
         _apiService = apiService;
         _db = db;
     }
-
 
     public async Task SyncBootstrapAsync()
     {
@@ -35,11 +33,8 @@ public class SyncService
         }
     }
 
-
     public async Task SyncPlaybackLogsAsync()
     {
-        // 1. Lấy danh sách log chưa sync. 
-        // Lúc này 'log' sẽ tự hiểu là kiểu PoiNarration.Core.Models.PlaybackLog
         var unsyncedLogs = await _db.GetUnsyncedPlaybackLogsAsync();
 
         if (unsyncedLogs == null || !unsyncedLogs.Any()) return;
@@ -48,9 +43,11 @@ public class SyncService
         {
             try
             {
-                // 2. Đẩy lên API qua DTO Request
                 await _apiService.PostPlaybackLogAsync(new PlaybackLogRequest
                 {
+                    VisitorUserId = string.IsNullOrWhiteSpace(log.VisitorUserId)
+        ? Preferences.Get("visitor_id_server", "")
+        : log.VisitorUserId,
                     BoothId = log.BoothId,
                     TriggerType = log.TriggerType,
                     Language = log.Language,
@@ -61,14 +58,36 @@ public class SyncService
                     SessionId = log.SessionId
                 });
 
-                // 3. Cập nhật trạng thái IsSynced = true dưới SQLite
                 await _db.MarkPlaybackLogSyncedAsync(log.Id);
             }
             catch (Exception ex)
             {
-                // Nếu mất mạng hoặc API lỗi, log này vẫn nằm dưới máy (IsSynced = false)
-                // break để không cố gửi các log tiếp theo khi đang lỗi mạng
-                Debug.WriteLine($"[Lỗi SyncLog]: {ex.Message}");
+                Debug.WriteLine($"[Lỗi SyncPlaybackLog]: {ex.Message}");
+                break;
+            }
+        }
+    }
+
+    // TẠM THỜI CHƯA SYNC API ĐỂ TRÁNH LỖI BUILD
+    public async Task SyncBoothVisitLogsAsync()
+    {
+        await _db.InitAsync();
+
+        var unsyncedLogs = await _db.GetUnsyncedBoothVisitLogsAsync();
+        if (unsyncedLogs == null || !unsyncedLogs.Any()) return;
+
+        foreach (var log in unsyncedLogs)
+        {
+            try
+            {
+                log.VisitorUserId = Preferences.Get("visitor_id_server", "");
+
+                await _apiService.PostBoothVisitLogAsync(log);
+                await _db.MarkBoothVisitLogSyncedAsync(log.Id);
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"[Lỗi SyncBoothVisitLogs]: {ex.Message}");
                 break;
             }
         }
