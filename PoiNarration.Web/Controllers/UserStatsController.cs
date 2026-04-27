@@ -23,7 +23,12 @@ public class UserStatsController : Controller
         var stats = await client.GetFromJsonAsync<VisitorStatsVm>("api/visitors/stats")
                     ?? new VisitorStatsVm();
 
+        var activityDetails = await client.GetFromJsonAsync<List<VisitorActivityDetailDto>>("api/visitors/activity-details")
+                             ?? new List<VisitorActivityDetailDto>();
+
         ViewBag.Stats = stats;
+        ViewBag.ActivityDetails = activityDetails;
+
         return View(visitors);
     }
 }

@@ -40,4 +40,28 @@ public class QrCodeService : IQrCodeService
         // Trả về URL tương đối để lưu DB hoặc hiển thị
         return $"/uploads/qrcodes/{fileName}";
     }
+    public async Task<string> GenerateAndSaveAppDownloadQrAsync(string downloadUrl)
+    {
+        if (string.IsNullOrWhiteSpace(downloadUrl))
+            throw new ArgumentException("downloadUrl không hợp lệ.");
+
+        string folderPath = Path.Combine(_webHostEnvironment.WebRootPath, "uploads", "qrcodes");
+        if (!Directory.Exists(folderPath))
+        {
+            Directory.CreateDirectory(folderPath);
+        }
+
+        using var qrGenerator = new QRCodeGenerator();
+        using var qrCodeData = qrGenerator.CreateQrCode(downloadUrl, QRCodeGenerator.ECCLevel.Q);
+
+        var pngQrCode = new PngByteQRCode(qrCodeData);
+        byte[] qrBytes = pngQrCode.GetGraphic(20);
+
+        string fileName = "qr-app-download.png";
+        string filePath = Path.Combine(folderPath, fileName);
+
+        await File.WriteAllBytesAsync(filePath, qrBytes);
+
+        return $"/uploads/qrcodes/{fileName}";
+    }
 }

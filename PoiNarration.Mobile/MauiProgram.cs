@@ -35,6 +35,7 @@ public static class MauiProgram
         builder.Services.AddSingleton<GeofenceService>();
         builder.Services.AddSingleton<LocationTrackingService>();
         builder.Services.AddSingleton<AutoBoothNavigatorService>();
+        builder.Services.AddSingleton<GpsModeStateService>();
 
         // 3. Pages
         builder.Services.AddTransient<BoothListPage>();
@@ -42,6 +43,7 @@ public static class MauiProgram
         builder.Services.AddTransient<BoothDetailPage>();
         builder.Services.AddTransient<MapPage>();
         builder.Services.AddTransient<QrScanPage>();
+        builder.Services.AddSingleton<VisitorSessionService>();
 
         return builder.Build();
     }

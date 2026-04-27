@@ -6,6 +6,10 @@ public class VisitorStatsVm
     public int TotalVisitLogs { get; set; }
     public int TotalPlaybackLogs { get; set; }
 
+    // THÊM MỚI
+    public int ActiveVisitorsToday { get; set; }
+    public int OnlineVisitors { get; set; }
+
     public List<LanguageCountVm> TopLanguages { get; set; } = new();
     public List<BoothCountVm> TopBoothsByVisit { get; set; } = new();
     public List<BoothCountVm> TopBoothsByPlayback { get; set; } = new();

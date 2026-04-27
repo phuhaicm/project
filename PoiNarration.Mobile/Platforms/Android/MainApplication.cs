@@ -6,7 +6,7 @@ namespace PoiNarration.Mobile;
 #if DEBUG
 [Application(UsesCleartextTraffic = true)]
 #else
-[Application]
+[Application(UsesCleartextTraffic = true)]
 #endif
 public class MainApplication : MauiApplication
 {

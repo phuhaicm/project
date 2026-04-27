@@ -152,7 +152,7 @@ public class NarrationService
                 },
                 speakCts.Token);
 
-            var visitorId = Preferences.Get("visitor_id", "");
+            var visitorId = Preferences.Get("visitor_id_server", "");
             var sessionId = Preferences.Get("session_id", Guid.NewGuid().ToString());
 
             var log = new PlaybackLog
@@ -170,8 +170,31 @@ public class NarrationService
                 IsSynced = false
             };
 
-            // LUÔN lưu local trước
+            // 1. lưu local trước
             await _db.SavePlaybackLogAsync(log);
+
+            // 2. gửi ngay lên API để admin thấy gần realtime
+            try
+            {
+                await _apiService.PostPlaybackLogAsync(new PlaybackLogRequest
+                {
+                    VisitorUserId = log.VisitorUserId,
+                    BoothId = log.BoothId,
+                    TriggerType = log.TriggerType,
+                    Language = log.Language,
+                    DurationSeconds = log.DurationSeconds,
+                    Lat = log.Lat,
+                    Lng = log.Lng,
+                    IsCompleted = log.IsCompleted,
+                    SessionId = log.SessionId
+                });
+
+                await _db.MarkPlaybackLogSyncedAsync(log.Id);
+            }
+            catch
+            {
+                // API lỗi thì giữ local, SyncService sẽ retry sau
+            }
 
 
             _lastBoothId = booth.Id;

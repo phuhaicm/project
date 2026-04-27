@@ -1,0 +1,42 @@
+@{
+    ViewData["Title"] = "Tải ứng dụng PoiNarration";
+    var apkUrl = ViewBag.ApkUrl as string ?? "/AppDownload/apk";
+    var qrImageUrl = ViewBag.QrImageUrl as string ?? "";
+}
+
+<div class="row justify-content-center">
+    <div class="col-12 col-lg-8">
+        <div class="card shadow-sm border-0 mt-4">
+            <div class="card-body p-4 text-center">
+                <h2 class="fw-bold mb-2">Tải ứng dụng PoiNarration</h2>
+                <p class="text-muted mb-4">Quét mã QR hoặc bấm nút bên dưới để tải ứng dụng.</p>
+
+                @if (!string.IsNullOrWhiteSpace(qrImageUrl))
+                {
+                    <img src="@qrImageUrl"
+                         alt="QR tải ứng dụng PoiNarration"
+                         style="max-width:280px"
+                         class="img-fluid rounded border mb-4" />
+                }
+                else
+                {
+                    <div class="alert alert-warning">Chưa có mã QR tải ứng dụng.</div>
+                }
+
+                <div class="d-grid gap-2 col-md-6 mx-auto">
+                    <a class="btn btn-primary btn-lg" href="@apkUrl" target="_blank">
+                        <i class="bi bi-download me-1"></i> Tải ứng dụng
+                    </a>
+                </div>
+
+                <div class="alert alert-info mt-4 text-start mb-0">
+                    <strong>Hướng dẫn:</strong>
+                    <ul class="mb-0 mt-2">
+                        <li>Nếu điện thoại chặn cài APK, hãy cho phép cài từ nguồn không xác định.</li>
+                        <li>Sau khi mở app, hệ thống sẽ tạo visitor mới và ghi nhận thống kê trên admin.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
