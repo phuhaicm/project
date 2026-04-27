@@ -9,7 +9,7 @@ builder.Services.AddControllers();
 builder.Services.AddScoped<ITranslationService, TranslationService>();
 builder.Services.AddScoped<IQrCodeService, QrCodeService>();
 
-// 2. Cấu hình CORS (Chỉ cần 1 đoạn này là đủ, đừng viết lặp lại)
+// 2. CORS
 builder.Services.AddCors(options =>
 {
     options.AddDefaultPolicy(policy =>
@@ -24,46 +24,44 @@ builder.Services.AddCors(options =>
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-// 4. QUAN TRỌNG: Đăng ký Swagger (Swashbuckle) 
-// Bạn phải có dòng này thì app.UseSwagger() mới không bị lỗi
+// 4. Swagger
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
 {
-    // Đây là dòng "cứu cánh" của bạn
-    // Nó sẽ biến "LoginRequest" thành "PoiNarration.Api.DTOs.Auth.LoginRequest"
     options.CustomSchemaIds(type => type.FullName);
-
-    // Nếu bạn muốn hiển thị ngắn gọn hơn nhưng vẫn tránh trùng, 
-    // có thể dùng: type => type.ToString().Replace("+", ".")
 });
-// (Tùy chọn) Nếu bạn dùng .NET 9 và muốn dùng bộ OpenAPI mới
+
 builder.Services.AddOpenApi();
 
 var app = builder.Build();
 
-// 5. Cấu hình Middleware cho Swagger
+// 5. Middleware
 if (app.Environment.IsDevelopment())
 {
-    app.UseSwagger(); // Tạo ra file swagger.json
+    app.UseSwagger();
     app.UseSwaggerUI(c =>
     {
-        // Đường dẫn chuẩn cho Swashbuckle
         c.SwaggerEndpoint("/swagger/v1/swagger.json", "PoiNarration API v1");
         c.RoutePrefix = "swagger";
     });
 }
 
-// 6. Thứ tự Middleware chuẩn
 app.UseStaticFiles();
-// app.UseHttpsRedirection(); // Tạm comment nếu bạn test http trên điện thoại thật cho dễ
+// app.UseHttpsRedirection();
 app.UseCors();
 app.MapControllers();
 
-// 7. Seed Data
+// 6. Seed Data + QR
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-    await DataSeeder.SeedAsync(db);
+
+    await DataSeeder.SeedAsync(db);         // seed dữ liệu gốc của hệ thống
+    await DemoDataSeeder.SeedAsync(db);     // seed visitor + visit log + playback log demo
+
+    var qrService = scope.ServiceProvider.GetRequiredService<IQrCodeService>();
+    var appDownloadUrl = "http://192.168.1.237:7269/AppDownload";
+    await qrService.GenerateAndSaveAppDownloadQrAsync(appDownloadUrl);
 }
 
 app.Run();

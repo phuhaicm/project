@@ -14,19 +14,24 @@ public partial class BoothListPage : ContentPage
     private bool _gpsModeEnabled;
     private readonly ApiService _apiService;
 
+    private readonly GpsModeStateService _gpsModeStateService;
+
     public BoothListPage(
         AppDatabase db,
         SyncService syncService,
         NarrationService narrationService,
         AutoBoothNavigatorService autoBoothNavigatorService,
-        ApiService apiService)
+        ApiService apiService,
+        GpsModeStateService gpsModeStateService)
     {
         InitializeComponent();
+
         _db = db;
         _syncService = syncService;
         _narrationService = narrationService;
         _autoBoothNavigatorService = autoBoothNavigatorService;
         _apiService = apiService;
+        _gpsModeStateService = gpsModeStateService;
     }
 
     protected override async void OnAppearing()
@@ -127,6 +132,8 @@ public partial class BoothListPage : ContentPage
             LanguageService.Set(lang);
             CurrentLanguageLabel.Text = lang;
             RefreshVisitorInfo();
+
+            await UpdateVisitorLanguageAsync(lang);
             await ApplyFilterAsync();
         }
     }
@@ -157,7 +164,7 @@ public partial class BoothListPage : ContentPage
     {
         try
         {
-            if (!_gpsModeEnabled)
+            if (!_gpsModeStateService.IsEnabled)
             {
                 var ok = await _autoBoothNavigatorService.StartAsync();
                 if (!ok)
@@ -171,20 +178,31 @@ public partial class BoothListPage : ContentPage
 
                 _autoBoothNavigatorService.SetAutoNarrationEnabled(true);
                 _gpsModeEnabled = true;
+                _gpsModeStateService.SetEnabled(true);
+
                 SyncStatusLabel.Text = $"{LanguageService.T("Ui_GpsMode")}: {LanguageService.T("Ui_GpsAutoEnabled")}";
+
                 await DisplayAlertAsync(
                     LanguageService.T("Ui_GpsMode"),
-                    LanguageService.T("Ui_GpsAutoEnabledMessage"),
+                    GetGpsEnabledMessage(),
                     LanguageService.T("Ui_Alert_Ok"));
+
+                // Chuyển sang tab Map ở dưới
+                await Shell.Current.GoToAsync("//MapPage");
             }
             else
             {
                 _autoBoothNavigatorService.SetAutoNarrationEnabled(false);
+                _autoBoothNavigatorService.Stop();
+
                 _gpsModeEnabled = false;
+                _gpsModeStateService.SetEnabled(false);
+
                 SyncStatusLabel.Text = $"{LanguageService.T("Ui_GpsMode")}: {LanguageService.T("Ui_GpsManualEnabled")}";
+
                 await DisplayAlertAsync(
                     LanguageService.T("Ui_GpsMode"),
-                    LanguageService.T("Ui_GpsManualEnabledMessage"),
+                    GetGpsDisabledMessage(),
                     LanguageService.T("Ui_Alert_Ok"));
             }
         }
@@ -196,6 +214,7 @@ public partial class BoothListPage : ContentPage
                 LanguageService.T("Ui_Alert_Ok"));
         }
     }
+
 
     private async void OnMapClicked(object sender, EventArgs e)
     {
@@ -222,4 +241,41 @@ public partial class BoothListPage : ContentPage
                 await _narrationService.SpeakBoothAsync(booth, "Manual");
         }
     }
+    private async Task UpdateVisitorLanguageAsync(string lang)
+    {
+        var visitorId = Preferences.Get("visitor_id_server", "");
+        if (string.IsNullOrWhiteSpace(visitorId))
+            return;
+
+        try
+        {
+            await _apiService.UpdateVisitorLanguageAsync(visitorId, lang);
+        }
+        catch
+        {
+            // nếu lỗi thì bỏ qua, app vẫn chạy bình thường
+        }
+    }
+    private string GetGpsEnabledMessage()
+    {
+        return LanguageService.CurrentLanguage switch
+        {
+            "en" => "GPS has been enabled.",
+            "fr" => "Le GPS a été activé.",
+            "zh" => "已开启 GPS。",
+            _ => "Đã bật GPS."
+        };
+    }
+
+    private string GetGpsDisabledMessage()
+    {
+        return LanguageService.CurrentLanguage switch
+        {
+            "en" => "GPS has been disabled.",
+            "fr" => "Le GPS a été désactivé.",
+            "zh" => "已关闭 GPS。",
+            _ => "Đã tắt GPS."
+        };
+    }
+
 }

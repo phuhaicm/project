@@ -8,10 +8,12 @@ namespace PoiNarration.Web.Controllers;
 public class DashboardController : Controller
 {
     private readonly HttpClient _http;
+    private readonly IConfiguration _configuration;
 
-    public DashboardController(IHttpClientFactory factory)
+    public DashboardController(IHttpClientFactory factory, IConfiguration configuration)
     {
         _http = factory.CreateClient("Api");
+        _configuration = configuration;
     }
 
     [HttpGet]
@@ -33,6 +35,12 @@ public class DashboardController : Controller
 
         vm.TopVisitorLanguages = visitorStats.TopLanguages;
         vm.TopVisitedBooths = visitorStats.TopBoothsByVisit;
+
+        ViewBag.AppDownloadUrl = Url.Action("Index", "AppDownload");
+        var apiBaseUrl = _configuration["Api:BaseUrl"]?.TrimEnd('/');
+        ViewBag.AppDownloadQrImageUrl = string.IsNullOrWhiteSpace(apiBaseUrl)
+            ? ""
+            : $"{apiBaseUrl}/uploads/qrcodes/qr-app-download.png";
 
         return View(vm);
     }

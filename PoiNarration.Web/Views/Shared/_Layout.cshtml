@@ -42,10 +42,15 @@
                                 </a>
                             </li>
                             <li class="nav-item">
-    <a class="nav-link @(ViewContext.RouteData.Values["Controller"]?.ToString() == "UserStats" ? "active fw-bold" : "")" asp-controller="UserStats" asp-action="Index">
-        <i class="bi bi-bar-chart me-1"></i> Thống kê người dùng
-    </a>
-</li>
+                                <a class="nav-link @(ViewContext.RouteData.Values["Controller"]?.ToString() == "UserStats" ? "active fw-bold" : "")" asp-controller="UserStats" asp-action="Index">
+                                    <i class="bi bi-bar-chart me-1"></i> Thống kê người dùng
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link @(ViewContext.RouteData.Values["Controller"]?.ToString() == "AppDownload" ? "active fw-bold" : "")" asp-controller="AppDownload" asp-action="Index">
+                                    <i class="bi bi-qr-code me-2"></i> QR tải ứng dụng
+                                </a>
+                            </li>
                         }
                         @if (role == "Owner")
                         {

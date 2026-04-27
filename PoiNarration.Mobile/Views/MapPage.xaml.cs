@@ -21,18 +21,22 @@ public partial class MapPage : ContentPage
 
     private bool _gpsModeEnabled = false;
 
+    private readonly GpsModeStateService _gpsModeStateService;
+
     public MapPage(
         AppDatabase db,
         AutoBoothNavigatorService autoBoothNavigatorService,
         NarrationService narrationService,
         ApiService apiService,
-        GeofenceService geofenceService)
+        GeofenceService geofenceService,
+        GpsModeStateService gpsModeStateService)
     {
         InitializeComponent();
 
         _db = db;
         _autoBoothNavigatorService = autoBoothNavigatorService;
         _geofenceService = geofenceService;
+        _gpsModeStateService = gpsModeStateService;
     }
 
     protected override async void OnAppearing()
@@ -46,21 +50,18 @@ public partial class MapPage : ContentPage
             _autoBoothNavigatorService.StateChanged -= OnAutoBoothStateChanged;
             _autoBoothNavigatorService.StateChanged += OnAutoBoothStateChanged;
 
-            await _autoBoothNavigatorService.StartAsync();
-            _gpsModeEnabled = true;
+            _gpsModeStateService.Changed -= OnGpsModeChanged;
+            _gpsModeStateService.Changed += OnGpsModeChanged;
 
             _booths = await _db.GetAllBoothsAsync();
 
             MainThread.BeginInvokeOnMainThread(() =>
             {
-                FoodMap.IsShowingUser = true;   // thêm dòng này
                 BoothCountLabel.Text = $"{LanguageService.T("Ui_BoothCount")}: {_booths.Count}";
-                GpsStatusLabel.Text = LanguageService.T("Ui_GpsActive");
-
                 LoadBoothPins();
             });
 
-
+            await ApplyGpsModeAsync(_gpsModeStateService.IsEnabled);
         }
         catch (Exception ex)
         {
@@ -72,6 +73,7 @@ public partial class MapPage : ContentPage
     {
         base.OnDisappearing();
         _autoBoothNavigatorService.StateChanged -= OnAutoBoothStateChanged;
+        _gpsModeStateService.Changed -= OnGpsModeChanged;
     }
 
     private void LoadBoothPins()
@@ -94,7 +96,13 @@ public partial class MapPage : ContentPage
             _pinBoothMap[pin] = booth;
         }
     }
-
+    private async void OnGpsModeChanged(object? sender, bool enabled)
+    {
+        await MainThread.InvokeOnMainThreadAsync(async () =>
+        {
+            await ApplyGpsModeAsync(enabled);
+        });
+    }
     private async void OnAutoBoothStateChanged(object? sender, AutoBoothStateChangedEventArgs e)
     {
         try
@@ -258,4 +266,62 @@ public partial class MapPage : ContentPage
             ? booth.NameVi
             : (!string.IsNullOrWhiteSpace(booth.NameEn) ? booth.NameEn : booth.NameVi);
     }
+    private async Task ApplyGpsModeAsync(bool enabled)
+    {
+        _gpsModeEnabled = enabled;
+
+        if (enabled)
+        {
+            var ok = await _autoBoothNavigatorService.StartAsync();
+            if (!ok)
+            {
+                GpsStatusLabel.Text = LanguageService.T("Ui_GpsNotEnabledOrPermissionDenied");
+                FoodMap.IsShowingUser = false;
+                return;
+            }
+
+            _autoBoothNavigatorService.SetAutoNarrationEnabled(true);
+            FoodMap.IsShowingUser = true;
+            GpsStatusLabel.Text = GetGpsOnText();
+            await _autoBoothNavigatorService.ForceRefreshAsync();
+        }
+        else
+        {
+            _autoBoothNavigatorService.SetAutoNarrationEnabled(false);
+            _autoBoothNavigatorService.Stop();
+
+            FoodMap.IsShowingUser = false;
+
+            LocationLabel.Text = LanguageService.T("Ui_Empty");
+            NearestBoothName.Text = LanguageService.T("Ui_NearestUnknown");
+            NearestBoothLabel.Text = LanguageService.T("Ui_NearestBoothNotFound");
+            NearestBoothDistance.Text = LanguageService.T("Ui_Empty");
+            OpenNearestButton.IsEnabled = false;
+
+            GpsStatusLabel.Text = GetGpsOffText();
+            GpsStatusLabel.TextColor = Colors.White;
+        }
+    }
+    private string GetGpsOnText()
+    {
+        return LanguageService.CurrentLanguage switch
+        {
+            "en" => "GPS is on",
+            "fr" => "Le GPS est activé",
+            "zh" => "GPS 已开启",
+            _ => "GPS đang bật"
+        };
+    }
+
+    private string GetGpsOffText()
+    {
+        return LanguageService.CurrentLanguage switch
+        {
+            "en" => "GPS is off",
+            "fr" => "Le GPS est désactivé",
+            "zh" => "GPS 已关闭",
+            _ => "GPS đang tắt"
+        };
+    }
+
 }

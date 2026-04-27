@@ -1,8 +1,12 @@
 ﻿@model PoiNarration.Web.ViewModels.DashboardIndexVm
 
+
 @{
-    ViewData["Title"] = "Dashboard";
+    ViewData["Title"] = "Bảng điều khiển";
+    var appDownloadUrl = ViewBag.AppDownloadUrl as string ?? "/AppDownload";
+    var appDownloadQrImageUrl = ViewBag.AppDownloadQrImageUrl as string ?? "";
 }
+
 
 <div class="d-flex justify-content-between align-items-center mb-4">
     <div>

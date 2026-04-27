@@ -2,38 +2,33 @@
 
 public class VisitorSessionService
 {
-    private const string VisitorIdKey = "visitor_id";
-    private const string VisitorCodeKey = "visitor_code";
     private const string DeviceKeyKey = "device_key";
     private const string SessionIdKey = "session_id";
 
+    private const string VisitorIdServerKey = "visitor_id_server";
+    private const string VisitorCodeKey = "visitor_code";
+    private const string VisitorDisplayNameKey = "visitor_display_name";
+
     public void EnsureInitialized()
     {
-        var visitorId = Preferences.Get(VisitorIdKey, "");
-        if (string.IsNullOrWhiteSpace(visitorId))
+        // 1 thiết bị chỉ tạo device_key đúng 1 lần
+        var deviceKey = Preferences.Get(DeviceKeyKey, "");
+        if (string.IsNullOrWhiteSpace(deviceKey))
         {
-            var newVisitorId = Guid.NewGuid().ToString();
-            var visitorCode = $"VIS-{Guid.NewGuid():N}".Substring(0, 10).ToUpper();
-            var deviceKey = $"device-{Guid.NewGuid():N}";
-            var sessionId = Guid.NewGuid().ToString();
+            Preferences.Set(DeviceKeyKey, $"device-{Guid.NewGuid():N}");
+        }
 
-            Preferences.Set(VisitorIdKey, newVisitorId);
-            Preferences.Set(VisitorCodeKey, visitorCode);
-            Preferences.Set(DeviceKeyKey, deviceKey);
-            Preferences.Set(SessionIdKey, sessionId);
+        // session_id có thể refresh mỗi lần mở app nếu bạn muốn theo dõi session
+        var sessionId = Preferences.Get(SessionIdKey, "");
+        if (string.IsNullOrWhiteSpace(sessionId))
+        {
+            Preferences.Set(SessionIdKey, Guid.NewGuid().ToString());
         }
     }
 
-    public string GetVisitorId()
+    public void RefreshSession()
     {
-        EnsureInitialized();
-        return Preferences.Get(VisitorIdKey, "");
-    }
-
-    public string GetVisitorCode()
-    {
-        EnsureInitialized();
-        return Preferences.Get(VisitorCodeKey, "");
+        Preferences.Set(SessionIdKey, Guid.NewGuid().ToString());
     }
 
     public string GetDeviceKey()
@@ -48,8 +43,32 @@ public class VisitorSessionService
         return Preferences.Get(SessionIdKey, "");
     }
 
-    public void RefreshSession()
+    public string GetVisitorIdServer()
     {
-        Preferences.Set(SessionIdKey, Guid.NewGuid().ToString());
+        return Preferences.Get(VisitorIdServerKey, "");
+    }
+
+    public string GetVisitorCode()
+    {
+        return Preferences.Get(VisitorCodeKey, "");
+    }
+
+    public string GetVisitorDisplayName()
+    {
+        return Preferences.Get(VisitorDisplayNameKey, "");
+    }
+
+    public void SaveRegisteredVisitor(string visitorId, string visitorCode, string displayName)
+    {
+        Preferences.Set(VisitorIdServerKey, visitorId ?? "");
+        Preferences.Set(VisitorCodeKey, visitorCode ?? "");
+        Preferences.Set(VisitorDisplayNameKey, displayName ?? "");
+    }
+
+    public void ClearRegisteredVisitor()
+    {
+        Preferences.Remove(VisitorIdServerKey);
+        Preferences.Remove(VisitorCodeKey);
+        Preferences.Remove(VisitorDisplayNameKey);
     }
 }

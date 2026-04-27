@@ -48,6 +48,7 @@ public class VisitorsController : ControllerBase
 
         var code = BuildVisitorCode();
 
+
         var visitor = new VisitorUser
         {
             Id = Guid.NewGuid().ToString(),
@@ -129,10 +130,145 @@ public class VisitorsController : ControllerBase
         });
 
     }
+    [HttpPut("{visitorId}/language")]
+    public async Task<IActionResult> UpdateLanguage(string visitorId, [FromBody] UpdateVisitorLanguageRequest request)
+    {
+        if (string.IsNullOrWhiteSpace(visitorId))
+            return BadRequest("visitorId là bắt buộc.");
 
+        var visitor = await _db.VisitorUsers.FirstOrDefaultAsync(x => x.Id == visitorId);
+        if (visitor == null)
+            return NotFound("Không tìm thấy visitor.");
+
+        visitor.PreferredLanguage = string.IsNullOrWhiteSpace(request.PreferredLanguage)
+            ? visitor.PreferredLanguage
+            : request.PreferredLanguage;
+
+        visitor.LastActiveAtUtc = DateTime.UtcNow;
+
+        await _db.SaveChangesAsync();
+
+        return Ok(new
+        {
+            visitor.Id,
+            visitor.VisitorCode,
+            visitor.PreferredLanguage,
+            visitor.LastActiveAtUtc
+        });
+    }
+
+
+    [HttpPut("{visitorId}/touch")]
+    public async Task<IActionResult> Touch(string visitorId)
+    {
+        if (string.IsNullOrWhiteSpace(visitorId))
+            return BadRequest("visitorId là bắt buộc.");
+
+        var visitor = await _db.VisitorUsers.FirstOrDefaultAsync(x => x.Id == visitorId);
+        if (visitor == null)
+            return NotFound("Không tìm thấy visitor.");
+
+        visitor.LastActiveAtUtc = DateTime.UtcNow;
+        await _db.SaveChangesAsync();
+
+        return Ok(new
+        {
+            visitor.Id,
+            visitor.VisitorCode,
+            visitor.LastActiveAtUtc
+        });
+    }
     private static string BuildVisitorCode()
     {
         return $"VIS-{Guid.NewGuid():N}".Substring(0, 10).ToUpper();
+    }
+    [HttpGet("activity-details")]
+    public async Task<IActionResult> GetActivityDetails()
+    {
+        var onlineThreshold = DateTime.UtcNow.AddMinutes(-5);
+
+        var boothNames = await _db.Booths
+            .AsNoTracking()
+            .ToDictionaryAsync(
+                x => x.Id,
+                x => string.IsNullOrWhiteSpace(x.NameVi) ? x.NameEn : x.NameVi);
+
+        var visitors = await _db.VisitorUsers
+            .AsNoTracking()
+            .OrderByDescending(x => x.LastActiveAtUtc)
+            .ToListAsync();
+
+        var visitGroups = await _db.BoothVisitLogs
+            .AsNoTracking()
+            .GroupBy(x => new { x.VisitorUserId, x.BoothId })
+            .Select(g => new VisitorBoothActivityDto
+            {
+                VisitorUserId = g.Key.VisitorUserId,
+                BoothId = g.Key.BoothId,
+                Count = g.Count(),
+                LastAtUtc = g.Max(x => x.VisitedAtUtc)
+            })
+            .ToListAsync();
+
+        var playbackGroups = await _db.PlaybackLogs
+            .AsNoTracking()
+            .Where(x => !string.IsNullOrWhiteSpace(x.VisitorUserId))
+            .GroupBy(x => new { VisitorUserId = x.VisitorUserId!, x.BoothId })
+            .Select(g => new VisitorBoothActivityDto
+            {
+                VisitorUserId = g.Key.VisitorUserId,
+                BoothId = g.Key.BoothId,
+                Count = g.Count(),
+                LastAtUtc = g.Max(x => x.PlayedAtUtc)
+            })
+            .ToListAsync();
+
+        var result = visitors.Select(v =>
+        {
+            var visitedBooths = visitGroups
+                .Where(x => x.VisitorUserId == v.Id)
+                .Select(x => new VisitorBoothActivityDto
+                {
+                    VisitorUserId = x.VisitorUserId,
+                    BoothId = x.BoothId,
+                    BoothName = boothNames.TryGetValue(x.BoothId, out var boothName) ? boothName : x.BoothId,
+                    Count = x.Count,
+                    LastAtUtc = x.LastAtUtc
+                })
+                .OrderByDescending(x => x.LastAtUtc)
+                .ToList();
+
+            var playedBooths = playbackGroups
+                .Where(x => x.VisitorUserId == v.Id)
+                .Select(x => new VisitorBoothActivityDto
+                {
+                    VisitorUserId = x.VisitorUserId,
+                    BoothId = x.BoothId,
+                    BoothName = boothNames.TryGetValue(x.BoothId, out var boothName) ? boothName : x.BoothId,
+                    Count = x.Count,
+                    LastAtUtc = x.LastAtUtc
+                })
+                .OrderByDescending(x => x.LastAtUtc)
+                .ToList();
+
+            return new VisitorActivityDetailResponse
+            {
+                VisitorId = v.Id,
+                VisitorCode = v.VisitorCode,
+                DisplayName = v.DisplayName,
+                PreferredLanguage = v.PreferredLanguage,
+                Platform = v.Platform,
+                AppVersion = v.AppVersion,
+                LastActiveAtUtc = v.LastActiveAtUtc,
+                IsOnline = v.LastActiveAtUtc >= onlineThreshold,
+                TotalVisitedBooths = visitedBooths.Sum(x => x.Count),
+                TotalPlayedBooths = playedBooths.Sum(x => x.Count),
+                VisitedBooths = visitedBooths,
+                PlayedBooths = playedBooths
+            };
+        }).ToList();
+
+        return Ok(result);
     }
 }
 
@@ -150,4 +286,34 @@ public class VisitorRegisterResponse
     public string VisitorCode { get; set; } = "";
     public string DisplayName { get; set; } = "";
     public string PreferredLanguage { get; set; } = "vi";
+}
+public class UpdateVisitorLanguageRequest
+{
+    public string PreferredLanguage { get; set; } = "vi";
+}
+public class VisitorActivityDetailResponse
+{
+    public string VisitorId { get; set; } = "";
+    public string VisitorCode { get; set; } = "";
+    public string DisplayName { get; set; } = "";
+    public string PreferredLanguage { get; set; } = "vi";
+    public string? Platform { get; set; }
+    public string? AppVersion { get; set; }
+    public DateTime LastActiveAtUtc { get; set; }
+    public bool IsOnline { get; set; }
+
+    public int TotalVisitedBooths { get; set; }
+    public int TotalPlayedBooths { get; set; }
+
+    public List<VisitorBoothActivityDto> VisitedBooths { get; set; } = new();
+    public List<VisitorBoothActivityDto> PlayedBooths { get; set; } = new();
+}
+
+public class VisitorBoothActivityDto
+{
+    public string VisitorUserId { get; set; } = "";
+    public string BoothId { get; set; } = "";
+    public string BoothName { get; set; } = "";
+    public int Count { get; set; }
+    public DateTime LastAtUtc { get; set; }
 }

@@ -1,18 +1,72 @@
 ﻿using PoiNarration.Mobile.Services;
+using System.Diagnostics;
 
 namespace PoiNarration.Mobile;
 
 public partial class App : Application
 {
     private readonly SyncService? _syncService;
+    private readonly VisitorSessionService _visitorSessionService;
+    private readonly ApiService _apiService;
 
-    public App(SyncService? syncService = null)
+    private IDispatcherTimer? _heartbeatTimer;
+    private string? _currentVisitorId;
+
+    public App(
+        SyncService? syncService = null,
+        VisitorSessionService? visitorSessionService = null,
+        ApiService? apiService = null)
     {
         InitializeComponent();
+
         _syncService = syncService;
+        _visitorSessionService = visitorSessionService ?? new VisitorSessionService();
+        _apiService = apiService ?? new ApiService();
 
         LanguageService.Initialize();
-        EnsureVisitorIdentity();
+
+        // Chỉ đảm bảo device_key tồn tại, KHÔNG reset visitor nữa
+        _visitorSessionService.EnsureInitialized();
+
+        // Session mới mỗi lần mở app là OK
+        _visitorSessionService.RefreshSession();
+    }
+
+    private void StartHeartbeat()
+    {
+        if (string.IsNullOrWhiteSpace(_currentVisitorId))
+            return;
+
+        StopHeartbeat();
+
+        _heartbeatTimer = Dispatcher.CreateTimer();
+        _heartbeatTimer.Interval = TimeSpan.FromSeconds(60);
+
+        _heartbeatTimer.Tick += async (s, e) =>
+        {
+            try
+            {
+                if (!string.IsNullOrWhiteSpace(_currentVisitorId))
+                {
+                    await _apiService.TouchVisitorAsync(_currentVisitorId);
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"[Heartbeat Error]: {ex}");
+            }
+        };
+
+        _heartbeatTimer.Start();
+    }
+
+    private void StopHeartbeat()
+    {
+        if (_heartbeatTimer != null)
+        {
+            _heartbeatTimer.Stop();
+            _heartbeatTimer = null;
+        }
     }
 
     protected override Window CreateWindow(IActivationState? activationState)
@@ -23,16 +77,14 @@ public partial class App : Application
         {
             try
             {
-                EnsureVisitorIdentity();
+                var serverVisitorId = _visitorSessionService.GetVisitorIdServer();
 
-                var api = new PoiNarration.Mobile.Services.ApiService();
-                var serverVisitorId = Preferences.Get("visitor_id_server", "");
-
+                // Nếu thiết bị này chưa từng đăng ký trên server
                 if (string.IsNullOrWhiteSpace(serverVisitorId))
                 {
-                    var response = await api.RegisterVisitorAsync(new PoiNarration.Mobile.Services.VisitorRegisterRequest
+                    var response = await _apiService.RegisterVisitorAsync(new VisitorRegisterRequest
                     {
-                        DeviceKey = Preferences.Get("device_key", ""),
+                        DeviceKey = _visitorSessionService.GetDeviceKey(),
                         PreferredLanguage = LanguageService.CurrentLanguage,
                         Platform = DeviceInfo.Platform.ToString(),
                         AppVersion = AppInfo.VersionString
@@ -40,9 +92,22 @@ public partial class App : Application
 
                     if (response != null)
                     {
-                        Preferences.Set("visitor_id_server", response.VisitorId);
-                        Preferences.Set("visitor_code", response.VisitorCode);
+                        _visitorSessionService.SaveRegisteredVisitor(
+                            response.VisitorId,
+                            response.VisitorCode,
+                            response.DisplayName);
+
+                        serverVisitorId = response.VisitorId;
                     }
+                }
+
+                // Sau khi đã có visitor server id thì mới touch + start heartbeat
+                _currentVisitorId = serverVisitorId;
+
+                if (!string.IsNullOrWhiteSpace(_currentVisitorId))
+                {
+                    await _apiService.TouchVisitorAsync(_currentVisitorId);
+                    StartHeartbeat();
                 }
 
                 if (_syncService != null)
@@ -52,33 +117,36 @@ public partial class App : Application
                     await _syncService.SyncPlaybackLogsAsync();
                 }
             }
-            catch
+            catch (Exception ex)
             {
+                Debug.WriteLine($"[App Startup Error]: {ex}");
                 // fallback offline
             }
         });
 
+        window.Stopped += (s, e) =>
+        {
+            StopHeartbeat();
+        };
+
+        window.Resumed += async (s, e) =>
+        {
+            try
+            {
+                _currentVisitorId = _visitorSessionService.GetVisitorIdServer();
+
+                if (!string.IsNullOrWhiteSpace(_currentVisitorId))
+                {
+                    await _apiService.TouchVisitorAsync(_currentVisitorId);
+                    StartHeartbeat();
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"[Resume Error]: {ex}");
+            }
+        };
+
         return window;
-    }
-
-    private void EnsureVisitorIdentity()
-    {
-        var deviceKey = Preferences.Get("device_key", "");
-        if (string.IsNullOrWhiteSpace(deviceKey))
-        {
-            Preferences.Set("device_key", $"device-{Guid.NewGuid():N}");
-        }
-
-        var visitorCode = Preferences.Get("visitor_code", "");
-        if (string.IsNullOrWhiteSpace(visitorCode))
-        {
-            Preferences.Set("visitor_code", $"VIS-{Guid.NewGuid():N}".Substring(0, 10).ToUpper());
-        }
-
-        var sessionId = Preferences.Get("session_id", "");
-        if (string.IsNullOrWhiteSpace(sessionId))
-        {
-            Preferences.Set("session_id", Guid.NewGuid().ToString());
-        }
     }
 }

@@ -131,8 +131,45 @@ namespace PoiNarration.Mobile.Services
         }
 
         public string BaseUrl => _http.BaseAddress?.ToString() ?? "";
-    }
+        public async Task UpdateVisitorLanguageAsync(string visitorId, string languageCode)
+        {
+            try
+            {
+                var response = await _http.PutAsJsonAsync(
+                    $"api/visitors/{visitorId}/language",
+                    new UpdateVisitorLanguageRequest
+                    {
+                        PreferredLanguage = languageCode
+                    });
 
+                response.EnsureSuccessStatusCode();
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"[Lỗi UpdateVisitorLanguageAsync]: {ex.Message}");
+                throw;
+            }
+        }
+
+        public async Task TouchVisitorAsync(string visitorId)
+        {
+            try
+            {
+                var response = await _http.PutAsync($"api/visitors/{visitorId}/touch", null);
+                response.EnsureSuccessStatusCode();
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"[Lỗi TouchVisitorAsync]: {ex.Message}");
+                throw;
+            }
+        }
+
+    }
+    public class UpdateVisitorLanguageRequest
+    {
+        public string PreferredLanguage { get; set; } = "vi";
+    }
     public class VisitorRegisterRequest
     {
         public string DeviceKey { get; set; } = "";
