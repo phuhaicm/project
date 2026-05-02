@@ -22,6 +22,7 @@ public partial class BoothListPage : ContentPage
         NarrationService narrationService,
         AutoBoothNavigatorService autoBoothNavigatorService,
         ApiService apiService,
+
         GpsModeStateService gpsModeStateService)
     {
         InitializeComponent();
@@ -32,6 +33,8 @@ public partial class BoothListPage : ContentPage
         _autoBoothNavigatorService = autoBoothNavigatorService;
         _apiService = apiService;
         _gpsModeStateService = gpsModeStateService;
+        LanguageService.LanguageChanged += OnLanguageServiceChanged;
+
     }
 
     protected override async void OnAppearing()
@@ -42,14 +45,26 @@ public partial class BoothListPage : ContentPage
         {
             await _db.InitAsync();
             LanguagePicker.SelectedItem = LanguageService.CurrentLanguage;
-            CurrentLanguageLabel.Text = LanguageService.CurrentLanguage;
-            RefreshVisitorInfo();
+            RefreshLocalizedTexts();
             await LoadBoothsAsync();
         }
         catch (Exception ex)
         {
-            await DisplayAlertAsync("Lỗi", ex.ToString(), "OK");
+            await DisplayAlertAsync(GetErrorTitleText(), ex.ToString(), GetOkText());
         }
+    }
+    protected override void OnDisappearing()
+    {
+        base.OnDisappearing();
+        LanguageService.LanguageChanged -= OnLanguageServiceChanged;
+    }
+    private void OnLanguageServiceChanged()
+    {
+        MainThread.BeginInvokeOnMainThread(async () =>
+        {
+            RefreshLocalizedTexts();
+            await ApplyFilterAsync();
+        });
     }
 
     private void RefreshVisitorInfo()
@@ -64,15 +79,115 @@ public partial class BoothListPage : ContentPage
         VisitorCodeLabel.Text = visitorCode;
         VisitorLangLabel.Text = currentLang;
         VisitorSyncStatusLabel.Text = string.IsNullOrWhiteSpace(visitorServerId)
-            ? "Chưa đồng bộ server"
-            : "Đã đồng bộ server";
+            ? GetVisitorSyncPendingText()
+            : GetVisitorSyncDoneText();
+    }
+    private string GetPageTitleText()
+    {
+        return LanguageService.CurrentLanguage switch
+        {
+            "en" => "Booth List",
+            "zh" => "展位列表",
+            "fr" => "Liste des stands",
+            "ja" => "ブース一覧",
+            "ko" => "부스 목록",
+            "es" => "Lista de stands",
+            "it" => "Elenco stand",
+            "ru" => "Список стендов",
+            _ => "Danh sách trạm"
+        };
     }
 
+    private string GetVisitorSyncPendingText()
+    {
+        return LanguageService.CurrentLanguage switch
+        {
+            "en" => "Not synced to server",
+            "zh" => "尚未同步到服务器",
+            "fr" => "Non synchronisé avec le serveur",
+            "ja" => "サーバー未同期",
+            "ko" => "서버와 아직 동기화되지 않음",
+            "es" => "Aún no sincronizado con el servidor",
+            "it" => "Non sincronizzato con il server",
+            "ru" => "Еще не синхронизировано с сервером",
+            _ => "Chưa đồng bộ server"
+        };
+    }
+
+    private string GetVisitorSyncDoneText()
+    {
+        return LanguageService.CurrentLanguage switch
+        {
+            "en" => "Synced to server",
+            "zh" => "已同步到服务器",
+            "fr" => "Synchronisé avec le serveur",
+            "ja" => "サーバーに同期済み",
+            "ko" => "서버와 동기화됨",
+            "es" => "Sincronizado con el servidor",
+            "it" => "Sincronizzato con il server",
+            "ru" => "Синхронизировано с сервером",
+            _ => "Đã đồng bộ server"
+        };
+    }
+
+    private string GetErrorTitleText()
+    {
+        return LanguageService.CurrentLanguage switch
+        {
+            "en" => "Error",
+            "zh" => "错误",
+            "fr" => "Erreur",
+            "ja" => "エラー",
+            "ko" => "오류",
+            "es" => "Error",
+            "it" => "Errore",
+            "ru" => "Ошибка",
+            _ => "Lỗi"
+        };
+    }
+
+    private string GetOkText()
+    {
+        return LanguageService.CurrentLanguage switch
+        {
+            "zh" => "确定",
+            "fr" => "OK",
+            "ja" => "OK",
+            "ko" => "확인",
+            "es" => "Aceptar",
+            "it" => "OK",
+            "ru" => "ОК",
+            _ => "OK"
+        };
+    }
+
+    private string GetSyncSuccessWithBoothCountText(int boothCount)
+    {
+        return LanguageService.CurrentLanguage switch
+        {
+            "en" => $"Sync successful: {boothCount} booths",
+            "zh" => $"同步成功：{boothCount} 个展位",
+            "fr" => $"Synchronisation réussie : {boothCount} stands",
+            "ja" => $"同期成功：{boothCount} ブース",
+            "ko" => $"동기화 성공: 부스 {boothCount}개",
+            "es" => $"Sincronización correcta: {boothCount} stands",
+            "it" => $"Sincronizzazione riuscita: {boothCount} stand",
+            "ru" => $"Синхронизация выполнена: {boothCount} стендов",
+            _ => $"Đồng bộ thành công: {boothCount} booth"
+        };
+    }
+
+    private void RefreshLocalizedTexts()
+    {
+        Title = GetPageTitleText();
+        CurrentLanguageLabel.Text = LanguageService.CurrentLanguage;
+        RefreshVisitorInfo();
+    }
     private async Task LoadBoothsAsync()
     {
         _allBooths = await _db.GetAllBoothsAsync();
         TotalBoothsLabel.Text = _allBooths.Count.ToString();
-        SyncStatusLabel.Text = $"{LanguageService.T("Ui_SyncSuccess")}: {_allBooths.Count} booth";
+        SyncStatusLabel.Text = GetSyncSuccessWithBoothCountText(_allBooths.Count);
         await ApplyFilterAsync();
     }
 

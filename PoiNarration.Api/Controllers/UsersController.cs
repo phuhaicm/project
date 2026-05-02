@@ -54,22 +54,24 @@ public class UsersController : ControllerBase
     [HttpPost]
     public async Task<ActionResult<AppUserDto>> CreateAsync([FromBody] CreateUserRequest request)
     {
-        if (string.IsNullOrWhiteSpace(request.Username) ||
-            string.IsNullOrWhiteSpace(request.Password) ||
-            string.IsNullOrWhiteSpace(request.FullName) ||
-            string.IsNullOrWhiteSpace(request.Role))
+        if (string.IsNullOrWhiteSpace(request.Username)
+            || string.IsNullOrWhiteSpace(request.Password)
+            || string.IsNullOrWhiteSpace(request.FullName)
+            || string.IsNullOrWhiteSpace(request.Role))
         {
             return BadRequest("Thiếu thông tin tạo tài khoản.");
         }
 
-        var exists = await _db.AppUsers.AnyAsync(x => x.Username == request.Username);
+        var normalizedUsername = request.Username.Trim();
+
+        var exists = await _db.AppUsers.AnyAsync(x => x.Username == normalizedUsername);
         if (exists)
             return Conflict("Tên đăng nhập đã tồn tại.");
 
         var user = new AppUser
         {
             Id = Guid.NewGuid().ToString(),
-            Username = request.Username.Trim(),
+            Username = normalizedUsername,
             Password = request.Password,
             PasswordHash = request.Password,
             FullName = request.FullName.Trim(),
@@ -79,13 +81,15 @@ public class UsersController : ControllerBase
         _db.AppUsers.Add(user);
         await _db.SaveChangesAsync();
 
-        return CreatedAtAction(nameof(GetByIdAsync), new { id = user.Id }, new AppUserDto
+        var dto = new AppUserDto
         {
             Id = user.Id,
             Username = user.Username,
             FullName = user.FullName,
             Role = user.Role
-        });
+        };
+
+        return Ok(dto);
     }
 
     [HttpPut("{id}")]

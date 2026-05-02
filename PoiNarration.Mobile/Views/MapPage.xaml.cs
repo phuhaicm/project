@@ -65,7 +65,7 @@ public partial class MapPage : ContentPage
         }
         catch (Exception ex)
         {
-            await DisplayAlertAsync("Lỗi MapPage", ex.Message, "OK");
+            await DisplayAlertAsync(GetErrorTitleText(), ex.Message, GetOkText());
         }
     }
 
@@ -95,6 +95,36 @@ public partial class MapPage : ContentPage
             FoodMap.Pins.Add(pin);
             _pinBoothMap[pin] = booth;
         }
+    }
+    private string GetErrorTitleText()
+    {
+        return LanguageService.CurrentLanguage switch
+        {
+            "en" => "Error",
+            "zh" => "错误",
+            "fr" => "Erreur",
+            "ja" => "エラー",
+            "ko" => "오류",
+            "es" => "Error",
+            "it" => "Errore",
+            "ru" => "Ошибка",
+            _ => "Lỗi"
+        };
+    }
+
+    private string GetOkText()
+    {
+        return LanguageService.CurrentLanguage switch
+        {
+            "zh" => "确定",
+            "fr" => "OK",
+            "ja" => "OK",
+            "ko" => "확인",
+            "es" => "Aceptar",
+            "it" => "OK",
+            "ru" => "ОК",
+            _ => "OK"
+        };
     }
     private async void OnGpsModeChanged(object? sender, bool enabled)
     {
@@ -206,7 +236,10 @@ public partial class MapPage : ContentPage
                 var ok = await _autoBoothNavigatorService.StartAsync();
                 if (!ok)
                 {
-                    await DisplayAlertAsync("GPS Mode", LanguageService.T("Ui_GpsNotEnabledOrPermissionDenied"), "OK");
+                    await DisplayAlertAsync(
+    LanguageService.T("Ui_GpsMode"),
+    LanguageService.T("Ui_GpsNotEnabledOrPermissionDenied"),
+    GetOkText());
                     return;
                 }
 
@@ -216,7 +249,10 @@ public partial class MapPage : ContentPage
                 GpsStatusLabel.Text = $"{LanguageService.T("Ui_GpsMode")}: {LanguageService.T("Ui_GpsAutoEnabled")}";
                 GpsStatusLabel.TextColor = Color.Parse("#6D5DF6");
 
-                await DisplayAlertAsync(LanguageService.T("Ui_GpsMode"), LanguageService.T("Ui_GpsAutoEnabledMessage"), "OK");
+                await DisplayAlertAsync(
+    LanguageService.T("Ui_GpsMode"),
+    LanguageService.T("Ui_GpsAutoEnabledMessage"),
+    GetOkText());
             }
             else
             {
@@ -230,12 +266,18 @@ public partial class MapPage : ContentPage
                 // Giữ vị trí user trên bản đồ
                 FoodMap.IsShowingUser = true;
 
-                await DisplayAlertAsync(LanguageService.T("Ui_GpsMode"), LanguageService.T("Ui_GpsManualEnabledMessage"), "OK");
+                await DisplayAlertAsync(
+    LanguageService.T("Ui_GpsMode"),
+    LanguageService.T("Ui_GpsManualEnabledMessage"),
+    GetOkText());
             }
         }
         catch (Exception ex)
         {
-            await DisplayAlertAsync(LanguageService.T("Ui_GpsModeError"), ex.ToString(), "OK");
+            await DisplayAlertAsync(
+    LanguageService.T("Ui_GpsModeError"),
+    ex.ToString(),
+    GetOkText());
         }
     }
 

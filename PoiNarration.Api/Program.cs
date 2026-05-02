@@ -60,8 +60,11 @@ using (var scope = app.Services.CreateScope())
     await DemoDataSeeder.SeedAsync(db);     // seed visitor + visit log + playback log demo
 
     var qrService = scope.ServiceProvider.GetRequiredService<IQrCodeService>();
-    var appDownloadUrl = "http://192.168.1.237:7269/AppDownload";
+    var webBaseUrl = "http://192.168.88.235:7269";
+    var appDownloadUrl = $"{webBaseUrl}/AppDownload";
     await qrService.GenerateAndSaveAppDownloadQrAsync(appDownloadUrl);
+
+    
 }
 
 app.Run();
