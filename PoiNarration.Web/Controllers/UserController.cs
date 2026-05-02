@@ -58,6 +58,11 @@ public class UserController : Controller
         var guard = EnsureAdmin();
         if (guard != null) return guard;
 
+        if (string.IsNullOrWhiteSpace(model.Password))
+        {
+            ModelState.AddModelError(nameof(model.Password), "Mật khẩu là bắt buộc.");
+        }
+
         if (!ModelState.IsValid)
             return View(model);
 
@@ -133,6 +138,9 @@ public class UserController : Controller
     {
         var guard = EnsureAdmin();
         if (guard != null) return guard;
+
+        // Password không bắt buộc ở màn hình Edit
+        ModelState.Remove(nameof(model.Password));
 
         if (!ModelState.IsValid)
             return View(model);

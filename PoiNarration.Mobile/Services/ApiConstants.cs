@@ -4,7 +4,8 @@ namespace PoiNarration.Mobile.Services
 {
     public static class ApiConstants
     {
-        private const string MyComputerIp = "192.168.1.237";
+        private const string MyComputerIp = "192.168.88.235";
+
         private const string HttpPort = "5151";
 
         public static string GetBaseUrl()
